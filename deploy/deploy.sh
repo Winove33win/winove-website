@@ -20,6 +20,7 @@ npm run build
 cd "$ROOT_DIR"
 rm -rf "$BACKEND_DIR/dist"
 cp -r "$FRONTEND_DIR/dist" "$BACKEND_DIR/"
+printf "SSR_INDEX_FILE=index.html\nNODE_ENV=production\n" > "$BACKEND_DIR/dist/.env"
 
 echo "Frontend build copied to backend/dist"
 
