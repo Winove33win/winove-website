@@ -10,15 +10,33 @@ const router = Router();
 
 // Normaliza o formato para o frontend
 function adapt(row) {
+  const title = row.titulo ?? row.title ?? null;
+  const excerpt = row.resumo ?? row.excerpt ?? null;
+  const content = row.conteudo ?? row.content ?? null;
+  const cover =
+    row.imagem_destacada ?? row.coverUrl ?? row.coverImage ?? row.image ?? null;
+  const author = row.autor ?? row.author ?? null;
+  const publishedAt =
+    row.data_publicacao ?? row.publishedAt ?? row.date ?? row.created_at ?? null;
   const category = row.categoria ?? row.category ?? null;
+
   return {
-    id: row.id,
-    slug: row.slug,
-    title: row.titulo,
-    excerpt: row.resumo ?? null,
-    coverUrl: row.imagem_destacada ?? null,
-    author: row.autor ?? null,
-    publishedAt: row.data_publicacao,
+    ...row,
+    titulo: row.titulo ?? title ?? undefined,
+    title,
+    resumo: row.resumo ?? excerpt ?? undefined,
+    excerpt,
+    conteudo: row.conteudo ?? content ?? undefined,
+    content,
+    imagem_destacada: row.imagem_destacada ?? cover ?? undefined,
+    coverUrl: cover,
+    coverImage: cover,
+    data_publicacao: row.data_publicacao ?? publishedAt ?? undefined,
+    publishedAt,
+    date: publishedAt,
+    autor: row.autor ?? author ?? undefined,
+    author,
+    categoria: row.categoria ?? category ?? undefined,
     category,
   };
 }
@@ -246,15 +264,8 @@ router.get("/blog-posts/:slug", async (req, res) => {
       return res.status(404).json({ error: "Post não encontrado" });
     }
 
-    const post = rows[0];
-    res.json({
-      ...post,
-      title: post.titulo,
-      excerpt: post.resumo,
-      coverUrl: post.imagem_destacada,
-      publishedAt: post.data_publicacao,
-      category: post.categoria ?? null,
-    });
+    const post = adapt(rows[0]);
+    res.json(post);
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/:slug error:", err?.code, err?.message);
     res.status(500).json({ error: "Internal server error" });

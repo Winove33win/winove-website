@@ -32,15 +32,22 @@ router.get('/blog/:slug([^/.]+)/?', async (req, res, next) => {
     const { slug } = req.params;
     const [rows] = await pool.query(
       `SELECT
+         id,
          slug,
          titulo,
+         titulo AS title,
          resumo,
+         resumo AS description,
          imagem_destacada,
+         imagem_destacada AS image,
          data_publicacao,
-         autor,
-         categoria,
+         data_publicacao AS published_at,
          data_publicacao AS updated_at,
-         data_publicacao AS created_at
+         data_publicacao AS created_at,
+         autor,
+         autor AS author,
+         categoria,
+         categoria AS category
        FROM blog_posts
        WHERE slug = ?
        LIMIT 1`,
@@ -62,8 +69,9 @@ router.get('/blog/:slug([^/.]+)/?', async (req, res, next) => {
     const title = postTitle ? `${postTitle} | Winove` : 'Post do Blog | Winove';
     const summary = (post.summary || post.resumo || '').trim();
     const description = summary || 'Confira este conteúdo exclusivo no blog da Winove.';
-    const image = ensureAbsoluteUrl(post.image || post.imagem_destacada) || DEFAULT_SHARE_IMAGE;
-    const publishedAtRaw = post.data_publicacao || post.created_at;
+    const image =
+      ensureAbsoluteUrl(post.image || post.imagem_destacada) || DEFAULT_SHARE_IMAGE;
+    const publishedAtRaw = post.published_at || post.data_publicacao || post.created_at;
     const updatedAtRaw = post.updated_at || publishedAtRaw;
     const datePublished = toISODate(publishedAtRaw) || new Date().toISOString();
     const dateModified = toISODate(updatedAtRaw) || datePublished;
@@ -134,15 +142,26 @@ router.get('/api/post/:slug/seo', async (req, res) => {
       `SELECT
          id,
          titulo,
+         titulo AS title,
          slug,
          resumo,
+         resumo AS description,
+         resumo AS excerpt,
          conteudo,
+         conteudo AS content,
          imagem_destacada,
+         imagem_destacada AS coverImage,
+         imagem_destacada AS coverUrl,
+         imagem_destacada AS image,
          data_publicacao,
-         autor,
-         categoria,
+         data_publicacao AS date,
+         data_publicacao AS published_at,
          data_publicacao AS updated_at,
-         data_publicacao AS created_at
+         data_publicacao AS created_at,
+         autor,
+         autor AS author,
+         categoria,
+         categoria AS category
        FROM blog_posts
        WHERE slug = ?
        LIMIT 1`,

@@ -62,14 +62,27 @@ export type BlogCategory = {
 
 const API = import.meta.env.VITE_API_URL || '/api';
 
-export async function fetchBlogPosts(params: { limit?: number; offset?: number; category?: string } = {}): Promise<BlogResponse> {
-  const { limit = 10, offset = 0, category } = params;
+export async function fetchBlogPosts(params: {
+  limit?: number;
+  offset?: number;
+  category?: string;
+  search?: string;
+} = {}): Promise<BlogResponse> {
+  const { limit = 10, offset = 0, category, search } = params;
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-  const url = new URL(`${API}/blog-posts`, origin);
+  const trimmedSearch = typeof search === 'string' ? search.trim() : '';
+  const hasSearch = trimmedSearch.length > 0;
+  const url = new URL(
+    `${API}${hasSearch ? '/blog-posts/search' : '/blog-posts'}`,
+    origin
+  );
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('offset', String(offset));
   if (category) {
     url.searchParams.set('category', category);
+  }
+  if (hasSearch) {
+    url.searchParams.set('q', trimmedSearch);
   }
 
   const fallback: BlogResponse = {
