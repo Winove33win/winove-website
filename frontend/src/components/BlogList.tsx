@@ -84,7 +84,7 @@ export default function BlogList() {
     <section className="space-y-6">
       {/* Filtros de categoria/tags */}
       {categories?.length > 0 ? (
-        <div className="my-4 py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-x-auto">
+        <div className="my-4 p-3 rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-x-auto">
           <div className="flex gap-3">
             {categories.map((cat) => {
               const active = selectedCategory === cat.category;
@@ -109,7 +109,7 @@ export default function BlogList() {
           </div>
         </div>
       ) : (
-        <div className="my-4 py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--card)]">
+        <div className="my-4 p-3 rounded-xl border border-[var(--border)] bg-[var(--card)]">
           <p className="text-sm opacity-60">Nenhuma categoria encontrada.</p>
         </div>
       )}

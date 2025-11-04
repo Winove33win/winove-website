@@ -31,7 +31,19 @@ router.get('/blog/:slug([^/.]+)/?', async (req, res, next) => {
   try {
     const { slug } = req.params;
     const [rows] = await pool.query(
-      'SELECT slug, titulo, resumo, imagem_destacada, data_publicacao, updated_at, created_at FROM blog_posts WHERE slug = ? LIMIT 1',
+      `SELECT
+         slug,
+         titulo,
+         resumo,
+         imagem_destacada,
+         data_publicacao,
+         autor,
+         categoria,
+         data_publicacao AS updated_at,
+         data_publicacao AS created_at
+       FROM blog_posts
+       WHERE slug = ?
+       LIMIT 1`,
       [slug]
     );
 
@@ -118,7 +130,24 @@ router.get('/api/post/:slug/seo', async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const [rows] = await pool.query('SELECT * FROM blog_posts WHERE slug = ? LIMIT 1', [slug]);
+    const [rows] = await pool.query(
+      `SELECT
+         id,
+         titulo,
+         slug,
+         resumo,
+         conteudo,
+         imagem_destacada,
+         data_publicacao,
+         autor,
+         categoria,
+         data_publicacao AS updated_at,
+         data_publicacao AS created_at
+       FROM blog_posts
+       WHERE slug = ?
+       LIMIT 1`,
+      [slug]
+    );
     if (!rows?.length) {
       return res.status(404).json({ error: 'Post não encontrado' });
     }

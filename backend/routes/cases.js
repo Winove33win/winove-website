@@ -17,10 +17,19 @@ const toArray = (value) => {
 const ABS = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
+
   const base = process.env.PUBLIC_BASE_URL || 'https://winove.com.br';
-  // força /assets/... mesmo se vier "assets/..."
-  const clean = url.startsWith('/assets') ? url : url.replace(/^assets\//, '/assets/');
-  return `${base}${clean.startsWith('/') ? '' : '/'}${clean}`;
+  const normalized = url.startsWith('/assets')
+    ? url
+    : `/${url.replace(/^\/?/, '').replace(/^assets\//, 'assets/')}`;
+
+  try {
+    return new URL(normalized, base).href;
+  } catch {
+    const safeBase = base.replace(/\/$/, '');
+    const path = normalized.startsWith('/') ? normalized : `/${normalized}`;
+    return `${safeBase}${encodeURI(path)}`;
+  }
 };
 
 router.get('/', async (req, res) => {
