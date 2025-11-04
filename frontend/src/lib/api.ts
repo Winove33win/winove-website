@@ -32,3 +32,34 @@ export const fetchTemplates = async (): Promise<Template[]> => {
   const res = await api.get<Template[]>(`/api/templates`);
   return res.data;
 };
+
+export type BlogItem = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  coverUrl?: string | null;
+  author?: string | null;
+  publishedAt: string;
+};
+
+export type BlogResponse = {
+  total: number;
+  items: BlogItem[];
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+};
+
+const API = import.meta.env.VITE_API_URL || '/api';
+
+export async function fetchBlogPosts(params: { limit?: number; offset?: number } = {}): Promise<BlogResponse> {
+  const { limit = 10, offset = 0 } = params;
+  const url = new URL(`${API}/blog-posts`, window.location.origin);
+  url.searchParams.set('limit', String(limit));
+  url.searchParams.set('offset', String(offset));
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('Falha ao carregar posts');
+  return res.json();
+}
