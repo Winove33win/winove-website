@@ -23,12 +23,57 @@ function adapt(row) {
   };
 }
 
+const MAX_PAGE_SIZE = 50;
+
+const parsePositiveInt = (value, fallback, { min = 1, max = MAX_PAGE_SIZE } = {}) => {
+  if (Array.isArray(value)) {
+    value = value[0];
+  }
+
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  const clamped = Math.max(min, max != null ? Math.min(parsed, max) : parsed);
+  if (!Number.isFinite(clamped)) {
+    return fallback;
+  }
+
+  return clamped;
+};
+
+const parseOffset = (value, fallback) => {
+  if (Array.isArray(value)) {
+    value = value[0];
+  }
+
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return fallback;
+  }
+
+  return parsed;
+};
+
+const resolvePagination = (query, { defaultLimit = 10 } = {}) => {
+  const limitFromQuery = parsePositiveInt(query.limit, null, { min: 1 });
+  const pageSizeFromQuery = parsePositiveInt(query.pageSize, null, { min: 1 });
+  const limit = limitFromQuery ?? pageSizeFromQuery ?? parsePositiveInt(undefined, defaultLimit, { min: 1 });
+
+  const offsetFromQuery = parseOffset(query.offset, null);
+  const pageFromQuery = parsePositiveInt(query.page, null, { min: 1, max: Number.MAX_SAFE_INTEGER });
+
+  const offset = offsetFromQuery ?? (pageFromQuery ? (pageFromQuery - 1) * limit : 0);
+
+  return { limit, offset };
+};
+
 // GET /api/blog-posts?limit=10&offset=0  | ?all=1 para tudo
 router.get("/blog-posts", async (req, res) => {
   try {
     const all = req.query.all === "1";
-    const limit = Math.max(1, Number(req.query.limit || 10));
-    const offset = Math.max(0, Number(req.query.offset || 0));
+    const { limit, offset } = resolvePagination(req.query);
     // Novo: aceita ?category=NomeDaCategoria (trim na string)
     const category =
       typeof req.query.category === "string" &&
@@ -120,8 +165,7 @@ router.get("/blog-posts/search", async (req, res) => {
     const sanitize = (value) => (value || "").toString().trim();
     const qRaw = sanitize(req.query.q);
     const categoryRaw = sanitize(req.query.category);
-    const limit = Math.max(1, Number(req.query.limit || req.query.pageSize || 10));
-    const offset = Math.max(0, Number(req.query.offset || 0));
+    const { limit, offset } = resolvePagination(req.query);
 
     const whereParts = [];
     const params = [];
