@@ -5,24 +5,37 @@ import type { BlogItem } from "@/lib/api";
 import { fetchBlogPosts } from "@/lib/api";
 
 export const Blog = () => {
-  const [articles, setArticles] = useState<BlogItem[] | null>(null);
+  const [articles, setArticles] = useState<BlogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const data = await fetchBlogPosts({ limit: 6, offset: 0 });
-        setArticles(data.items);
+
+        if (!data.success) {
+          setArticles([]);
+          setError(data.message || "Erro ao carregar posts");
+          return;
+        }
+
+        const incoming = Array.isArray(data.items) ? data.items : [];
+        setArticles(incoming);
       } catch (err) {
         console.error("fetch blog-posts", err);
         setArticles([]);
+        setError(err instanceof Error ? err.message : "Erro ao carregar posts");
+      } finally {
+        setLoading(false);
       }
     };
     load();
   }, []);
 
-  if (!articles) {
-    return <p>Carregando...</p>;
-  }
+  const safeArticles = Array.isArray(articles) ? articles : [];
 
   return (
     <section id="blog" className="py-24 bg-gradient-navy relative overflow-hidden">
@@ -48,10 +61,12 @@ export const Blog = () => {
 
           {/* Articles Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.length === 0 ? (
-              <p>Nenhum post disponível no momento</p>
+            {loading ? (
+              <p>Carregando...</p>
+            ) : safeArticles.length === 0 ? (
+              <p>{error || "Nenhum post disponível no momento"}</p>
             ) : (
-              articles.map((article, index) => (
+              safeArticles.map((article, index) => (
                 <Link
                   key={article.slug}
                   to={`/blog/${article.slug}`}
@@ -110,6 +125,10 @@ export const Blog = () => {
               ))
             )}
           </div>
+
+          {error && safeArticles.length > 0 && (
+            <p className="mt-4 text-center text-sm text-red-400">{error}</p>
+          )}
 
           {/* View All Button */}
           <div className="text-center mt-12">

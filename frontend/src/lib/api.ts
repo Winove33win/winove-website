@@ -49,17 +49,51 @@ export type BlogResponse = {
   limit: number;
   offset: number;
   hasMore: boolean;
+  success: boolean;
+  message?: string;
 };
 
 const API = import.meta.env.VITE_API_URL || '/api';
 
 export async function fetchBlogPosts(params: { limit?: number; offset?: number } = {}): Promise<BlogResponse> {
   const { limit = 10, offset = 0 } = params;
-  const url = new URL(`${API}/blog-posts`, window.location.origin);
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(`${API}/blog-posts`, origin);
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('offset', String(offset));
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error('Falha ao carregar posts');
-  return res.json();
+  const fallback: BlogResponse = {
+    total: 0,
+    items: [],
+    limit,
+    offset,
+    hasMore: false,
+    success: false,
+    message: 'Falha ao carregar posts',
+  };
+
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      const message = `Erro ao carregar posts (${res.status})`;
+      return { ...fallback, message };
+    }
+
+    const data = await res.json();
+    const items = Array.isArray(data?.items) ? data.items : [];
+    const total = typeof data?.total === 'number' ? data.total : items.length;
+    const response: BlogResponse = {
+      total,
+      items,
+      limit: typeof data?.limit === 'number' ? data.limit : limit,
+      offset: typeof data?.offset === 'number' ? data.offset : offset,
+      hasMore: Boolean(data?.hasMore) && items.length + offset < total,
+      success: true,
+    };
+
+    return response;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : fallback.message;
+    return { ...fallback, message };
+  }
 }

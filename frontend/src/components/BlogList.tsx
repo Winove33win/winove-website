@@ -11,16 +11,37 @@ export default function BlogList() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const safeItems = Array.isArray(items) ? items : [];
+
   async function loadMore(nextOffset = 0) {
     try {
       setLoading(true);
       setError(null);
       const data = await fetchBlogPosts({ limit: PAGE_SIZE, offset: nextOffset });
-      setItems(prev => nextOffset === 0 ? data.items : [...prev, ...data.items]);
-      setTotal(data.total);
-      setOffset(nextOffset + data.items.length);
-      setHasMore(data.hasMore);
+
+      if (!data.success) {
+        if (nextOffset === 0) {
+          setItems([]);
+          setTotal(0);
+        }
+        setHasMore(false);
+        setError(data.message || "Erro ao carregar posts");
+        return;
+      }
+
+      const incomingItems = Array.isArray(data.items) ? data.items : [];
+      setItems((prev) =>
+        nextOffset === 0 ? incomingItems : [...prev, ...incomingItems]
+      );
+      setTotal(typeof data.total === 'number' ? data.total : incomingItems.length + nextOffset);
+      setOffset(nextOffset + incomingItems.length);
+      setHasMore(Boolean(data.hasMore) && incomingItems.length > 0);
     } catch (e: any) {
+      if (nextOffset === 0) {
+        setItems([]);
+        setTotal(0);
+      }
+      setHasMore(false);
       setError(e?.message || "Erro ao carregar posts");
     } finally {
       setLoading(false);
@@ -34,7 +55,7 @@ export default function BlogList() {
   return (
     <section className="space-y-6">
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map(post => (
+        {safeItems.map(post => (
           <li key={post.id} className="rounded-2xl border border-[var(--border,#26262a)] bg-[var(--card,#1C1C1F)] p-4">
             {post.coverUrl && (
               <img
@@ -57,6 +78,9 @@ export default function BlogList() {
       </ul>
 
       {error && <p className="text-red-500">{error}</p>}
+      {!loading && safeItems.length === 0 && !error && (
+        <p className="text-center text-sm opacity-70">Nenhum post disponível.</p>
+      )}
 
       <div className="flex items-center justify-center">
         {hasMore ? (
@@ -69,13 +93,13 @@ export default function BlogList() {
           </button>
         ) : (
           <p className="text-sm opacity-70">
-            {items.length === 0 ? "Nenhum post encontrado." : "Todos os posts foram carregados."}
+            {safeItems.length === 0 ? "Nenhum post encontrado." : "Todos os posts foram carregados."}
           </p>
         )}
       </div>
 
       <p className="text-center text-xs opacity-60">
-        Exibindo {items.length} de {total}
+        Exibindo {safeItems.length} de {total}
       </p>
     </section>
   );
