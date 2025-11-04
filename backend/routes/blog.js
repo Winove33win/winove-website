@@ -18,6 +18,7 @@ function adapt(row) {
     coverUrl: row.imagem_destacada ?? null,
     author: row.autor ?? null,
     publishedAt: row.data_publicacao,
+    category: row.categoria ?? null,
   };
 }
 
@@ -27,23 +28,43 @@ router.get("/blog-posts", async (req, res) => {
     const all = req.query.all === "1";
     const limit = Math.max(1, Number(req.query.limit || 10));
     const offset = Math.max(0, Number(req.query.offset || 0));
+    // Novo: aceita ?category=NomeDaCategoria (trim na string)
+    const category =
+      typeof req.query.category === "string" &&
+      req.query.category.trim().length > 0
+        ? req.query.category.trim()
+        : null;
 
-    const countSql = "SELECT COUNT(*) AS total FROM blog_posts";
-    const [countRows] = await pool.query(countSql);
+    // Se houver categoria, monte WHERE e parâmetros
+    let whereClause = "";
+    const params = [];
+    if (category) {
+      whereClause = "WHERE categoria = ?";
+      params.push(category);
+    }
+
+    // Aplica o whereClause também na contagem
+    const [countRows] = await pool.query(
+      `SELECT COUNT(*) AS total FROM blog_posts ${whereClause}`,
+      params
+    );
     const total = countRows?.[0]?.total ?? 0;
 
+    // Seleciona também a categoria
     let sql = `
-      SELECT id, titulo, slug, resumo, conteudo, imagem_destacada, data_publicacao, autor
+      SELECT id, titulo, slug, resumo, conteudo, imagem_destacada, data_publicacao, autor, categoria
       FROM blog_posts
+      ${whereClause}
       ORDER BY data_publicacao DESC, id DESC
     `;
 
     let rows;
     if (all) {
-      [rows] = await pool.query(sql);
+      // Quando todos, passa apenas params (se houver where)
+      [rows] = await pool.query(sql, params);
     } else {
       sql += " LIMIT ? OFFSET ?";
-      [rows] = await pool.query(sql, [limit, offset]);
+      [rows] = await pool.query(sql, [...params, limit, offset]);
     }
 
     const items = rows.map(adapt);

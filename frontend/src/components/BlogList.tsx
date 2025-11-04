@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { fetchBlogPosts, type BlogItem } from "@/lib/api";
+import {
+  fetchBlogPosts,
+  type BlogItem,
+  fetchBlogCategories,
+  type BlogCategory,
+} from "@/lib/api";
 
 const PAGE_SIZE = 10;
 
@@ -10,6 +15,9 @@ export default function BlogList() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Estado para categorias e categoria selecionada
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const safeItems = Array.isArray(items) ? items : [];
 
@@ -17,7 +25,14 @@ export default function BlogList() {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchBlogPosts({ limit: PAGE_SIZE, offset: nextOffset });
+      if (nextOffset === 0) {
+        setOffset(0);
+      }
+      const data = await fetchBlogPosts({
+        limit: PAGE_SIZE,
+        offset: nextOffset,
+        category: selectedCategory ?? undefined,
+      });
 
       if (!data.success) {
         if (nextOffset === 0) {
@@ -48,12 +63,48 @@ export default function BlogList() {
     }
   }
 
+  // Carrega categorias apenas uma vez
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await fetchBlogCategories();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.warn("Não foi possível carregar categorias", err);
+      }
+    })();
+  }, []);
+
+  // Sempre que a categoria selecionada mudar, reinicia a lista
   useEffect(() => {
     loadMore(0);
-  }, []);
+  }, [selectedCategory]);
 
   return (
     <section className="space-y-6">
+      {/* Filtros de categoria/tags */}
+      {categories?.length > 0 && (
+        <div className="flex flex-wrap gap-2 my-4">
+          {categories.map((cat) => {
+            const active = selectedCategory === cat.category;
+            return (
+              <button
+                key={cat.category || "__empty"}
+                onClick={() =>
+                  setSelectedCategory((prev) =>
+                    prev === cat.category ? null : cat.category
+                  )
+                }
+                className={`px-3 py-1 rounded-full border text-sm ${
+                  active ? "bg-[var(--accent)] text-white" : "bg-transparent"
+                }`}
+              >
+                {cat.category} ({cat.count})
+              </button>
+            );
+          })}
+        </div>
+      )}
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {safeItems.map(post => (
           <li key={post.id} className="rounded-2xl border border-[var(--border,#26262a)] bg-[var(--card,#1C1C1F)] p-4">

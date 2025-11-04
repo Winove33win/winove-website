@@ -41,6 +41,7 @@ export type BlogItem = {
   coverUrl?: string | null;
   author?: string | null;
   publishedAt: string;
+  category?: string | null;
 };
 
 export type BlogResponse = {
@@ -53,14 +54,23 @@ export type BlogResponse = {
   message?: string;
 };
 
+// Representa cada categoria (tag) com sua contagem
+export type BlogCategory = {
+  category: string;
+  count: number;
+};
+
 const API = import.meta.env.VITE_API_URL || '/api';
 
-export async function fetchBlogPosts(params: { limit?: number; offset?: number } = {}): Promise<BlogResponse> {
-  const { limit = 10, offset = 0 } = params;
+export async function fetchBlogPosts(params: { limit?: number; offset?: number; category?: string } = {}): Promise<BlogResponse> {
+  const { limit = 10, offset = 0, category } = params;
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
   const url = new URL(`${API}/blog-posts`, origin);
   url.searchParams.set('limit', String(limit));
   url.searchParams.set('offset', String(offset));
+  if (category) {
+    url.searchParams.set('category', category);
+  }
 
   const fallback: BlogResponse = {
     total: 0,
@@ -95,5 +105,23 @@ export async function fetchBlogPosts(params: { limit?: number; offset?: number }
   } catch (error) {
     const message = error instanceof Error ? error.message : fallback.message;
     return { ...fallback, message };
+  }
+}
+
+// Busca categorias disponíveis para filtragem
+export async function fetchBlogCategories(): Promise<BlogCategory[]> {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(`${API}/blog-posts/categories`, origin);
+
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      throw new Error(`Erro ao carregar categorias (${res.status})`);
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }
