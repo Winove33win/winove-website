@@ -1,16 +1,12 @@
 import { Router } from "express";
-import mysql from "mysql2/promise";
+// Use o pool compartilhado com defaults em db.js. Isso evita erros 500 quando
+// as variáveis de ambiente (DB_HOST, DB_USER, etc.) não estão definidas.
+import { pool } from "../db.js";
 
 const router = Router();
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  connectionLimit: 10,
-});
+// Não crie um novo pool aqui. O pool em db.js já aplica valores padrão e
+// manipula corretamente as variáveis de ambiente ausentes.
 
 // Normaliza o formato para o frontend
 function adapt(row) {
