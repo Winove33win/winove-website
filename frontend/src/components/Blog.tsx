@@ -69,7 +69,7 @@ export const Blog = () => {
               safeArticles.map((article, index) => (
                 <Link
                   key={article.slug}
-                  to={`/blog/${article.slug}`}
+                  to={`/blog/${article.slug}/`}
                   className="block"
                 >
                   <article
@@ -132,7 +132,7 @@ export const Blog = () => {
 
           {/* View All Button */}
           <div className="text-center mt-12">
-            <Link to="/blog" className="btn-secondary px-8 py-4 text-lg">
+            <Link to="/blog/" className="btn-secondary px-8 py-4 text-lg">
               Ver Todos os Artigos
             </Link>
           </div>

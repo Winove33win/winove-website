@@ -14,12 +14,29 @@ const escapeHtml = (value) => String(value ?? '')
   .replace(/>/g, '&gt;');
 const escapeAttribute = (value) => escapeHtml(value).replace(/"/g, '&quot;');
 
-const candidateIndexPaths = [
-  process.env.SSR_INDEX_FILE,
-  path.join(__dirname, '../../frontend/dist/index.html'),
-  path.join(__dirname, '../../dist/index.html'),
-  path.join(__dirname, '../../frontend/index.html'),
-].filter(Boolean);
+const BACKEND_ROOT = path.join(__dirname, '..');
+
+const resolveCandidatePath = (value) => {
+  if (!value) {
+    return null;
+  }
+  if (path.isAbsolute(value)) {
+    return value;
+  }
+  return path.join(BACKEND_ROOT, value);
+};
+
+const candidateIndexPaths = Array.from(
+  new Set(
+    [
+      resolveCandidatePath(process.env.SSR_INDEX_FILE),
+      path.join(__dirname, '../dist/index.html'),
+      path.join(__dirname, '../../frontend/dist/index.html'),
+      path.join(__dirname, '../../dist/index.html'),
+      path.join(__dirname, '../../frontend/index.html'),
+    ].filter(Boolean)
+  )
+);
 
 let cachedBaseTemplate = null;
 let cachedTemplateMtime = null;

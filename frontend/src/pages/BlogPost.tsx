@@ -152,7 +152,7 @@ export const BlogPost = () => {
         <SEO
           title="Blog Winove"
           description="Conteúdos exclusivos sobre marketing, vendas e tecnologia para impulsionar seu negócio."
-          canonical="https://www.winove.com.br/blog"
+          canonical="https://www.winove.com.br/blog/"
           noindex
         />
         <div className="min-h-screen bg-background">
@@ -161,7 +161,7 @@ export const BlogPost = () => {
               <div className="max-w-4xl mx-auto text-center">
                 <h1 className="text-4xl font-bold text-foreground mb-4">Post não encontrado</h1>
                 <p className="text-muted-foreground mb-8">O post que você está procurando não existe.</p>
-                <Link to="/blog" className="btn-primary">
+                <Link to="/blog/" className="btn-primary">
                   Voltar ao Blog
                 </Link>
               </div>
@@ -178,7 +178,7 @@ export const BlogPost = () => {
       <SEO
         title={`${post.title} | Blog Winove`}
         description={post.excerpt || ""}
-        canonical={`https://www.winove.com.br/blog/${post.slug}`}
+        canonical={`https://www.winove.com.br/blog/${post.slug}/`}
         image={post.coverImage}
         type="article"
         jsonLd={{
@@ -200,9 +200,9 @@ export const BlogPost = () => {
           dateModified: post.date,
           mainEntityOfPage: {
             "@type": "WebPage",
-            "@id": `https://www.winove.com.br/blog/${post.slug}`,
+            "@id": `https://www.winove.com.br/blog/${post.slug}/`,
           },
-          url: `https://www.winove.com.br/blog/${post.slug}`,
+          url: `https://www.winove.com.br/blog/${post.slug}/`,
         }}
       />
     <div className="min-h-screen bg-background">
@@ -216,8 +216,8 @@ export const BlogPost = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             {/* Back Button */}
-            <Link 
-              to="/blog"
+            <Link
+              to="/blog/"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300 mb-8"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -326,7 +326,7 @@ export const BlogPost = () => {
                         {relatedPost.excerpt}
                       </p>
                       <Link
-                        to={`/blog/${relatedPost.slug}`}
+                        to={`/blog/${relatedPost.slug}/`}
                         className="text-primary hover:text-primary/80 transition-colors duration-300 text-sm font-medium"
                       >
                         Ler mais →

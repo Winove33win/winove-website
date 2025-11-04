@@ -34,8 +34,8 @@ const App = () => (
         <main id="app">
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/blog/*" element={<BlogPage />} />
+            <Route path="/blog/:slug/*" element={<BlogPost />} />
             <Route path="/cases" element={<CasesList />} />
             <Route path="/cases/:slug" element={<CaseDetail />} />
             <Route path="/templates" element={<Templates />} />

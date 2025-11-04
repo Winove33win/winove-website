@@ -127,7 +127,7 @@ export default function BlogList() {
             <h3 className="text-lg font-semibold">{post.title}</h3>
             <p className="mt-2 text-sm opacity-80">{post.excerpt}</p>
             <a
-              href={`/blog/${post.slug}`}
+              href={`/blog/${post.slug}/`}
               className="mt-3 inline-block rounded-full border px-4 py-2 text-sm"
             >
               Ler mais
