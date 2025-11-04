@@ -83,8 +83,8 @@ export default function BlogList() {
   return (
     <section className="space-y-6">
       {/* Filtros de categoria/tags */}
-      {categories?.length > 0 && (
-        <div className="flex flex-wrap gap-2 my-4">
+      {categories?.length > 0 ? (
+        <div className="flex gap-2 my-4 overflow-x-auto py-2 scrollbar-thin">
           {categories.map((cat) => {
             const active = selectedCategory === cat.category;
             return (
@@ -95,8 +95,10 @@ export default function BlogList() {
                     prev === cat.category ? null : cat.category
                   )
                 }
-                className={`px-3 py-1 rounded-full border text-sm ${
-                  active ? "bg-[var(--accent)] text-white" : "bg-transparent"
+                className={`whitespace-nowrap px-3 py-1 rounded-full text-sm border ${
+                  active
+                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                    : "border-[var(--border)] text-[var(--text)] hover:bg-[var(--border)]"
                 }`}
               >
                 {cat.category} ({cat.count})
@@ -104,6 +106,8 @@ export default function BlogList() {
             );
           })}
         </div>
+      ) : (
+        <p className="text-sm opacity-60 my-4">Nenhuma categoria encontrada.</p>
       )}
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {safeItems.map(post => (
