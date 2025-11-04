@@ -84,30 +84,34 @@ export default function BlogList() {
     <section className="space-y-6">
       {/* Filtros de categoria/tags */}
       {categories?.length > 0 ? (
-        <div className="flex gap-2 my-4 overflow-x-auto py-2 scrollbar-thin">
-          {categories.map((cat) => {
-            const active = selectedCategory === cat.category;
-            return (
-              <button
-                key={cat.category || "__empty"}
-                onClick={() =>
-                  setSelectedCategory((prev) =>
-                    prev === cat.category ? null : cat.category
-                  )
-                }
-                className={`whitespace-nowrap px-3 py-1 rounded-full text-sm border ${
-                  active
-                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                    : "border-[var(--border)] text-[var(--text)] hover:bg-[var(--border)]"
-                }`}
-              >
-                {cat.category} ({cat.count})
-              </button>
-            );
-          })}
+        <div className="my-4 py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-x-auto">
+          <div className="flex gap-3">
+            {categories.map((cat) => {
+              const active = selectedCategory === cat.category;
+              return (
+                <button
+                  key={cat.category || "__empty"}
+                  onClick={() =>
+                    setSelectedCategory((prev) =>
+                      prev === cat.category ? null : cat.category
+                    )
+                  }
+                  className={`whitespace-nowrap px-4 py-1 text-sm rounded-full border transition-colors ${
+                    active
+                      ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                      : "border-[var(--border)] text-[var(--text)] hover:bg-[var(--border)]"
+                  }`}
+                >
+                  {cat.category} ({cat.count})
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : (
-        <p className="text-sm opacity-60 my-4">Nenhuma categoria encontrada.</p>
+        <div className="my-4 py-3 px-4 rounded-xl border border-[var(--border)] bg-[var(--card)]">
+          <p className="text-sm opacity-60">Nenhuma categoria encontrada.</p>
+        </div>
       )}
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {safeItems.map(post => (
