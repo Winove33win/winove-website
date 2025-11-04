@@ -10,6 +10,7 @@ const router = Router();
 
 // Normaliza o formato para o frontend
 function adapt(row) {
+  const category = row.categoria ?? row.category ?? null;
   return {
     id: row.id,
     slug: row.slug,
@@ -18,7 +19,7 @@ function adapt(row) {
     coverUrl: row.imagem_destacada ?? null,
     author: row.autor ?? null,
     publishedAt: row.data_publicacao,
-    category: row.categoria ?? null,
+    category,
   };
 }
 
@@ -52,7 +53,16 @@ router.get("/blog-posts", async (req, res) => {
 
     // Seleciona também a categoria
     let sql = `
-      SELECT id, titulo, slug, resumo, conteudo, imagem_destacada, data_publicacao, autor, categoria
+      SELECT
+        id,
+        titulo,
+        slug,
+        resumo,
+        conteudo,
+        imagem_destacada,
+        data_publicacao,
+        autor,
+        categoria
       FROM blog_posts
       ${whereClause}
       ORDER BY data_publicacao DESC, id DESC
@@ -78,6 +88,131 @@ router.get("/blog-posts", async (req, res) => {
     });
   } catch (err) {
     console.error("[BLOG] /api/blog-posts error:", err?.code, err?.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/blog-posts/categories
+router.get("/blog-posts/categories", async (_req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT categoria AS category, COUNT(*) AS count
+       FROM blog_posts
+       GROUP BY categoria
+       ORDER BY count DESC`
+    );
+
+    const categories = (rows || []).map((row) => ({
+      category: row.category || "Sem categoria",
+      count: Number(row.count || 0),
+    }));
+
+    res.json(categories);
+  } catch (err) {
+    console.error("[BLOG] /api/blog-posts/categories error:", err?.code, err?.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/blog-posts/search
+router.get("/blog-posts/search", async (req, res) => {
+  try {
+    const sanitize = (value) => (value || "").toString().trim();
+    const qRaw = sanitize(req.query.q);
+    const categoryRaw = sanitize(req.query.category);
+    const limit = Math.max(1, Number(req.query.limit || req.query.pageSize || 10));
+    const offset = Math.max(0, Number(req.query.offset || 0));
+
+    const whereParts = [];
+    const params = [];
+
+    if (qRaw) {
+      const q = `%${qRaw}%`;
+      whereParts.push("(titulo LIKE ? OR resumo LIKE ? OR conteudo LIKE ?)");
+      params.push(q, q, q);
+    }
+
+    if (categoryRaw) {
+      whereParts.push("categoria = ?");
+      params.push(categoryRaw);
+    }
+
+    const where = whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "";
+
+    const [countRows] = await pool.query(
+      `SELECT COUNT(*) AS total FROM blog_posts ${where}`,
+      params
+    );
+    const total = Number(countRows?.[0]?.total || 0);
+
+    const [rows] = await pool.query(
+      `SELECT
+         id,
+         titulo,
+         slug,
+         resumo,
+         conteudo,
+         imagem_destacada,
+         data_publicacao,
+         autor,
+         categoria
+       FROM blog_posts
+       ${where}
+       ORDER BY data_publicacao DESC, id DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+
+    const items = (rows || []).map(adapt);
+
+    res.json({
+      total,
+      items,
+      limit,
+      offset,
+      hasMore: offset + items.length < total,
+    });
+  } catch (err) {
+    console.error("[BLOG] /api/blog-posts/search error:", err?.code, err?.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/blog-posts/:slug
+router.get("/blog-posts/:slug", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+         id,
+         titulo,
+         slug,
+         resumo,
+         conteudo,
+         imagem_destacada,
+         data_publicacao,
+         autor,
+         categoria
+       FROM blog_posts
+       WHERE slug = ?
+       LIMIT 1`,
+      [req.params.slug]
+    );
+
+    if (!rows?.length) {
+      return res.status(404).json({ error: "Post não encontrado" });
+    }
+
+    const post = rows[0];
+    res.json({
+      ...post,
+      title: post.titulo,
+      excerpt: post.resumo,
+      coverUrl: post.imagem_destacada,
+      publishedAt: post.data_publicacao,
+      category: post.categoria ?? null,
+    });
+  } catch (err) {
+    console.error("[BLOG] /api/blog-posts/:slug error:", err?.code, err?.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });
