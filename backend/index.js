@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import sitemapRoute from './routes/sitemap.js';
+import blogRoute from './routes/blog.js';
 import blogPostsRoute from './routes/blogPosts.js';
 import casesRoute from './routes/cases.js';
 import templatesRoute from './routes/templates.js';
@@ -187,6 +188,7 @@ app.get('/blog/', (req, res, next) => {
 });
 
 // API routes
+app.use('/api', blogRoute);
 app.use('/api/blog-posts', blogPostsRoute);
 app.use('/api/cases', casesRoute);
 app.use('/api/templates', templatesRoute);

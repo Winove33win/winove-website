@@ -3,6 +3,7 @@ import { Calendar, User, ArrowLeft, Clock, Share2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { SEO } from "@/lib/seo";
+import { fetchBlogPosts, type BlogItem } from "@/lib/api";
 
 interface BlogPost {
   id: number;
@@ -16,6 +17,36 @@ interface BlogPost {
   category: string;
 }
 
+type RelatedPost = {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImage?: string | null;
+  date: string;
+  author?: string | null;
+};
+
+const mapItemToRelated = (item: BlogItem): RelatedPost => ({
+  id: item.id,
+  title: item.title,
+  slug: item.slug,
+  excerpt: item.excerpt,
+  coverImage: item.coverUrl ?? null,
+  date: item.publishedAt,
+  author: item.author ?? null,
+});
+
+const mapLegacyToRelated = (item: any): RelatedPost => ({
+  id: item.id,
+  title: item.title,
+  slug: item.slug,
+  excerpt: item.excerpt,
+  coverImage: item.coverImage ?? item.coverUrl ?? null,
+  date: item.date ?? item.publishedAt ?? "",
+  author: item.author ?? null,
+});
+
 function calcReadingTime(content: string): string {
   const words = content.replace(/<[^>]+>/g, "").split(/\s+/).filter(Boolean).length;
   return `${Math.max(1, Math.ceil(words / 200))}`;
@@ -24,7 +55,7 @@ function calcReadingTime(content: string): string {
 export const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
 
   useEffect(() => {
     const fetchJsonFallback = async <T,>(urls: string[]): Promise<T | null> => {
@@ -36,6 +67,40 @@ export const BlogPost = () => {
       }
       return null;
     };
+
+    const loadRelatedFromApi = async (currentSlug: string): Promise<RelatedPost[]> => {
+      try {
+        let offset = 0;
+        let hasMore = true;
+        const collected: RelatedPost[] = [];
+        while (hasMore && collected.length < 3) {
+          const data = await fetchBlogPosts({ limit: 10, offset });
+          const candidates = data.items
+            .filter((item) => item.slug !== currentSlug)
+            .map(mapItemToRelated);
+          for (const candidate of candidates) {
+            if (candidate.slug === currentSlug) continue;
+            if (collected.some((existing) => existing.slug === candidate.slug)) continue;
+            collected.push(candidate);
+            if (collected.length >= 3) break;
+          }
+          hasMore = data.hasMore && collected.length < 3;
+          offset = data.offset + data.items.length;
+          if (!data.hasMore) break;
+        }
+        return collected.slice(0, 3);
+      } catch (err) {
+        console.error("fetch related posts", err);
+        return [];
+      }
+    };
+
+    const normalizeList = (input: any): any[] => {
+      if (Array.isArray(input)) return input;
+      if (input && Array.isArray(input.items)) return input.items;
+      return [];
+    };
+
     const load = async () => {
       if (!slug) return;
       const API = import.meta.env.VITE_API_URL || "/api";
@@ -46,34 +111,33 @@ export const BlogPost = () => {
         ]);
         let postData = data;
         if (!postData) {
-          // Fallback: lista completa via /api/blog-posts
-          const all = await fetchJsonFallback<BlogPost[]>([
-            `${API}/blog-posts`,
-            `/api/blog-posts.php`,
-            `/assets/blog-fallback.json`,
-          ]);
-          postData = all?.find(p => p.slug === slug) || null;
+          const all = normalizeList(
+            await fetchJsonFallback<any>([
+              `${API}/blog-posts`,
+              `/api/blog-posts.php`,
+              `/assets/blog-fallback.json`,
+            ])
+          );
+          postData = all.find((p: any) => p.slug === slug) || null;
           if (!postData) return;
         }
         setPost(postData);
-        const allPosts = await fetchJsonFallback<BlogPost[]>([
-          `${API}/blog-posts`,
-          `/api/blog-posts.php`,
-        ]);
-        if (allPosts) {
-          const related = allPosts
-            .filter(p => p.slug !== slug && p.category === postData.category)
-            .slice(0, 3);
-          setRelatedPosts(related);
-        } else {
-          const local = await fetchJsonFallback<BlogPost[]>(['/blog/fallback.json']);
-          if (local) {
-            const related = local
-              .filter(p => p.slug !== slug && p.category === postData.category)
-              .slice(0, 3);
-            setRelatedPosts(related);
-          }
+
+        let related = await loadRelatedFromApi(postData.slug);
+        if (related.length === 0) {
+          const fallbackList = normalizeList(
+            await fetchJsonFallback<any>([
+              `${API}/blog-posts`,
+              `/api/blog-posts.php`,
+              `/assets/blog-fallback.json`,
+            ])
+          );
+          related = fallbackList
+            .filter((p: any) => p.slug !== postData.slug)
+            .slice(0, 3)
+            .map(mapLegacyToRelated);
         }
+        setRelatedPosts(related);
       } catch (err) {
         console.error('fetch blog-post', err);
       }
@@ -240,11 +304,17 @@ export const BlogPost = () => {
                 {relatedPosts.map((relatedPost) => (
                   <article key={relatedPost.slug} className="glass rounded-2xl overflow-hidden hover-lift group">
                     <div className="relative h-48 overflow-hidden">
-                    <img
-                        src={relatedPost.coverImage}
-                        alt={relatedPost.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      {relatedPost.coverImage ? (
+                        <img
+                          src={relatedPost.coverImage}
+                          alt={relatedPost.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-muted/10 text-sm text-muted-foreground">
+                          Sem imagem
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
                     </div>
 
