@@ -27,10 +27,12 @@ router.get('/', async (req, res) => {
       LIMIT ? OFFSET ?
     `,
       [pageSize, offset]
-        );
+    );
+
+    const adapted = (rows || []).map(adaptPostForLegacyClients);
 
     // Front-end espera um array simples de posts
-    res.json(rows || []);
+    res.json(adapted);
   } catch (err) {
     console.error('GET /api/blog-posts ->', err);
     res.status(500).json({ error: 'Erro ao carregar posts' });
@@ -88,7 +90,9 @@ router.get('/search', async (req, res) => {
       [...params, pageSize, offset]
     );
 
-    res.json({ items: rows || [], total, page, pageSize });
+    const adaptedItems = (rows || []).map(adaptPostForLegacyClients);
+
+    res.json({ items: adaptedItems, total, page, pageSize });
   } catch (err) {
     console.error('GET /api/blog-posts/search ->', err);
     res.status(500).json({ error: 'Erro ao buscar posts' });
@@ -135,7 +139,7 @@ router.get('/:slug([A-Za-z0-9-]+)', async (req, res) => {
     );
 
     if (!rows?.length) return res.status(404).json({ error: 'Post não encontrado' });
-    res.json(rows[0]);
+    res.json(adaptPostForLegacyClients(rows[0]));
   } catch (err) {
     console.error('GET /api/blog-posts/:slug ->', err);
     res.status(500).json({ error: 'Erro ao carregar post' });
@@ -143,3 +147,27 @@ router.get('/:slug([A-Za-z0-9-]+)', async (req, res) => {
 });
 
 export default router;
+
+function adaptPostForLegacyClients(post) {
+  if (!post) return post;
+
+  return {
+    ...post,
+    titulo: post.titulo ?? post.title ?? null,
+    title: post.title ?? post.titulo ?? null,
+    resumo: post.resumo ?? post.excerpt ?? null,
+    excerpt: post.excerpt ?? post.resumo ?? null,
+    conteudo: post.conteudo ?? post.content ?? null,
+    content: post.content ?? post.conteudo ?? null,
+    imagem: post.imagem ?? post.coverImage ?? null,
+    imagem_destacada: post.imagem_destacada ?? post.coverImage ?? post.imagem ?? null,
+    coverImage: post.coverImage ?? post.imagem_destacada ?? post.imagem ?? null,
+    criado_em: post.criado_em ?? post.date ?? null,
+    data_publicacao: post.data_publicacao ?? post.date ?? post.criado_em ?? null,
+    date: post.date ?? post.data_publicacao ?? post.criado_em ?? null,
+    autor: post.autor ?? post.author ?? null,
+    author: post.author ?? post.autor ?? null,
+    categoria: post.categoria ?? post.category ?? null,
+    category: post.category ?? post.categoria ?? null,
+  };
+}
