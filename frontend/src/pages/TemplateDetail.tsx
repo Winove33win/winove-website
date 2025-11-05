@@ -134,6 +134,19 @@ const TemplateDetail = () => {
     );
   }
 
+  // Template meta (may come from backend as json string/object)
+  const meta = (template as any).meta || {};
+
+  // WhatsApp link builder (uses meta with sensible defaults)
+  const wa = meta?.contact?.whatsappIntl ?? '5519982403845';
+  const base = meta?.contact?.defaultMessage ?? 'Olá! Vim da página do Template Advocacia Blue Mode.';
+  const mk = (msg: string) => {
+    const href = typeof window !== 'undefined' ? window.location.href : '';
+    const utm = href.includes('?') ? '&utm_source=template-advocacia' : '?utm_source=template-advocacia';
+    const page = href ? href + utm : 'https://winove.com.br/templates';
+    return `https://wa.me/${wa}?text=${encodeURIComponent(`${base} ${msg} | Página: ${page}`)}`;
+  };
+
   const handlePurchase = async () => {
     try {
       const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -352,29 +365,91 @@ const TemplateDetail = () => {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">Pagamento único</p>
+                    {/* Optional addons shown beside price */}
+                    {meta?.addons && (
+                      <div className="mt-3 text-sm text-muted-foreground">
+                        {meta.addons.hosting && (
+                          <div>Hospedagem: {meta.addons.hosting.name ?? 'Hospedagem'} — R$ {meta.addons.hosting.priceYear}{meta.addons.hosting.priceYear ? '/ano' : ''}</div>
+                        )}
+                        {meta.addons.email && (
+                          <div>E-mail: {meta.addons.email.name ?? 'E-mail'} — R$ {meta.addons.email.priceYear ?? meta.addons.email.price}{meta.addons.email.priceYear ? '/ano' : ''}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3">
-                    <Button 
-                      onClick={handlePurchase}
-                      className="w-full btn-primary" 
-                      size="lg"
+                    {/* WhatsApp CTAs (open wa.me with prefilled message + page URL) */}
+                    <a
+                      href={mk('Quero comprar o Template (R$ ' + template.price.toFixed(2).replace('.', ',') + ').')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
                     >
-                      <Download className="w-5 h-5 mr-2" />
-                      Comprar Template
-                    </Button>
-                    
-                    <a 
-                      href={template.demoUrl} 
-                      target="_blank" 
+                      <Button className="w-full" size="lg">
+                        <Download className="w-5 h-5 mr-2" />
+                        {meta?.ctaTexts?.buyTemplate ?? `Comprar Template — R$ ${template.price.toFixed(2).replace('.', ',')}`}
+                      </Button>
+                    </a>
+
+                    <a
+                      href={mk('Quero adicionar Hospedagem Plesk 3GB (R$ 564/ano).')}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="block"
                     >
                       <Button variant="outline" className="w-full" size="lg">
-                        <Eye className="w-5 h-5 mr-2" />
-                        Ver Demo
+                        <Shield className="w-5 h-5 mr-2" />
+                        {meta?.ctaTexts?.hosting ?? 'Adicionar Hospedagem Plesk 3GB — R$ 564/ano'}
                       </Button>
                     </a>
+
+                    <a
+                      href={mk('Quero adicionar E-mail corporativo 3GB (R$ 250/ano).')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button variant="outline" className="w-full" size="lg">
+                        <Users className="w-5 h-5 mr-2" />
+                        {meta?.ctaTexts?.email ?? 'Adicionar E-mail Corporativo 3GB — R$ 250/ano'}
+                      </Button>
+                    </a>
+
+                    <a
+                      href={mk('Quero o Combo: Site + Hospedagem + E-mail (1º ano R$ 1.564; renovação R$ 814/ano).')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button className="w-full" size="lg">
+                        <Star className="w-5 h-5 mr-2" />
+                        {meta?.ctaTexts?.bundle ?? 'Combo (Site + Hospedagem + E-mail) — R$ 1.564 (1º ano)'}
+                      </Button>
+                    </a>
+
+                    {/* Keep original actions (demo/purchase via checkout) below for users who prefer direct purchase */}
+                    <div className="mt-2">
+                      <Button 
+                        onClick={handlePurchase}
+                        className="w-full mt-2" 
+                        size="lg"
+                      >
+                        <Download className="w-5 h-5 mr-2" />
+                        Comprar (Checkout)
+                      </Button>
+                      <a 
+                        href={template.demoUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <Button variant="outline" className="w-full mt-2" size="lg">
+                          <Eye className="w-5 h-5 mr-2" />
+                          Ver Demo
+                        </Button>
+                      </a>
+                    </div>
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-border space-y-3">
