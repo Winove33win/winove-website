@@ -1,140 +1,76 @@
-import axios from 'axios';
+'use client';
 
-export interface Template {
-  slug: string;
-  category?: string;
-  difficulty?: string;
-  title: string;
-  description?: string;
-  tags?: string[];
-  images: {
-    cover: string;
-  };
-  price: number;
-  originalPrice?: number;
-  pages?: number;
+import React from 'react';
+import type { Template } from '@/src/lib/api'; // ou '@/src/types/Template' se você separar o type
+
+function buildWaLink(
+  msg: string,
+  waIntl = '5519982403845',
+  base = 'Olá! Vim da página do Template Advocacia Blue Mode.'
+) {
+  const href = typeof window !== 'undefined' ? window.location.href : '';
+  const sep = href.includes('?') ? '&' : '?';
+  const withUtm = href ? `${href}${sep}utm_source=template-advocacia` : 'https://winove.com.br/templates';
+  const final = `${base} ${msg} | Página: ${withUtm}`;
+  return `https://wa.me/${waIntl}?text=${encodeURIComponent(final)}`;
 }
 
-// In Vite, env vars come from import.meta.env
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+type Props = { template: Template };
 
-export const api = axios.create({
-  baseURL: BASE_URL, // empty -> use same-origin relative /api
-  timeout: 5000,
-});
+const PriceBox: React.FC<Props> = ({ template }) => {
+  const wa   = template.contact?.whatsappIntl   ?? '5519982403845';
+  const base = template.contact?.defaultMessage ?? 'Olá! Vim da página do Template Advocacia Blue Mode.';
+  const CTA  = template.ctaTexts ?? {};
 
-export const fetchTemplate = async (slug: string): Promise<Template> => {
-  const res = await api.get<Template>(`/api/templates/${slug}`);
-  return res.data;
-};
+  const price = template.price ?? 0;
+  const priceStr = price.toLocaleString('pt-BR', { style: 'currency', currency: template.currency ?? 'BRL' });
+  const oldStr   = template.originalPrice != null
+    ? template.originalPrice.toLocaleString('pt-BR', { style: 'currency', currency: template.currency ?? 'BRL' })
+    : '';
 
-export const fetchTemplates = async (): Promise<Template[]> => {
-  const res = await api.get<Template[]>(`/api/templates`);
-  return res.data;
-};
+  return (
+    <aside className="rounded-2xl border border-[#1f2a3a] bg-[#0f1722] p-5 space-y-3">
+      <div>
+        <div className="text-3xl font-extrabold bg-gradient-to-r from-[#ff8a00] to-[#ffbd66] bg-clip-text text-transparent">
+          {priceStr}
+        </div>
+        {oldStr && <div className="text-sm opacity-60 line-through">{oldStr}</div>}
+        <div className="text-xs opacity-80">Pagamento único</div>
+      </div>
 
-export type BlogItem = {
-  id: number;
-  slug: string;
-  title: string;
-  excerpt: string;
-  coverUrl?: string | null;
-  author?: string | null;
-  publishedAt: string;
-  category?: string | null;
-};
+      <a
+        className="block w-full rounded-xl bg-[#ff8a00] px-4 py-3 text-center font-semibold text-[#111] hover:opacity-90"
+        href={buildWaLink(`Quero comprar o Template (${priceStr}).`, wa, base)}
+        target="_blank" rel="noopener noreferrer"
+      >
+        {CTA.buyTemplate ?? `Comprar Template — ${priceStr}`}
+      </a>
 
-export type BlogResponse = {
-  total: number;
-  items: BlogItem[];
-  limit: number;
-  offset: number;
-  hasMore: boolean;
-  success: boolean;
-  message?: string;
-};
+      <a
+        className="block w-full rounded-xl border border-[#2b3b4d] px-4 py-3 text-center text-[#e6eaf0] hover:bg-[#121c29]"
+        href={buildWaLink('Quero adicionar Hospedagem Plesk 3GB (R$ 564/ano).', wa, base)}
+        target="_blank" rel="noopener noreferrer"
+      >
+        {CTA.hosting ?? 'Adicionar Hospedagem Plesk 3GB — R$ 564/ano'}
+      </a>
 
-// Representa cada categoria (tag) com sua contagem
-export type BlogCategory = {
-  category: string;
-  count: number;
-};
+      <a
+        className="block w-full rounded-xl border border-[#2b3b4d] px-4 py-3 text-center text-[#e6eaf0] hover:bg-[#121c29]"
+        href={buildWaLink('Quero adicionar E-mail corporativo 3GB (R$ 250/ano).', wa, base)}
+        target="_blank" rel="noopener noreferrer"
+      >
+        {CTA.email ?? 'Adicionar E-mail Corporativo 3GB — R$ 250/ano'}
+      </a>
 
-const API = import.meta.env.VITE_API_URL || '/api';
-
-export async function fetchBlogPosts(params: {
-  limit?: number;
-  offset?: number;
-  category?: string;
-  search?: string;
-} = {}): Promise<BlogResponse> {
-  const { limit = 10, offset = 0, category, search } = params;
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-  const trimmedSearch = typeof search === 'string' ? search.trim() : '';
-  const hasSearch = trimmedSearch.length > 0;
-  const url = new URL(
-    `${API}${hasSearch ? '/blog-posts/search' : '/blog-posts'}`,
-    origin
+      <a
+        className="block w-full rounded-xl bg-[#e0b14c] px-4 py-3 text-center font-extrabold text-[#0c1b2a] hover:opacity-95"
+        href={buildWaLink('Quero o Combo: Site + Hospedagem + E-mail (1º ano R$ 1.564; renovação R$ 814/ano).', wa, base)}
+        target="_blank" rel="noopener noreferrer"
+      >
+        {CTA.bundle ?? 'Combo (Site + Hospedagem + E-mail) — R$ 1.564 (1º ano)'}
+      </a>
+    </aside>
   );
-  url.searchParams.set('limit', String(limit));
-  url.searchParams.set('offset', String(offset));
-  if (category) {
-    url.searchParams.set('category', category);
-  }
-  if (hasSearch) {
-    url.searchParams.set('q', trimmedSearch);
-  }
+};
 
-  const fallback: BlogResponse = {
-    total: 0,
-    items: [],
-    limit,
-    offset,
-    hasMore: false,
-    success: false,
-    message: 'Falha ao carregar posts',
-  };
-
-  try {
-    const res = await fetch(url.toString());
-    if (!res.ok) {
-      const message = `Erro ao carregar posts (${res.status})`;
-      return { ...fallback, message };
-    }
-
-    const data = await res.json();
-    const items = Array.isArray(data?.items) ? data.items : [];
-    const total = typeof data?.total === 'number' ? data.total : items.length;
-    const response: BlogResponse = {
-      total,
-      items,
-      limit: typeof data?.limit === 'number' ? data.limit : limit,
-      offset: typeof data?.offset === 'number' ? data.offset : offset,
-      hasMore: Boolean(data?.hasMore) && items.length + offset < total,
-      success: true,
-    };
-
-    return response;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : fallback.message;
-    return { ...fallback, message };
-  }
-}
-
-// Busca categorias disponíveis para filtragem
-export async function fetchBlogCategories(): Promise<BlogCategory[]> {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
-  const url = new URL(`${API}/blog-posts/categories`, origin);
-
-  try {
-    const res = await fetch(url.toString());
-    if (!res.ok) {
-      throw new Error(`Erro ao carregar categorias (${res.status})`);
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
+export default PriceBox;
