@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
 import { SEO } from "@/lib/seo";
 import {
   ArrowLeft,
@@ -23,10 +21,26 @@ import {
   FileText,
 } from "lucide-react";
 
+type TemplateAddon = {
+  id?: string;
+  name?: string;
+  priceYear?: number;
+  storageGB?: number;
+  panel?: string;
+  quotaGB?: number;
+  accounts?: number;
+};
+
+type TemplateBundle = {
+  id?: string;
+  name?: string;
+  firstYear?: number;
+  renewalYear?: number;
+  includes?: string[];
+};
+
 const TemplateDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { toast } = useToast();
-
   const { data: template, isLoading } = useQuery({ queryKey: ['template', slug], enabled: !!slug, queryFn: () => fetchTemplate(slug as string) });
 
   const canonicalBase = "https://www.winove.com.br/templates";
@@ -134,33 +148,17 @@ const TemplateDetail = () => {
     );
   }
 
-  const handlePurchase = async () => {
-    try {
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-      const API = import.meta.env.VITE_API_URL || "/api";
-
-      const response = await fetch(`${API}/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: template.slug }),
-      });
-
-      const text = await response.text();
-      if (!text) throw new Error("Resposta vazia do servidor");
-      const { sessionId } = JSON.parse(text);
-
-      if (sessionId && stripe) {
-        await stripe.redirectToCheckout({ sessionId });
-      } else {
-        toast({ title: "Erro", description: "Erro ao criar sessão de pagamento." });
-      }
-    } catch (err) {
-      console.error("Erro ao redirecionar:", err);
-      toast({ title: "Erro", description: "Não foi possível redirecionar." });
-    }
-  };
+  const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: template.currency ?? 'BRL',
+  });
+  const addonsRaw = (template.addons ?? {}) as Record<string, TemplateAddon>;
+  const addonsList: TemplateAddon[] = Object.values(addonsRaw);
+  const bundlesList: TemplateBundle[] = Array.isArray(template.bundles)
+    ? (template.bundles as TemplateBundle[])
+    : [];
+  const hostingAddon = addonsRaw['hosting'];
+  const emailAddon = addonsRaw['email'];
 
   return (
     <>
@@ -339,15 +337,15 @@ const TemplateDetail = () => {
             <div className="space-y-6 lg:col-start-3 lg:row-start-1">
               {/* Price Card */}
               <Card className="sticky top-24">
-                <CardContent className="p-6">
-                  <div className="text-center mb-6">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <span className="text-3xl font-bold text-primary">
-                        R$ {template.price.toFixed(2).replace('.', ',')}
+                <CardContent className="p-6 space-y-6">
+                  <div className="text-center space-y-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="bg-gradient-to-r from-[#ff8a00] to-[#ffbd66] bg-clip-text text-transparent text-[32px] font-extrabold">
+                        {currencyFormatter.format(template.price ?? 0)}
                       </span>
-                      {template.originalPrice && (
+                      {template.originalPrice != null && (
                         <span className="text-lg text-muted-foreground line-through">
-                          R$ {template.originalPrice.toFixed(2).replace('.', ',')}
+                          {currencyFormatter.format(template.originalPrice)}
                         </span>
                       )}
                     </div>
@@ -355,29 +353,119 @@ const TemplateDetail = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <Button 
-                      onClick={handlePurchase}
-                      className="w-full btn-primary" 
-                      size="lg"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Comprar Template
-                    </Button>
-                    
-                    <a 
-                      href={template.demoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <Button variant="outline" className="w-full" size="lg">
-                        <Eye className="w-5 h-5 mr-2" />
-                        Ver Demo
-                      </Button>
-                    </a>
+                    {(() => {
+                      const wa = template.contact?.whatsappIntl ?? '5519982403845';
+                      const base = template.contact?.defaultMessage ?? 'Olá! Vim da página do Template Advocacia Blue Mode.';
+                      const mk = (msg: string) => {
+                        const href = typeof window !== 'undefined' ? window.location.href : '';
+                        const utm = href.includes('?') ? '&utm_source=template-advocacia' : '?utm_source=template-advocacia';
+                        const page = href ? `${href}${utm}` : 'https://winove.com.br/templates';
+                        return `https://wa.me/${wa}?text=${encodeURIComponent(`${base} ${msg} | Página: ${page}`)}`;
+                      };
+
+                      const priceNow = currencyFormatter.format(template.price ?? 0);
+                      const hostingPrice = hostingAddon?.priceYear != null ? currencyFormatter.format(hostingAddon.priceYear) : 'R$ 564,00';
+                      const emailPrice = emailAddon?.priceYear != null ? currencyFormatter.format(emailAddon.priceYear) : 'R$ 250,00';
+                      const bundle = bundlesList.length > 0 ? bundlesList[0] : undefined;
+                      const bundleFirstYear = bundle?.firstYear != null ? currencyFormatter.format(bundle.firstYear) : 'R$ 1.564,00';
+                      const bundleRenewal = bundle?.renewalYear != null ? currencyFormatter.format(bundle.renewalYear) : 'R$ 814,00';
+                      const ctas = (template.ctaTexts ?? {}) as Record<string, string>;
+
+                      return (
+                        <>
+                          <a
+                            className="block w-full rounded-xl bg-[#ff8a00] px-4 py-4 text-center text-base font-semibold text-[#111] transition-colors hover:bg-[#ff9a21]"
+                            href={mk(`Quero comprar o Template (${priceNow}).`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {ctas.buyTemplate ?? `Comprar Template — ${priceNow}`}
+                          </a>
+                          <a
+                            className="block w-full rounded-xl border border-[#2b3b4d] px-4 py-4 text-center text-base font-semibold text-[#e6eaf0] transition-colors hover:bg-[#121c29]"
+                            href={mk(`Quero adicionar Hospedagem Plesk 3GB (${hostingPrice}/ano).`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {ctas.hosting ?? 'Adicionar Hospedagem Plesk 3GB — R$ 564/ano'}
+                          </a>
+                          <a
+                            className="block w-full rounded-xl border border-[#2b3b4d] px-4 py-4 text-center text-base font-semibold text-[#e6eaf0] transition-colors hover:bg-[#121c29]"
+                            href={mk(`Quero adicionar E-mail corporativo 3GB (${emailPrice}/ano).`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {ctas.email ?? 'Adicionar E-mail Corporativo 3GB — R$ 250/ano'}
+                          </a>
+                          <a
+                            className="block w-full rounded-xl bg-[#e0b14c] px-4 py-4 text-center text-base font-semibold text-[#0c1b2a] transition-colors hover:bg-[#efc465]"
+                            href={mk(`Quero o Combo: Site + Hospedagem + E-mail (1º ano ${bundleFirstYear}; renovação ${bundleRenewal}/ano).`)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {ctas.bundle ?? 'Combo (Site + Hospedagem + E-mail) — R$ 1.564 (1º ano)'}
+                          </a>
+                        </>
+                      );
+                    })()}
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-border space-y-3">
+                  {addonsList.length > 0 && (
+                    <div className="space-y-2 text-left">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Opcionais</h4>
+                      <div className="space-y-2">
+                        {addonsList.map((addon) => {
+                          const priceYear = addon?.priceYear != null ? `${currencyFormatter.format(addon.priceYear)}/ano` : null;
+                          const extras = [
+                            addon?.storageGB != null ? `${addon.storageGB}GB` : null,
+                            addon?.panel,
+                            addon?.quotaGB != null ? `${addon.quotaGB}GB` : null,
+                            addon?.accounts != null ? `${addon.accounts} conta${addon.accounts > 1 ? 's' : ''}` : null,
+                          ].filter(Boolean).join(' · ');
+                          return (
+                            <div key={addon?.id ?? addon?.name} className="rounded-xl border border-[#1f2a3a] bg-[#121b2c] px-4 py-3">
+                              <div className="flex items-baseline justify-between gap-2">
+                                <span className="text-sm font-semibold text-foreground">{addon?.name}</span>
+                                {priceYear && <span className="text-xs font-semibold text-[#e0b14c]">{priceYear}</span>}
+                              </div>
+                              {extras && <p className="mt-1 text-xs text-muted-foreground">{extras}</p>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {bundlesList.length > 0 && (
+                    <div className="space-y-2 text-left">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Combos</h4>
+                      <div className="space-y-2">
+                        {bundlesList.map((bundle) => {
+                          const firstYear = bundle?.firstYear != null ? currencyFormatter.format(bundle.firstYear) : null;
+                          const renewal = bundle?.renewalYear != null ? currencyFormatter.format(bundle.renewalYear) : null;
+                          return (
+                            <div key={bundle?.id ?? bundle?.name} className="rounded-xl border border-[#1f2a3a] bg-[#121b2c] px-4 py-3">
+                              <div className="flex flex-col gap-1 text-sm">
+                                <span className="font-semibold text-foreground">{bundle?.name}</span>
+                                {(firstYear || renewal) && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {firstYear && `1º ano ${firstYear}`}
+                                    {firstYear && renewal && ' • '}
+                                    {renewal && `Renovação ${renewal}/ano`}
+                                  </span>
+                                )}
+                                {Array.isArray(bundle?.includes) && bundle.includes.length > 0 && (
+                                  <span className="text-xs text-muted-foreground">Inclui: {bundle.includes.join(', ')}</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-6 border-t border-border space-y-3">
                     <div className="flex items-center gap-2 text-sm">
                       <Shield className="w-4 h-4 text-green-500" />
                       <span>Garantia de 7 dias</span>
