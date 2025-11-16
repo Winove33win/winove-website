@@ -78,6 +78,22 @@ The local server relies on the following packages:
 - **mysql2** – MySQL client with promise support
 - **stripe** – Stripe API client
 - **dotenv** – load environment variables from `.env`
+- **nodemailer** – envio de notificações SMTP
+
+### Backend environment variables
+
+Algumas rotas do backend, como `/api/propostas`, dependem das seguintes
+variáveis de ambiente (configure-as no painel da hospedagem ou em um arquivo
+`.env` dentro de `backend/`):
+
+- `MAIL_HOST` – host SMTP fornecido pela hospedagem/provedor de e-mail.
+- `MAIL_PORT` – porta SMTP (geralmente 587 ou 465).
+- `MAIL_USER` – usuário ou remetente autenticado no servidor SMTP.
+- `MAIL_PASS` – senha do usuário SMTP.
+- `CONTACT_EMAIL` – e-mail que receberá as propostas enviadas pelo site.
+
+Opcionalmente, defina `MAIL_FROM` para personalizar o endereço "from". Caso
+não seja informado, o valor de `MAIL_USER` será utilizado.
 
 ### AppUni standalone API
 

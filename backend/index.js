@@ -11,6 +11,7 @@ import casesRoute from './routes/cases.js';
 import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
+import proposalsRoute from './routes/proposals.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -191,6 +192,7 @@ app.use('/api', blogRoute);
 app.use('/api/cases', casesRoute);
 app.use('/api/templates', templatesRoute);
 app.use('/api/leads', leadsRoutes);
+app.use('/api/propostas', proposalsRoute);
 app.use('/', postSeoRoute);
 
 app.get('/', (req, res, next) => {
