@@ -79,6 +79,16 @@ The local server relies on the following packages:
 - **stripe** – Stripe API client
 - **dotenv** – load environment variables from `.env`
 
+### AppUni standalone API
+
+For AppUni/Plesk environments that require a lightweight API dedicated to GPT
+Actions, this repository now ships `winove_api_appuni.js` (Express server) and
+`winove_openapi.json` (schema for Actions). A ready-to-copy `.env`
+template—`.env.appuni.example`—is also included. Follow the full setup guide in
+`docs/winove_appuni_api.md` to configurar o `.env`, instalar dependências,
+copiar os arquivos para o servidor e testar os endpoints com `curl` antes de
+abrir o serviço ao público.
+
 ## How can I deploy this project?
 
 Simply open [Winove](https://lovable.dev/projects/47e97737-0d5b-4617-a6fc-0cc3a9fb4b6b) and click on Share -> Publish.

@@ -1,0 +1,125 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Winove API",
+    "version": "1.0.0",
+    "description": "API para listar templates, registrar leads e enviar notificações por e-mail."
+  },
+  "servers": [
+    {
+      "url": "https://winove.com.br/api",
+      "description": "Servidor de produção em AppUni"
+    }
+  ],
+  "paths": {
+    "/templates": {
+      "get": {
+        "operationId": "get_templates",
+        "summary": "Listar templates",
+        "description": "Retorna todos os templates disponíveis com nome, descrição, preço e link para demo.",
+        "responses": {
+          "200": {
+            "description": "Lista de templates",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "nome": { "type": "string" },
+                      "descricao": { "type": "string" },
+                      "preco": { "type": "number" },
+                      "url_demo": { "type": "string" }
+                    },
+                    "required": ["id", "nome", "preco"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/leads": {
+      "post": {
+        "operationId": "create_lead",
+        "summary": "Registrar lead",
+        "description": "Cria um lead no banco de dados com nome, e-mail, telefone e interesse.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "telefone": { "type": "string" },
+                  "interesse": { "type": "string" }
+                },
+                "required": ["email", "interesse"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead criado com sucesso"
+          },
+          "400": {
+            "description": "Requisição inválida"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/send-email": {
+      "post": {
+        "operationId": "notify_email",
+        "summary": "Enviar dados por e-mail",
+        "description": "Envia os dados do lead por e-mail para o time da Winove.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nome": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "telefone": { "type": "string" },
+                  "interesse": { "type": "string" }
+                },
+                "required": ["email", "interesse"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail enviado com sucesso"
+          },
+          "400": {
+            "description": "Requisição inválida"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  }
+}
