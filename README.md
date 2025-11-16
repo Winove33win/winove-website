@@ -83,9 +83,17 @@ The local server relies on the following packages:
 
 For AppUni/Plesk environments that require a lightweight API dedicated to GPT
 Actions, this repository now ships `winove_api_appuni.js` (Express server) and
+
+`winove_openapi.json` (schema for Actions). A ready-to-copy `.env`
+template—`.env.appuni.example`—is also included. Follow the full setup guide in
+`docs/winove_appuni_api.md` to configurar o `.env`, instalar dependências,
+copiar os arquivos para o servidor e testar os endpoints com `curl` antes de
+abrir o serviço ao público.
+
 `winove_openapi.json` (schema for Actions). Follow the full setup guide in
 `docs/winove_appuni_api.md` to configure the `.env`, install dependencies and
 deploy the service alongside your main site.
+
 
 ## How can I deploy this project?
 

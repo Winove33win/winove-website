@@ -86,6 +86,19 @@ utilizado em `/leads`.
 
 ## 6. Implantação
 
+
+1. Copie `winove_api_appuni.js`, `winove_openapi.json` **e o seu `.env`** para o
+   host AppUni/Plesk (use SCP, SFTP ou o gerenciador de arquivos do painel).
+2. Garanta que o banco possua as tabelas `templates` e `leads` com as colunas
+   mencionadas.
+3. Configure as variáveis de ambiente (via `.env` ou painel AppUni). Um
+   arquivo de exemplo chamado `.env.appuni.example` está disponível neste
+   repositório; renomeie-o para `.env` e personalize.
+4. No terminal do servidor, instale as dependências e inicie a API:
+
+   ```bash
+   npm install express mysql2 nodemailer dotenv
+
 1. Envie `winove_api_appuni.js` e `winove_openapi.json` para o servidor.
 2. Garanta que o banco possua as tabelas `templates` e `leads` com as colunas
    mencionadas.
@@ -93,6 +106,7 @@ utilizado em `/leads`.
 4. Inicie o app:
 
    ```bash
+
    node winove_api_appuni.js
    ```
 
@@ -103,7 +117,24 @@ utilizado em `/leads`.
    pm2 start winove_api_appuni.js --name winove-api
    ```
 
+
+5. Teste os endpoints com `curl` (ajuste domínio/porta conforme necessário):
+
+   ```bash
+   curl -X GET  https://seu-dominio/api/templates
+   curl -X POST https://seu-dominio/api/leads \
+     -H 'Content-Type: application/json' \
+     -d '{"nome":"Teste","email":"teste@dominio.com","interesse":"Site"}'
+   curl -X POST https://seu-dominio/api/send-email \
+     -H 'Content-Type: application/json' \
+     -d '{"email":"teste@dominio.com","interesse":"Site"}'
+   ```
+
+   Você também pode abrir as URLs `/templates`, `/leads` e `/send-email` em um
+   navegador (para POSTs use uma ferramenta como Postman ou Insomnia).
+
 5. Teste os endpoints, por exemplo `https://seu-dominio/api/templates`.
+
 
 ## 7. Observações
 

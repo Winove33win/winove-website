@@ -6,6 +6,7 @@ pnpm-lock.yaml
 .DS_Store
 .env
 .env.*
+!.env.appuni.example
 *.log
 # Ignore generic dist directories
 dist/
