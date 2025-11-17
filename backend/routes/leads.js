@@ -37,6 +37,20 @@ const sanitizeObjectStrings = (obj = {}) => {
   }, {});
 };
 
+const logDetailedError = (context, err) => {
+  const message = err?.message || err;
+  console.error(`${context}:`, message);
+  if (err?.stack) {
+    console.error(err.stack);
+  }
+  if (err?.sqlMessage || err?.sqlState) {
+    console.error("MySQL error details:", {
+      sqlMessage: err.sqlMessage,
+      sqlState: err.sqlState,
+    });
+  }
+};
+
 router.post("/", async (req, res) => {
   try {
     const {
@@ -71,26 +85,33 @@ router.post("/", async (req, res) => {
         ? JSON.stringify(sanitizedExtra)
         : null;
 
-    const conn = await getConnection();
-    await conn.execute(
-      `INSERT INTO ${LEADS_TABLE}
-       (nome, email, telefone, interesse, origem, mensagem, extra)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        sanitizedNome,
-        sanitizedEmail,
-        sanitizedTelefone,
-        sanitizedInteresse,
-        sanitizedOrigem,
-        sanitizedMensagem,
-        extraPayload,
-      ]
-    );
-    await conn.end();
-
-    res.json({ ok: true });
+    let conn;
+    try {
+      conn = await getConnection();
+      await conn.execute(
+        `INSERT INTO ${LEADS_TABLE}
+         (nome, email, telefone, interesse, origem, mensagem, extra)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          sanitizedNome,
+          sanitizedEmail,
+          sanitizedTelefone,
+          sanitizedInteresse,
+          sanitizedOrigem,
+          sanitizedMensagem,
+          extraPayload,
+        ]
+      );
+      res.json({ ok: true });
+    } finally {
+      if (conn) {
+        await conn.end().catch((closeErr) =>
+          console.error("POST /api/leads connection close error:", closeErr)
+        );
+      }
+    }
   } catch (err) {
-    console.error("POST /api/leads error:", err);
+    logDetailedError("POST /api/leads error", err);
     res.status(500).json({ error: "internal_error" });
   }
 });
@@ -123,31 +144,38 @@ router.post("/libras", async (req, res) => {
         .status(400)
         .json({ error: "nome e email são obrigatórios" });
 
-    const conn = await getConnection();
-    await conn.execute(
-      `INSERT INTO ${LEADS_LIBRAS_TABLE}
-       (nome, email, telefone, empresa, tipoServico, dataEvento, local_evento, tamanhoPublico, duracao, linkVideo, descricao, lgpdConsent)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        sanitizedNome,
-        sanitizedEmail,
-        sanitizeString(telefone),
-        sanitizeString(empresa),
-        sanitizeString(tipoServico),
-        sanitizeString(dataEvento),
-        sanitizeString(local_evento),
-        sanitizeString(tamanhoPublico),
-        sanitizeString(duracao),
-        sanitizeString(linkVideo),
-        sanitizeString(descricao),
-        lgpdConsent ? 1 : 0,
-      ]
-    );
-    await conn.end();
-
-    res.json({ ok: true });
+    let conn;
+    try {
+      conn = await getConnection();
+      await conn.execute(
+        `INSERT INTO ${LEADS_LIBRAS_TABLE}
+         (nome, email, telefone, empresa, tipoServico, dataEvento, local_evento, tamanhoPublico, duracao, linkVideo, descricao, lgpdConsent)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          sanitizedNome,
+          sanitizedEmail,
+          sanitizeString(telefone),
+          sanitizeString(empresa),
+          sanitizeString(tipoServico),
+          sanitizeString(dataEvento),
+          sanitizeString(local_evento),
+          sanitizeString(tamanhoPublico),
+          sanitizeString(duracao),
+          sanitizeString(linkVideo),
+          sanitizeString(descricao),
+          lgpdConsent ? 1 : 0,
+        ]
+      );
+      res.json({ ok: true });
+    } finally {
+      if (conn) {
+        await conn.end().catch((closeErr) =>
+          console.error("POST /api/leads/libras connection close error:", closeErr)
+        );
+      }
+    }
   } catch (err) {
-    console.error("POST /api/leads/libras error:", err);
+    logDetailedError("POST /api/leads/libras error", err);
     res.status(500).json({ error: "internal_error" });
   }
 });
