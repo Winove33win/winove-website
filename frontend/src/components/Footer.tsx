@@ -172,6 +172,12 @@ export const Footer = () => {
               >
                 Cookies
               </a>
+              <a
+                href="/excluir-dados"
+                className="text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
+                Exclusão de Dados
+              </a>
             </div>
           </div>
         </div>
