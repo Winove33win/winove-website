@@ -24,6 +24,7 @@ import Cursos from "./pages/Cursos";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import CookiesPolicy from "./pages/CookiesPolicy";
+import DataDeletion from "./pages/DataDeletion";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             <Route path="/termos-de-uso" element={<TermsOfUse />} />
             <Route path="/politica-de-cookies" element={<CookiesPolicy />} />
+            <Route path="/excluir-dados" element={<DataDeletion />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
