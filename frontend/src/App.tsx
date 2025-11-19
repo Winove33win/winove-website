@@ -21,6 +21,9 @@ import Promocoes from "./pages/Promocoes";
 import NotFound from "./pages/NotFound";
 import LibrasPage from "./pages/Libras";
 import Cursos from "./pages/Cursos";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
+import CookiesPolicy from "./pages/CookiesPolicy";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App = () => (
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/servicos/libras" element={<LibrasPage />} />
+            <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+            <Route path="/termos-de-uso" element={<TermsOfUse />} />
+            <Route path="/politica-de-cookies" element={<CookiesPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

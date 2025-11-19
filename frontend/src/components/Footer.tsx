@@ -154,13 +154,22 @@ export const Footer = () => {
             </div>
             
             <div className="flex gap-6 text-sm">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+              <a
+                href="/politica-de-privacidade"
+                className="text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
                 Política de Privacidade
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+              <a
+                href="/termos-de-uso"
+                className="text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
                 Termos de Uso
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors duration-300">
+              <a
+                href="/politica-de-cookies"
+                className="text-muted-foreground hover:text-primary transition-colors duration-300"
+              >
                 Cookies
               </a>
             </div>
