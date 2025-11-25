@@ -2,6 +2,10 @@
 RewriteEngine On
 RewriteBase /
 
+# Force canonical host
+RewriteCond %{HTTP_HOST} !^www\.winove\.com\.br$ [NC]
+RewriteRule ^(.*)$ https://www.winove.com.br/$1 [L,R=301]
+
 # Serve existing files/directories as-is
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

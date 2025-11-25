@@ -1,7 +1,7 @@
 import fs from 'fs';
 import mysql from 'mysql2/promise';
 
-const BASE = 'https://winove.com.br';
+const BASE = 'https://www.winove.com.br';
 // AJUSTE o caminho real do seu Plesk, se for diferente:
 const OUT = '/var/www/vhosts/winove.com.br/httpdocs/sitemap.xml';
 
