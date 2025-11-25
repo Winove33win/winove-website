@@ -5,12 +5,22 @@ const BASE = 'https://winove.com.br';
 // AJUSTE o caminho real do seu Plesk, se for diferente:
 const OUT = '/var/www/vhosts/winove.com.br/httpdocs/sitemap.xml';
 
+const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error(
+    `Missing required environment variables for database connection: ${missingEnvVars.join(', ')}`
+  );
+  process.exit(1);
+}
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'lweb03.appuni.com.br',
+  host: process.env.DB_HOST,
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-  user: process.env.DB_USER || 'winove',
-  password: process.env.DB_PASSWORD || '9*19avmU0',
-  database: process.env.DB_NAME || 'fernando_winove_com_br_',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
 });
