@@ -24,4 +24,5 @@ Notes
 - The server maps `/assets/*` to `backend/dist/assets` and serves `backend/dist/index.html` for SPA routes.
 - If assets 404 or load as `text/html`, make sure the files exist in `backend/dist/assets` and that the Node process restarted.
 - Adjust CSP in `backend/index.js` if you add new external sources.
+- Before running `npm --prefix backend run sitemap`, set the following environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (optionally `DB_PORT`, defaulting to `3306`). All four required variables must be present or the script will exit with an error.
 
