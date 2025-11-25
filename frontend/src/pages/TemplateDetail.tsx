@@ -45,11 +45,18 @@ const TemplateDetail = () => {
 
   const canonicalBase = "https://www.winove.com.br/templates";
   const canonical = slug ? `${canonicalBase}/${slug}` : canonicalBase;
+  const ensureAbsoluteUrl = (url?: string | null) => {
+    if (!url) return undefined;
+    if (/^https?:\/\//i.test(url)) return url;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `https://www.winove.com.br${normalizedPath}`;
+  };
   const fallbackDescription = "Veja detalhes completos de um template profissional Wix Studio desenvolvido pela Winove.";
   const seoTitle = template
     ? `${template.title} | Template Wix Studio | Winove`
     : "Template Wix Studio | Winove";
   const seoDescription = template?.description || fallbackDescription;
+  const coverImage = ensureAbsoluteUrl(template?.images?.cover);
 
   // Inline skeleton to manter layout enquanto carrega
   const DetailSkeleton = () => (
@@ -80,13 +87,13 @@ const TemplateDetail = () => {
     </div>
   );
 
-  const jsonLd = template
+  const productJsonLd = template
     ? {
         "@context": "https://schema.org",
         "@type": "Product",
         name: template.title,
         description: template.description,
-        image: template.images?.cover,
+        image: coverImage,
         sku: template.slug,
         url: canonical,
         offers: template.price
@@ -103,6 +110,29 @@ const TemplateDetail = () => {
         },
       }
     : undefined;
+
+  const breadcrumbJsonLd = slug
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Templates",
+            item: canonicalBase,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: template?.title ?? "Template",
+            item: canonical,
+          },
+        ],
+      }
+    : undefined;
+
+  const jsonLd = [productJsonLd, breadcrumbJsonLd].filter(Boolean);
 
   if (isLoading) {
     return (
@@ -166,8 +196,8 @@ const TemplateDetail = () => {
         title={seoTitle}
         description={seoDescription}
         canonical={canonical}
-        image={template?.images?.cover}
-        jsonLd={jsonLd}
+        image={coverImage}
+        jsonLd={jsonLd.length > 0 ? jsonLd : undefined}
       />
       <div className="min-h-screen bg-background text-foreground">
         <div className="section--first px-4">
@@ -189,7 +219,7 @@ const TemplateDetail = () => {
               {/* Hero Image */}
               <div className="relative rounded-lg overflow-hidden">
                 <img
-                  src={template?.images?.cover || ''}
+                  src={coverImage || ''}
                   alt={template.title}
                   className="w-full h-96 object-cover"
                 />
