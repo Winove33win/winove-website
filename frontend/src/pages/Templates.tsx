@@ -44,12 +44,86 @@ const Templates = () => {
     return matchesCategory && matchesSearch;
   });
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "Templates Wix Studio",
-    url: "https://www.winove.com.br/templates",
-  };
+  const baseUrl = "https://www.winove.com.br";
+  const collectionUrl = `${baseUrl}/templates`;
+
+  const jsonLd = useMemo(() => {
+    const breadcrumbList = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Templates",
+          item: collectionUrl,
+        },
+      ],
+    };
+
+    if (isLoading) {
+      return [
+        {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Templates Wix Studio",
+          url: collectionUrl,
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              item: {
+                "@type": "Product",
+                name: "Template Wix Studio",
+                url: collectionUrl,
+                offers: {
+                  "@type": "Offer",
+                  priceCurrency: "BRL",
+                  price: "0",
+                  availability: "https://schema.org/PreOrder",
+                },
+                category: "Templates",
+              },
+            },
+          ],
+        },
+        breadcrumbList,
+      ];
+    }
+
+    const itemListElement = filteredTemplates.map((template, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Product",
+        name: template.title,
+        url: `${collectionUrl}/${template.slug}`,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "BRL",
+          price: template.price,
+        },
+        category: template.category,
+      },
+    }));
+
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Templates Wix Studio",
+        url: collectionUrl,
+        itemListElement,
+      },
+      breadcrumbList,
+    ];
+  }, [baseUrl, collectionUrl, filteredTemplates, isLoading]);
 
   return (
     <>
