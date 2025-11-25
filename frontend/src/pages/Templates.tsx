@@ -130,7 +130,7 @@ const Templates = () => {
       <SEO
         title="Templates Wix Studio | Winove"
         description="Acelere seu projeto com nossos templates profissionais para Wix Studio. Designs modernos, responsivos e otimizados para conversão."
-        canonical="https://www.winove.com.br/templates"
+        canonical={collectionUrl}
         jsonLd={jsonLd}
       />
     <div className="min-h-screen bg-background text-foreground">

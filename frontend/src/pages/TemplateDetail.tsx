@@ -43,13 +43,14 @@ const TemplateDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: template, isLoading } = useQuery({ queryKey: ['template', slug], enabled: !!slug, queryFn: () => fetchTemplate(slug as string) });
 
-  const canonicalBase = "https://www.winove.com.br/templates";
+  const siteBaseUrl = "https://www.winove.com.br";
+  const canonicalBase = `${siteBaseUrl}/templates`;
   const canonical = slug ? `${canonicalBase}/${slug}` : canonicalBase;
   const ensureAbsoluteUrl = (url?: string | null) => {
     if (!url) return undefined;
     if (/^https?:\/\//i.test(url)) return url;
     const normalizedPath = url.startsWith("/") ? url : `/${url}`;
-    return `https://www.winove.com.br${normalizedPath}`;
+    return `${siteBaseUrl}${normalizedPath}`;
   };
   const fallbackDescription = "Veja detalhes completos de um template profissional Wix Studio desenvolvido pela Winove.";
   const seoTitle = template
@@ -389,7 +390,7 @@ const TemplateDetail = () => {
                       const mk = (msg: string) => {
                         const href = typeof window !== 'undefined' ? window.location.href : '';
                         const utm = href.includes('?') ? '&utm_source=template-advocacia' : '?utm_source=template-advocacia';
-                        const page = href ? `${href}${utm}` : 'https://winove.com.br/templates';
+                        const page = href ? `${href}${utm}` : canonicalBase;
                         return `https://wa.me/${wa}?text=${encodeURIComponent(`${base} ${msg} | Página: ${page}`)}`;
                       };
 
