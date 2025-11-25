@@ -1,48 +1,57 @@
-import fs from 'fs';
+import fs from 'fs/promises';
+import path from 'path';
 import mysql from 'mysql2/promise';
 
-const BASE = 'https://www.winove.com.br';
-// AJUSTE o caminho real do seu Plesk, se for diferente:
-const OUT = '/var/www/vhosts/winove.com.br/httpdocs/sitemap.xml';
+const BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://winove.com.br').replace(/\/$/, '');
+const OUTPUT_PATH = process.env.SITEMAP_OUTPUT || '/var/www/vhosts/winove.com.br/httpdocs/sitemap.xml';
 
-const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  console.error(
-    `Missing required environment variables for database connection: ${missingEnvVars.join(', ')}`
-  );
-  process.exit(1);
-}
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
+const dbConfig = {
+  host: process.env.DB_HOST || 'lweb03.appuni.com.br',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  user: process.env.DB_USER || 'winove',
+  password: process.env.DB_PASSWORD || '9*19avmU0',
+  database: process.env.DB_NAME || 'fernando_winove_com_br_',
   waitForConnections: true,
   connectionLimit: 10,
-});
+};
 
-const staticUrls = [
-  { loc: `${BASE}/`,         changefreq: 'weekly',  priority: '1.0' },
-  { loc: `${BASE}/blog`,     changefreq: 'weekly',  priority: '0.9' },
-  { loc: `${BASE}/cases`,    changefreq: 'monthly', priority: '0.7' },
-  { loc: `${BASE}/servicos`, changefreq: 'monthly', priority: '0.7' },
-  { loc: `${BASE}/contato`,  changefreq: 'monthly', priority: '0.6' },
+const staticRoutes = [
+  '/',
+  '/sobre',
+  '/servicos',
+  '/blog',
+  '/contato',
+  '/cases',
 ];
 
-const toUrlXml = ({ loc, changefreq, priority, lastmod }) => `
-  <url>
-    <loc>${loc}</loc>
-    ${lastmod ? `<lastmod>${new Date(lastmod).toISOString()}</lastmod>` : ''}
-    <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
-  </url>`.trim();
+function formatDate(value, fallback = null) {
+  const date = value ? new Date(value) : fallback ? new Date(fallback) : null;
+  if (!date || Number.isNaN(date.getTime())) return null;
+  return date.toISOString().split('T')[0];
+}
 
-try {
-  const [posts] = await pool.query(
+function buildSitemapXml(urls) {
+  const urlset = urls
+    .map((url) => {
+      return `
+  <url>
+    <loc>${url.loc}</loc>
+    ${url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : ''}
+    <changefreq>${url.changefreq}</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`;
+    })
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urlset}
+</urlset>
+`;
+}
+
+async function getBlogUrls(pool) {
+  const [rows] = await pool.execute(
     `SELECT slug, data_publicacao
      FROM blog_posts
      WHERE slug IS NOT NULL AND slug <> ''
@@ -50,7 +59,16 @@ try {
      LIMIT 5000`
   );
 
-  const [templates] = await pool.query(
+  return rows.map((row) => ({
+    loc: `${BASE_URL}/blog/${row.slug}`,
+    lastmod: formatDate(row.data_publicacao),
+    changefreq: 'weekly',
+    priority: '0.8',
+  }));
+}
+
+async function getTemplateUrls(pool) {
+  const [rows] = await pool.execute(
     `SELECT slug, updated_at, created_at
      FROM templates
      WHERE slug IS NOT NULL AND slug <> ''
@@ -58,39 +76,73 @@ try {
      LIMIT 5000`
   );
 
-  const latestTemplateDate = (templates || []).reduce((latest, tpl) => {
-    const lastmod = tpl.updated_at || tpl.created_at;
-    if (!lastmod) return latest;
-    return !latest || new Date(lastmod) > new Date(latest) ? lastmod : latest;
-  }, null);
+  return rows.map((row) => ({
+    loc: `${BASE_URL}/templates/${row.slug}`,
+    lastmod: formatDate(row.updated_at || row.created_at),
+    changefreq: 'weekly',
+    priority: '0.8',
+  }));
+}
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${staticUrls.map(u => toUrlXml(u)).join('')}
-  ${toUrlXml({
-        loc: `${BASE}/templates/`,
+async function writeSitemap(xml) {
+  const destination = path.isAbsolute(OUTPUT_PATH)
+    ? OUTPUT_PATH
+    : path.resolve(process.cwd(), OUTPUT_PATH);
+
+  await fs.mkdir(path.dirname(destination), { recursive: true });
+  await fs.writeFile(destination, xml, 'utf8');
+
+  return destination;
+}
+
+async function main() {
+  const pool = mysql.createPool(dbConfig);
+  const today = formatDate(new Date());
+
+  try {
+    const staticUrls = staticRoutes.map((route, index) => ({
+      loc: `${BASE_URL}${route}`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: route === '/' ? '1.0' : index <= 2 ? '0.9' : '0.8',
+    }));
+
+    const [blogUrls, templateUrls] = await Promise.all([
+      getBlogUrls(pool),
+      getTemplateUrls(pool),
+    ]);
+
+    const latestTemplateUpdate = formatDate(
+      templateUrls.reduce((latest, current) => {
+        if (!current.lastmod) return latest;
+        return !latest || new Date(current.lastmod) > new Date(latest)
+          ? current.lastmod
+          : latest;
+      }, null)
+    );
+
+    const urls = [
+      ...staticUrls,
+      {
+        loc: `${BASE_URL}/templates/`,
+        lastmod: latestTemplateUpdate || today,
         changefreq: 'weekly',
         priority: '0.9',
-        lastmod: latestTemplateDate,
-      })}
-  ${(posts || []).map(p => toUrlXml({
-        loc: `${BASE}/blog/${p.slug}`,
-        changefreq: 'weekly',
-        priority: '0.8',
-        lastmod: p.data_publicacao || new Date(),
-      })).join('')}
-  ${(templates || []).map(t => toUrlXml({
-        loc: `${BASE}/templates/${t.slug}`,
-        changefreq: 'weekly',
-        priority: '0.8',
-        lastmod: t.updated_at || t.created_at,
-      })).join('')}
-</urlset>`;
+      },
+      ...blogUrls,
+      ...templateUrls,
+    ];
 
-  fs.writeFileSync(OUT, xml, 'utf8');
-  console.log('Sitemap escrito em', OUT);
-  process.exit(0);
-} catch (e) {
-  console.error('Erro ao gerar sitemap:', e);
-  process.exit(1);
+    const xml = buildSitemapXml(urls);
+    const destination = await writeSitemap(xml);
+
+    console.log(`✅ Sitemap escrito em ${destination} com ${urls.length} URLs`);
+  } catch (error) {
+    console.error('Erro ao gerar sitemap:', error);
+    process.exitCode = 1;
+  } finally {
+    await pool.end();
+  }
 }
+
+main();
