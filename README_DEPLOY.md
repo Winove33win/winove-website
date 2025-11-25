@@ -4,6 +4,7 @@ Deploy to Plesk
 What is included
 - `dist-for-deploy.zip` — Vite production build (contains `index.html` and `assets/`).
 - `backend/index.js` — serves the build from `backend/dist`.
+- `backend/scripts/generate-sitemap.mjs` — grava `sitemap.xml` no caminho consumido pelo `robots.txt`.
 
 Goal
 - After each pull from GitHub, Plesk runs the Node app and it serves the built frontend from `backend/dist` without manual tweaks.
@@ -16,6 +17,8 @@ Recommended steps (Plesk GUI)
    - `backend/dist/index.html`
    - `backend/dist/assets/...`
 5. In Domains → Node.js, restart the application.
+
+After the deploy script finishes, confirm that `/httpdocs/sitemap.xml` exists (gerado pelo `npm --prefix backend run sitemap`) para que o arquivo indicado no `robots.txt` (`https://winove.com.br/sitemap.xml`) continue acessível.
 
 Notes
 - The server maps `/assets/*` to `backend/dist/assets` and serves `backend/dist/index.html` for SPA routes.
