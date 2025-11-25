@@ -34,6 +34,7 @@ const toUrlXml = ({ loc, changefreq, priority, lastmod }) => `
 router.get('/sitemap.xml', async (req, res) => {
   try {
     let posts = [];
+    let templates = [];
     try {
       // Atenção: nomes de colunas iguais aos da sua tabela
       const [rows] = await pool.query(
@@ -48,6 +49,19 @@ router.get('/sitemap.xml', async (req, res) => {
       console.error('[sitemap] DB error:', dbErr?.message || dbErr);
     }
 
+    try {
+      const [rows] = await pool.query(
+        `SELECT slug, updated_at, created_at
+         FROM templates
+         WHERE slug IS NOT NULL AND slug <> ''
+         ORDER BY COALESCE(updated_at, created_at) DESC
+         LIMIT 5000`
+      );
+      templates = rows || [];
+    } catch (dbErr) {
+      console.error('[sitemap] DB templates error:', dbErr?.message || dbErr);
+    }
+
     const staticXml = staticUrls.map(u => toUrlXml(u)).join('');
     const postsXml = posts.map(p =>
       toUrlXml({
@@ -58,10 +72,34 @@ router.get('/sitemap.xml', async (req, res) => {
       })
     ).join('');
 
+    const latestTemplateDate = templates.reduce((latest, tpl) => {
+      const lastmod = tpl.updated_at || tpl.created_at;
+      if (!lastmod) return latest;
+      return !latest || new Date(lastmod) > new Date(latest) ? lastmod : latest;
+    }, null);
+
+    const templatesListXml = toUrlXml({
+      loc: `${BASE}/templates/`,
+      changefreq: 'weekly',
+      priority: '0.9',
+      lastmod: latestTemplateDate,
+    });
+
+    const templatesXml = templates.map(t =>
+      toUrlXml({
+        loc: `${BASE}/templates/${t.slug}`,
+        changefreq: 'weekly',
+        priority: '0.8',
+        lastmod: t.updated_at || t.created_at,
+      })
+    ).join('');
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${staticXml}
+  ${templatesListXml}
   ${postsXml}
+  ${templatesXml}
   ${posts.length === 0 ? '<!-- fallback: sem posts (verifique conexão/colunas) -->' : ''}
 </urlset>`;
 
