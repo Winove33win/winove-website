@@ -1,19 +1,36 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: './server/.env' });
+dotenv.config();
+
+const REQUIRED_ENV_VARS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
 
 async function checkAndCreateTables() {
   let connection;
-  
+
+  const missingEnv = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+  if (missingEnv.length) {
+    console.error(
+      `❌ Variáveis de ambiente do banco ausentes: ${missingEnv.join(", ")}. ` +
+        'Defina-as antes de rodar o checkDatabaseAndCreateTables.'
+    );
+    process.exit(1);
+  }
+
+  const dbPort = Number(process.env.DB_PORT);
+  if (Number.isNaN(dbPort)) {
+    console.error('❌ DB_PORT deve ser um número válido.');
+    process.exit(1);
+  }
+
   try {
-    // Test connection
+    // Test connection usando apenas variáveis de ambiente válidas
     connection = await mysql.createConnection({
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-      user: process.env.DB_USER || 'winove',
-      password: process.env.DB_PASSWORD || '9*19avmU0',
-      database: process.env.DB_NAME || 'fernando_winove_com_br_'
+      host: process.env.DB_HOST,
+      port: dbPort,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
     });
 
     console.log('✅ Conexão com o banco de dados estabelecida com sucesso!');
@@ -21,7 +38,7 @@ async function checkAndCreateTables() {
     // Check if blog_posts table exists
     const [blogTableExists] = await connection.execute(
       "SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = ? AND table_name = 'blog_posts'",
-      [process.env.DB_NAME || 'fernando_winove_com_br_']
+      [process.env.DB_NAME]
     );
 
     if (blogTableExists[0].count === 0) {
@@ -56,7 +73,7 @@ async function checkAndCreateTables() {
     // Check if cases table exists
     const [casesTableExists] = await connection.execute(
       "SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = ? AND table_name = 'cases'",
-      [process.env.DB_NAME || 'fernando_winove_com_br_']
+      [process.env.DB_NAME]
     );
 
     if (casesTableExists[0].count === 0) {

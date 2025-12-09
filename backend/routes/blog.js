@@ -1,12 +1,12 @@
 import { Router } from "express";
-// Use o pool compartilhado com defaults em db.js. Isso evita erros 500 quando
-// as variáveis de ambiente (DB_HOST, DB_USER, etc.) não estão definidas.
+// Use o pool compartilhado configurado via variáveis de ambiente em db.js.
+// Isso garante uma única origem de configuração para as credenciais do banco.
 import { pool } from "../db.js";
 
 const router = Router();
 
-// Não crie um novo pool aqui. O pool em db.js já aplica valores padrão e
-// manipula corretamente as variáveis de ambiente ausentes.
+// Não crie um novo pool aqui. O pool em db.js centraliza a conexão e valida os
+// valores obrigatórios de ambiente logo no bootstrap da API.
 
 // Normaliza o formato para o frontend
 function adapt(row) {
