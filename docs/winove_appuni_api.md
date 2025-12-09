@@ -8,7 +8,7 @@ seu GPT para listar templates, registrar leads e enviar notificações.
 
 - **Node.js 18+** disponível no host AppUni.
 - **Acesso MySQL** (use as mesmas credenciais configuradas na AppUni, por
-  exemplo `lweb03.appuni.com.br`, usuário `winove`, senha `9*19avmU0`, banco
+  exemplo `127.0.0.1`, usuário `winove`, senha `9*19avmU0`, banco
   `fernando_winove_com_br_`).
 - **Conta SMTP** (SendGrid, Mailgun, Amazon SES ou SMTP da hospedagem).
 
@@ -28,7 +28,7 @@ Adicione um arquivo `.env` para armazenar variáveis sensíveis (não faça comm
 Crie um `.env` na raiz do projeto:
 
 ```env
-DB_HOST=lweb03.appuni.com.br
+DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=winove
 DB_PASS=9*19avmU0

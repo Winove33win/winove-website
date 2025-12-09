@@ -11,7 +11,7 @@ const SITEMAP_URL = "https://winove.wixsite.com/meusite-6/sitemap.xml";
 
 // === SUA CONEXÃO PADRÃO (mantida conforme seu projeto) ===
 const DB_CONFIG = {
-  host: 'lweb03.appuni.com.br',
+  host: '127.0.0.1',
   port: 3306,
   user: 'winove',
   password: '9*19avmU0',

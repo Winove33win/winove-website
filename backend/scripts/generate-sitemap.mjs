@@ -6,7 +6,7 @@ const BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://winove.com.br').replac
 const OUTPUT_PATH = process.env.SITEMAP_OUTPUT || '/var/www/vhosts/winove.com.br/httpdocs/sitemap.xml';
 
 const dbConfig = {
-  host: process.env.DB_HOST || 'lweb03.appuni.com.br',
+  host: process.env.DB_HOST || '127.0.0.1',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
   user: process.env.DB_USER || 'winove',
   password: process.env.DB_PASSWORD || '9*19avmU0',
