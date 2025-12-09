@@ -379,8 +379,11 @@ router.post('/', async (req, res) => {
       id: proposalId,
     });
   } catch (error) {
-    console.error('Erro ao salvar proposta comercial:', error);
-    return res.status(500).json({ erro_mapeamento: 'falha_ao_registrar_proposta', campo_problematico: 'banco' });
+    console.error('Erro ao salvar proposta comercial:', error?.stack || error);
+    const detalhe = typeof error?.message === 'string' ? error.message : String(error);
+    return res
+      .status(500)
+      .json({ erro_mapeamento: 'falha_ao_registrar_proposta', campo_problematico: 'banco', detalhe });
   }
 });
 

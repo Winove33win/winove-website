@@ -138,20 +138,30 @@ const ProposalPanel = () => {
         }),
       });
 
-      const data: ProposalApiResponse = await response.json();
+      const contentType = response.headers.get('content-type') || '';
 
       if (!response.ok) {
-        const problem =
-          data?.erro_mapeamento ||
-          data?.error ||
-          data?.message ||
-          "Erro ao salvar proposta";
-        throw new Error(
-          typeof data?.campo_problematico === "string"
-            ? `${problem} (campo: ${data.campo_problematico})`
-            : problem
-        );
+        const text = await response.text();
+        console.error('Resposta de erro do servidor:', response.status, text);
+        // Tentar extrair mensagem JSON caso o servidor retorne JSON de erro
+        try {
+          const parsed = JSON.parse(text);
+          const problem = parsed?.erro_mapeamento || parsed?.error || parsed?.message || `Erro ${response.status}`;
+          const campo = parsed?.campo_problematico;
+          throw new Error(typeof campo === 'string' ? `${problem} (campo: ${campo})` : problem);
+        } catch (_parseErr) {
+          // Resposta não é JSON — provavelmente HTML. Levantar erro genérico com trecho
+          throw new Error(`Servidor retornou ${response.status}: ${text.slice(0, 200)}`);
+        }
       }
+
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Resposta inesperada do servidor (não JSON):', text);
+        throw new Error('Resposta inesperada do servidor (não JSON)');
+      }
+
+      const data: ProposalApiResponse = await response.json();
 
       setServerMessage("Proposta registrada e mapeada com sucesso.");
       setSubmitStatus("success");

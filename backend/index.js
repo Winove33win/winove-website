@@ -286,6 +286,16 @@ app.get('/api/health', (_req, res) => {
 // API 404
 app.use('/api', (_req, res) => res.status(404).json({ error: 'not_found' }));
 
+// Global error handler: sempre retorna JSON para evitar que proxies/host gerem
+// páginas HTML em respostas de erro (ex.: 500). Deve ficar após as rotas API.
+app.use((err, req, res, next) => {
+  console.error('Unhandled error (global handler):', err?.stack || err);
+  if (res.headersSent) return next(err);
+  const statusCode = err && err.status && Number.isInteger(err.status) ? err.status : 500;
+  const message = err && err.message ? String(err.message) : 'Internal server error';
+  res.status(statusCode).json({ error: 'internal_error', message });
+});
+
 // SPA fallback for React Router
 app.get('*', (req, res) => {
   if (req.path.includes('.')) return res.status(404).end();
