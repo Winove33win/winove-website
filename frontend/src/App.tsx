@@ -25,6 +25,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import CookiesPolicy from "./pages/CookiesPolicy";
 import DataDeletion from "./pages/DataDeletion";
+import ProposalPanel from "./pages/ProposalPanel";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/chat-whatsapp" element={<ChatWhatsapp />} />
             <Route path="/chatwhatsapp" element={<ChatWhatsapp />} />
             <Route path="/central-atendimento" element={<CentralAtendimento />} />
+            <Route path="/propostas" element={<ProposalPanel />} />
             <Route path="/promocoes" element={<Promocoes />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
