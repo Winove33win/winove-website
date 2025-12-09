@@ -74,6 +74,8 @@ const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
 const ProposalPanel = () => {
   const templateRef = useRef<HTMLDivElement>(null);
   const [proposal, setProposal] = useState<ProposalJson | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [serverMessage, setServerMessage] = useState<string | null>(null);
 
   const form = useForm<ProposalFormData>({
     resolver: zodResolver(proposalSchema),
@@ -102,9 +104,38 @@ const ProposalPanel = () => {
 
   const previewProposal = useMemo(() => buildProposalJson(watchedValues), [watchedValues]);
 
-  const onSubmit = (values: ProposalFormData) => {
+  const onSubmit = async (values: ProposalFormData) => {
     const finalizedProposal = buildProposalJson(values);
     setProposal(finalizedProposal);
+    setServerMessage(null);
+    setSubmitStatus("saving");
+
+    try {
+      const response = await fetch("/api/propostas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...values,
+          aceiteDigital: values.aceiteDigital,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Não foi possível salvar a proposta");
+      }
+
+      const idInfo = data?.id ? ` (#${data.id})` : "";
+      setServerMessage(`Proposta salva com sucesso${idInfo}.`);
+      setSubmitStatus("success");
+    } catch (err) {
+      console.error("Erro ao registrar proposta:", err);
+      setServerMessage("Não foi possível salvar a proposta. Tente novamente.");
+      setSubmitStatus("error");
+    }
   };
 
   const handleExportPdf = () => {
@@ -372,18 +403,33 @@ const ProposalPanel = () => {
                   <Separator />
 
                   <div className="flex flex-wrap gap-3 justify-between items-center">
-                    <div className={cn("text-sm", isComplete ? "text-emerald-600" : "text-destructive")}> 
+                    <div className={cn("text-sm", isComplete ? "text-emerald-600" : "text-destructive")}>
                       {isComplete ? "Checklist completo. Pronto para gerar a proposta." : "Preencha todos os campos obrigatórios antes de gerar."}
                     </div>
                     <div className="flex gap-2">
                       <Button type="button" variant="outline" disabled={!proposal} onClick={handleExportPdf}>
                         Exportar PDF
                       </Button>
-                      <Button type="submit" disabled={!isComplete}>
-                        Gerar proposta
+                      <Button type="submit" disabled={!isComplete || submitStatus === "saving"}>
+                        {submitStatus === "saving" ? "Salvando..." : "Gerar proposta"}
                       </Button>
                     </div>
                   </div>
+
+                  {submitStatus !== "idle" && (
+                    <p
+                      className={cn(
+                        "text-sm",
+                        submitStatus === "error"
+                          ? "text-destructive"
+                          : submitStatus === "saving"
+                            ? "text-muted-foreground"
+                            : "text-emerald-600"
+                      )}
+                    >
+                      {submitStatus === "saving" ? "Salvando proposta comercial..." : serverMessage}
+                    </p>
+                  )}
                 </form>
               </Form>
             </CardContent>
