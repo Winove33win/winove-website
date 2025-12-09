@@ -3,11 +3,6 @@ import { pool } from '../db.js';
 const REQUIRED_PASSWORD = 'VfY9KO';
 const MIN_COLUMNS = 46;
 
-// Ensure the environment variable is always populated with the required password value
-process.env.COMMERCIAL_PANEL_PASSWORD = process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
-
-export const getCommercialPanelPassword = () => process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
-
 export const PANEL_TO_DB_MAPPING = {
   nome: 'nome',
   empresa: 'empresa',
@@ -25,7 +20,7 @@ export const PANEL_TO_DB_MAPPING = {
   pdf_download: 'pdf_download_url',
 };
 
-const REQUIRED_COLUMNS = [
+export const REQUIRED_COLUMNS = [
   'id',
   'lead_id',
   'template_id',
@@ -79,10 +74,39 @@ const REQUIRED_COLUMNS = [
   'pdf_download_url',
 ];
 
+const REQUIRED_ENV_VARS = [
+  'DB_HOST',
+  'DB_PORT',
+  'DB_NAME',
+  'DB_USER',
+  'DB_PASSWORD',
+  'COMMERCIAL_PANEL_USERNAME',
+  'COMMERCIAL_PANEL_PASSWORD',
+];
+
 let cachedSchema;
 let checkingPromise;
 
-export const isCommercialPasswordValid = () => getCommercialPanelPassword() === REQUIRED_PASSWORD;
+export const isCommercialPasswordValid = () =>
+  process.env.COMMERCIAL_PANEL_PASSWORD === REQUIRED_PASSWORD;
+
+export const validateEnvForProposals = () => {
+  const missingEnv = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+  const passwordOk = isCommercialPasswordValid();
+  const failures = missingEnv.concat(!passwordOk ? ['COMMERCIAL_PANEL_PASSWORD'] : []);
+
+  if (failures.length) {
+    return {
+      ok: false,
+      message: !passwordOk
+        ? 'Variavel COMMERCIAL_PANEL_PASSWORD ausente ou divergente. Configure exatamente VfY9KO.'
+        : `Variaveis de ambiente ausentes: ${missingEnv.join(', ')}.`,
+      missingRequired: failures,
+    };
+  }
+
+  return { ok: true, missingRequired: [] };
+};
 
 export const getProposalSchemaStatus = async () => {
   if (cachedSchema) return cachedSchema;
@@ -104,7 +128,7 @@ export const getProposalSchemaStatus = async () => {
           missingRequired,
           message: ok
             ? 'Schema validado com sucesso.'
-            : `Schema incompleto: faltam ${missingRequired.join(', ')}. É necessário alinhar a tabela propostas_comerciais com o schema JSON do phpMyAdmin antes de continuar.`,
+            : `Schema incompleto: faltam ${missingRequired.join(', ')}. Ajuste a tabela propostas_comerciais conforme o checklist antes de continuar.`,
         };
         checkingPromise = null;
         return cachedSchema;
