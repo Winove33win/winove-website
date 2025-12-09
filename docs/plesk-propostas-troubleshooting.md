@@ -20,13 +20,13 @@ As causas mais comuns:
 **Passos:**
 1. Aceda ao painel Plesk → **Domains** → seu domínio (winove.com.br)
 2. Vá para **Node.js** → **Environment Variables**
-3. Verifique ou adicione:
+3. Verifique ou adicione (sempre com valores provenientes do ambiente de hospedagem ou secret manager):
    ```
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_USER=winove
-   DB_PASSWORD=9*19avmU0
-   DB_NAME=fernando_winove_com_br_
+   DB_HOST=<database-host>
+   DB_PORT=<database-port>
+   DB_USER=<database-user>
+   DB_PASSWORD=<database-password>
+   DB_NAME=<database-name>
    COMMERCIAL_PANEL_USERNAME=comercial
    COMMERCIAL_PANEL_PASSWORD=VfY9KO
    MAIL_HOST=[seu host SMTP]
@@ -65,7 +65,7 @@ Se o seu repositório tem `backend/diagnose-proposals.js`:
 1. Aceda ao Plesk → **Databases** (ou via terminal SSH se disponível)
 2. Verificar se tabela existe:
    ```sql
-   USE fernando_winove_com_br_;
+   USE <database-name>;
    SHOW TABLES LIKE 'propostas_comerciais';
    ```
    Se **não aparecer**, a tabela não existe. Vá para o Passo 3.

@@ -100,19 +100,22 @@ não seja informado, o valor de `MAIL_USER` será utilizado.
 O backend lê os dados do MySQL por variáveis de ambiente (`DB_HOST`,
 `DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_NAME`). Um template pronto está em
 `backend/.env.example`; copie-o para `backend/.env` e ajuste os valores se
-precisar. Para o banco atual do Plesk, use:
+precisar. Use apenas valores fornecidos pelo ambiente de hospedagem ou por um
+gerenciador de segredos. Exemplo:
 
 ```env
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=fernando_winove_com_br_
-DB_USER=winove
-DB_PASSWORD=9*19avmU0
+DB_HOST=<database-host>
+DB_PORT=<database-port>
+DB_NAME=<database-name>
+DB_USER=<database-user>
+DB_PASSWORD=<database-password>
 ```
 
 Após salvar o `.env`, execute `node scripts/migrate.mjs` dentro da pasta
 `backend/` para criar/atualizar a tabela `propostas_comerciais` e reinicie o
-app no painel Node.js do Plesk para que as variáveis sejam recarregadas.
+app no painel Node.js do Plesk para que as variáveis sejam recarregadas. Programe
+uma rotação das credenciais expostas e atualize as configurações de deploy com
+os novos valores fornecidos pelo provedor.
 
 Consulte também a [checklist de liberação do painel de propostas](docs/propostas-api-setup.md)
 para configurar `COMMERCIAL_PANEL_PASSWORD`, validar o schema com o endpoint
@@ -229,5 +232,6 @@ node createTable.js
 node insertData.js
 node selectData.js
 
-GRANT ALL PRIVILEGES ON fernando_winove_com_br.* TO 'Winove'@'%' IDENTIFIED BY '9*19avmU0';
+# Substitua pelos valores reais do seu ambiente/secret manager
+GRANT ALL PRIVILEGES ON <database-name>.* TO '<database-user>'@'%' IDENTIFIED BY '<database-password>';
 FLUSH PRIVILEGES;
