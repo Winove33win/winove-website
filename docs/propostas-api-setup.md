@@ -4,14 +4,12 @@ A rota `/api/propostas` responde com `503 schema_invalido` quando o backend dete
 
 ## Variáveis de ambiente obrigatórias
 
-O painel comercial só é liberado quando a variável `COMMERCIAL_PANEL_PASSWORD` está definida com uma senha não vazia. O valor é configurável, mas precisa estar presente no ambiente; se estiver ausente ou vazio, o check falha e o backend devolve 503. Configure também a conexão MySQL usada pelo pool do backend:
-
 ```env
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=fernando_winove_com_br_
-DB_USER=winove
-DB_PASSWORD=9*19avmU0
+DB_HOST=<database-host>
+DB_PORT=<database-port>
+DB_NAME=<database-name>
+DB_USER=<database-user>
+DB_PASSWORD=<database-password>
 
 # senha que libera o painel comercial (escolha qualquer valor não vazio)
 COMMERCIAL_PANEL_PASSWORD=sua-senha-segura
