@@ -1,17 +1,7 @@
 import express from 'express';
-import mysql from 'mysql2/promise';
+import { pool } from '../db.js';
 
 const router = express.Router();
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
-  user: process.env.DB_USER || 'winove',
-  password: process.env.DB_PASSWORD || '9*19avmU0',
-  database: process.env.DB_NAME || 'fernando_winove_com_br_',
-  waitForConnections: true,
-  connectionLimit: 10,
-});
 
 const BASE = 'https://winove.com.br';
 
