@@ -4,7 +4,7 @@ async function setupCompleteDatabase() {
   console.log('🔄 Iniciando configuração completa do banco de dados...\n');
   
   const connection = await mysql.createConnection({
-    host: 'lweb03.appuni.com.br',
+    host: '127.0.0.1',
     port: 3306,
     user: 'winove',
     password: '9*19avmU0',

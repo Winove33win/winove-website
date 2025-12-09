@@ -95,6 +95,25 @@ variáveis de ambiente (configure-as no painel da hospedagem ou em um arquivo
 Opcionalmente, defina `MAIL_FROM` para personalizar o endereço "from". Caso
 não seja informado, o valor de `MAIL_USER` será utilizado.
 
+#### Conexão com o banco de produção
+
+O backend lê os dados do MySQL por variáveis de ambiente (`DB_HOST`,
+`DB_PORT`, `DB_USER`, `DB_PASSWORD` e `DB_NAME`). Um template pronto está em
+`backend/.env.example`; copie-o para `backend/.env` e ajuste os valores se
+precisar. Para o banco atual do Plesk, use:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=fernando_winove_com_br_
+DB_USER=winove
+DB_PASSWORD=9*19avmU0
+```
+
+Após salvar o `.env`, execute `node scripts/migrate.mjs` dentro da pasta
+`backend/` para criar/atualizar a tabela `propostas_comerciais` e reinicie o
+app no painel Node.js do Plesk para que as variáveis sejam recarregadas.
+
 ### AppUni standalone API
 
 For AppUni/Plesk environments that require a lightweight API dedicated to GPT

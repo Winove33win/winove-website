@@ -6,14 +6,19 @@ dotenv.config();
 const router = Router();
 const LEADS_TABLE = process.env.LEADS_TABLE || "leads";
 const LEADS_LIBRAS_TABLE = process.env.LEADS_LIBRAS_TABLE || "leads_libras";
+const DB_HOST = process.env.DB_HOST || "127.0.0.1";
+const DB_PORT = Number(process.env.DB_PORT) || 3306;
+const DB_USER = process.env.DB_USER || "winove";
+const DB_PASSWORD = process.env.DB_PASSWORD || "9*19avmU0";
+const DB_NAME = process.env.DB_NAME || "fernando_winove_com_br_";
 
 async function getConnection() {
   return await mysql.createConnection({
-    host: "lweb03.appuni.com.br",
-    port: 3306,
-    user: "winove",
-    password: "9*19avmU0",
-    database: "fernando_winove_com_br_",
+    host: DB_HOST,
+    port: DB_PORT,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
   });
 }
 

@@ -6,7 +6,7 @@ import util from 'util';
 const execAsync = util.promisify(exec);
 
 // 🔧 Configurações do banco - podem ser sobrescritas por variáveis de ambiente
-const HOST = process.env.DB_HOST || 'lweb03.appuni.com.br';
+const HOST = process.env.DB_HOST || '127.0.0.1';
 const PORT = Number(process.env.DB_PORT) || 3306;
 const USER = process.env.DB_USER || 'winove';
 const PASSWORD = process.env.DB_PASSWORD || '9*19avmU0';
