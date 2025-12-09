@@ -118,6 +118,10 @@ Consulte também a [checklist de liberação do painel de propostas](docs/propos
 para configurar `COMMERCIAL_PANEL_PASSWORD`, validar o schema com o endpoint
 `/api/propostas/schema` e conferir o payload aceito pelo POST `/api/propostas`.
 
+**Se receber erro 500 em `/api/propostas`**, siga o guia de resolução:
+[Troubleshooting Plesk /api/propostas](docs/plesk-propostas-troubleshooting.md).
+Inclui checklist passo-a-passo e script de diagnóstico (`backend/diagnose-proposals.js`).
+
 ### AppUni standalone API
 
 For AppUni/Plesk environments that require a lightweight API dedicated to GPT
