@@ -5,7 +5,7 @@ Este plano descreve como reativar o painel de propostas quando a API responde co
 ## 1) Checklist de ambiente
 
 1. **Senha do painel**
-   - No host da API, exporte `COMMERCIAL_PANEL_PASSWORD=VfY9KO` e reinicie o serviço (PM2/systemd/docker). A senha é validada antes de qualquer rota `/api/propostas`.
+   - No host da API, exporte `COMMERCIAL_PANEL_PASSWORD=<sua_senha>` e reinicie o serviço (PM2/systemd/docker). A senha é validada antes de qualquer rota `/api/propostas`.
 2. **Usuário do painel**
    - Confirme o usuário básico (padrão `comercial`) via `COMMERCIAL_PANEL_USERNAME`.
 3. **Variáveis de e-mail**
@@ -16,7 +16,7 @@ Este plano descreve como reativar o painel de propostas quando a API responde co
 1. Verifique a conexão:
    - `mysql -u $DB_USER -p$DB_PASSWORD -h $DB_HOST $DB_NAME -e "SHOW TABLES LIKE 'propostas_comerciais';"`
 2. Valide o schema via API (retorna `{ ok: true }` em caso de sucesso):
-   - `curl -u comercial:VfY9KO https://<host>/api/propostas/schema`
+   - `curl -u comercial:<sua_senha> https://<host>/api/propostas/schema`
 3. Se retornar `schema_invalido`:
    - Abra `backend/migrations/006_create_propostas_comerciais.sql` e compare com o banco.
    - A tabela precisa de **pelo menos 46 colunas** e todas as listadas em `REQUIRED_COLUMNS` (ver `backend/utils/proposalSchema.js`).
@@ -24,15 +24,15 @@ Este plano descreve como reativar o painel de propostas quando a API responde co
 
 ## 3) Fluxo de autenticação do painel
 
-1. As rotas `/api/propostas/*` e `/comercial-propostas` exigem **Basic Auth** com o par `comercial:VfY9KO` (ou o usuário definido em `COMMERCIAL_PANEL_USERNAME`).
+1. As rotas `/api/propostas/*` e `/comercial-propostas` exigem **Basic Auth** com o par `comercial:<sua_senha>` (ou o usuário definido em `COMMERCIAL_PANEL_USERNAME`).
 2. Sem o header `Authorization: Basic ...`, o backend responde 401 antes de processar a rota.
 3. Em ambiente de homolog/produção, confirme que o proxy (Nginx/Apache) não está removendo o header `Authorization`.
 
 ## 4) Diagnóstico rápido das rotas
 
-- **Schema**: `curl -i -u comercial:VfY9KO https://<host>/api/propostas/schema`
-- **Envio de proposta**: `curl -i -u comercial:VfY9KO -H 'Content-Type: application/json' -d '{"nome":"Teste","email":"t@e.st"}' https://<host>/api/propostas`
-- **PDF**: `curl -i -u comercial:VfY9KO https://<host>/api/propostas/1/pdf`
+- **Schema**: `curl -i -u comercial:<sua_senha> https://<host>/api/propostas/schema`
+- **Envio de proposta**: `curl -i -u comercial:<sua_senha> -H 'Content-Type: application/json' -d '{"nome":"Teste","email":"t@e.st"}' https://<host>/api/propostas`
+- **PDF**: `curl -i -u comercial:<sua_senha> https://<host>/api/propostas/1/pdf`
 
 ## 5) Fracasso no carregamento do painel ("not_found")
 

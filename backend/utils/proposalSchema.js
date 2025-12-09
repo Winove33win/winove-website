@@ -1,6 +1,4 @@
 import { pool } from '../db.js';
-
-const REQUIRED_PASSWORD = 'VfY9KO';
 const MIN_COLUMNS = 46;
 
 export const PANEL_TO_DB_MAPPING = {
@@ -87,8 +85,9 @@ const REQUIRED_ENV_VARS = [
 let cachedSchema;
 let checkingPromise;
 
-export const isCommercialPasswordValid = () =>
-  process.env.COMMERCIAL_PANEL_PASSWORD === REQUIRED_PASSWORD;
+export const getCommercialPanelPassword = () => process.env.COMMERCIAL_PANEL_PASSWORD || '';
+
+export const isCommercialPasswordValid = () => Boolean(getCommercialPanelPassword().trim());
 
 export const validateEnvForProposals = () => {
   const missingEnv = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
@@ -99,7 +98,7 @@ export const validateEnvForProposals = () => {
     return {
       ok: false,
       message: !passwordOk
-        ? 'Variavel COMMERCIAL_PANEL_PASSWORD ausente ou divergente. Configure exatamente VfY9KO.'
+        ? 'Variavel COMMERCIAL_PANEL_PASSWORD ausente ou vazia. Defina uma senha no ambiente para habilitar o painel.'
         : `Variaveis de ambiente ausentes: ${missingEnv.join(', ')}.`,
       missingRequired: failures,
     };

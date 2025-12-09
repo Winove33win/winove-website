@@ -28,13 +28,15 @@ As causas mais comuns:
    DB_PASSWORD=9*19avmU0
    DB_NAME=fernando_winove_com_br_
    COMMERCIAL_PANEL_USERNAME=comercial
-   COMMERCIAL_PANEL_PASSWORD=VfY9KO
+   COMMERCIAL_PANEL_PASSWORD=<sua_senha>
    MAIL_HOST=[seu host SMTP]
    MAIL_PORT=[porta SMTP, ex: 587 ou 465]
    MAIL_USER=[seu usuário SMTP]
    MAIL_PASS=[sua senha SMTP]
    CONTACT_EMAIL=[email para notificações]
-   ```
+ ```
+
+Use qualquer valor não vazio para `COMMERCIAL_PANEL_PASSWORD` e guarde-o para usar nos testes de autenticação básica.
 
 4. **Salve** e prossiga para o próximo passo (reiniciar não é feito aqui, será feito depois)
 
@@ -128,7 +130,7 @@ Após reiniciar, teste o endpoint schema (não requer POST nem JSON complexo):
 1. Abra: `https://winove.com.br/api/propostas/schema`
 2. Na janela de autenticação, digite:
    - User: `comercial`
-   - Password: `VfY9KO`
+   - Password: `<sua_senha>`
 3. Você deve receber JSON:
    ```json
    {
@@ -139,7 +141,7 @@ Após reiniciar, teste o endpoint schema (não requer POST nem JSON complexo):
 
 **Via curl (PowerShell):**
 ```powershell
-curl.exe -i -u "comercial:VfY9KO" "https://winove.com.br/api/propostas/schema"
+curl.exe -i -u "comercial:<sua_senha>" "https://winove.com.br/api/propostas/schema"
 ```
 
 **Se receber:**
@@ -156,7 +158,7 @@ curl.exe -i -u "comercial:VfY9KO" "https://winove.com.br/api/propostas/schema"
 ```powershell
 curl.exe -i -X POST "https://winove.com.br/api/propostas" `
   -H "Content-Type: application/json" `
-  -u "comercial:VfY9KO" `
+  -u "comercial:<sua_senha>" `
   -d '{"nome":"Teste","email":"teste@example.com","empresa":"Empresa X","servicos":[{"servico":"Site","valor":"1000"}],"descricao":"Desc","prazo":"30 dias","termos":"OK","assinaturaNome":"Fulano","aceiteDigital":true}'
 ```
 

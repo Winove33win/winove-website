@@ -4,7 +4,7 @@ Este guia resume como usar as três rotas expostas pelo backend sob o prefixo `/
 
 ## Autenticação e middleware
 - As rotas são montadas em `backend/index.js` com o prefixo `/api/propostas` e passam pelo middleware `requireCommercialProposalAuth`, que exige Basic Auth.
-- Usuário: `comercial` (ou `COMMERCIAL_PANEL_USERNAME` se definido). Senha: precisa corresponder exatamente a `COMMERCIAL_PANEL_PASSWORD`, cujo padrão é `VfY9KO`. Caso contrário, o backend retorna `401` com `error: "painel_bloqueado"`.
+- Usuário: `comercial` (ou `COMMERCIAL_PANEL_USERNAME` se definido). Senha: precisa corresponder ao valor configurado em `COMMERCIAL_PANEL_PASSWORD`. Caso contrário, o backend retorna `401` com `error: "painel_bloqueado"`.
 - O middleware também valida o schema e o cache de template antes de entregar as rotas. Para testar a configuração, use a rota `/schema` descrita abaixo.
 
 ## Validação do schema
@@ -29,7 +29,7 @@ Rota usada pelo painel para criar uma nova proposta. Fluxo principal:
 6) Retorna `201` com os dados da proposta, `pdf_download_url`, `pdf_storage_info` e `email_enviado` (se SMTP estiver configurado). Erros de validação retornam `400`; falhas de schema, `503`.
 
 ## Checklist de configuração
-- Definir `COMMERCIAL_PANEL_PASSWORD` com o valor `VfY9KO` (e `COMMERCIAL_PANEL_USERNAME` se quiser customizar o usuário).
+- Definir `COMMERCIAL_PANEL_PASSWORD` com uma senha não vazia (e `COMMERCIAL_PANEL_USERNAME` se quiser customizar o usuário).
 - Configurar credenciais de banco (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`).
 - Garantir que a tabela `propostas_comerciais` contenha as 46 colunas exigidas ou ajuste os requisitos no código.
 - Para envio de e-mail opcional, definir `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS` e `CONTACT_EMAIL`.

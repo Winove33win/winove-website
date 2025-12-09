@@ -4,7 +4,7 @@ A rota `/api/propostas` responde com `503 schema_invalido` quando o backend dete
 
 ## Variáveis de ambiente obrigatórias
 
-O painel comercial só é liberado quando a variável `COMMERCIAL_PANEL_PASSWORD` está definida exatamente com o valor fixo `VfY9KO`. Se outro valor for usado, o check falha e o backend devolve 503. Configure também a conexão MySQL usada pelo pool do backend:
+O painel comercial só é liberado quando a variável `COMMERCIAL_PANEL_PASSWORD` está definida com uma senha não vazia. O valor é configurável, mas precisa estar presente no ambiente; se estiver ausente ou vazio, o check falha e o backend devolve 503. Configure também a conexão MySQL usada pelo pool do backend:
 
 ```env
 DB_HOST=127.0.0.1
@@ -13,8 +13,8 @@ DB_NAME=fernando_winove_com_br_
 DB_USER=winove
 DB_PASSWORD=9*19avmU0
 
-# senha que libera o painel comercial
-COMMERCIAL_PANEL_PASSWORD=VfY9KO
+# senha que libera o painel comercial (escolha qualquer valor não vazio)
+COMMERCIAL_PANEL_PASSWORD=sua-senha-segura
 ```
 
 Copie `backend/.env.example` para `backend/.env`, ajuste os valores acima e reinicie o app Node no Plesk (ou o processo local) para recarregar o ambiente.
@@ -44,7 +44,15 @@ A resposta deve ser `{ ok: true, columns: [...] }`. Se `ok` vier `false`, o camp
 
 ## Erros comuns e como resolver
 
-- **Resposta HTML e status 500 ao fazer POST /api/propostas** – indica que o processo Node não iniciou. Confirme as variáveis no `.env` ou no painel do Plesk (DB_*, COMMERCIAL_PANEL_*). O backend só sobe quando `COMMERCIAL_PANEL_PASSWORD` for exatamente `VfY9KO`.
+- **Resposta HTML e status 500 ao fazer POST /api/propostas** – indica que o processo Node não iniciou. Confirme as variáveis no `.env` ou no painel do Plesk (DB_*, COMMERCIAL_PANEL_*). O backend só sobe quando `COMMERCIAL_PANEL_PASSWORD` estiver definido com algum valor.
+
+## Verificação manual do painel
+
+Após definir `COMMERCIAL_PANEL_PASSWORD`, teste o acesso ao painel `/comercial-propostas` com autenticação básica:
+
+- Configure `COMMERCIAL_PANEL_USERNAME` e `COMMERCIAL_PANEL_PASSWORD` no ambiente (Plesk ou `.env`).
+- Faça uma requisição com Basic Auth usando essas credenciais e confirme que o painel é liberado.
+- Tente novamente com senha incorreta e verifique que o acesso é negado (HTTP 401).
 - **TypeError no frontend (não consegue ler `payload`)** – acontece quando o backend devolve a página HTML genérica de erro do Plesk em vez de JSON. Ajuste as variáveis de ambiente, rode `node scripts/migrate.mjs` para alinhar o schema e reinicie a aplicação Node; depois disso o endpoint volta a responder JSON.
 - **HTTP 503 schema_invalido** – a tabela `propostas_comerciais` está ausente ou faltam colunas. Execute a migração `backend/migrations/006_create_propostas_comerciais.sql` (ou `node scripts/migrate.mjs`) para criar/atualizar o schema com as 46 colunas exigidas.
 - **Variáveis coladas no formulário do painel** – não insira as credenciais nos campos do formulário de proposta. Esses valores precisam estar no `.env` ou nas variáveis de ambiente do Plesk; o formulário deve receber apenas dados da proposta.

@@ -13,8 +13,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { SEO } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
+const PANEL_USERNAME = import.meta.env.VITE_COMMERCIAL_PANEL_USERNAME || "comercial";
+const PANEL_PASSWORD = import.meta.env.VITE_COMMERCIAL_PANEL_PASSWORD || "";
 const PANEL_AUTH_HEADER =
-  typeof btoa === "function" ? `Basic ${btoa("comercial:VfY9KO")}` : "";
+  PANEL_PASSWORD && typeof btoa === "function"
+    ? `Basic ${btoa(`${PANEL_USERNAME}:${PANEL_PASSWORD}`)}`
+    : "";
 
 const proposalSchema = z.object({
   nome: z.string().min(3, "Informe o nome completo do cliente"),
