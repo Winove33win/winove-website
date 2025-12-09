@@ -42,6 +42,13 @@ A resposta deve ser `{ ok: true, columns: [...] }`. Se `ok` vier `false`, o camp
 
 > Dica: o arquivo `docs/api-propostas.md` detalha respostas e payloads das rotas `/api/propostas` caso precise checar formatos ou mensagens de erro.
 
+## Erros comuns e como resolver
+
+- **Resposta HTML e status 500 ao fazer POST /api/propostas** – indica que o processo Node não iniciou. Confirme as variáveis no `.env` ou no painel do Plesk (DB_*, COMMERCIAL_PANEL_*). O backend só sobe quando `COMMERCIAL_PANEL_PASSWORD` for exatamente `VfY9KO`.
+- **TypeError no frontend (não consegue ler `payload`)** – acontece quando o backend devolve a página HTML genérica de erro do Plesk em vez de JSON. Ajuste as variáveis de ambiente, rode `node scripts/migrate.mjs` para alinhar o schema e reinicie a aplicação Node; depois disso o endpoint volta a responder JSON.
+- **HTTP 503 schema_invalido** – a tabela `propostas_comerciais` está ausente ou faltam colunas. Execute a migração `backend/migrations/006_create_propostas_comerciais.sql` (ou `node scripts/migrate.mjs`) para criar/atualizar o schema com as 46 colunas exigidas.
+- **Variáveis coladas no formulário do painel** – não insira as credenciais nos campos do formulário de proposta. Esses valores precisam estar no `.env` ou nas variáveis de ambiente do Plesk; o formulário deve receber apenas dados da proposta.
+
 ## Payload esperado no POST `/api/propostas`
 
 A rota aceita campos simples no corpo da requisição, como `nome`, `email`, `empresa`, `servicos` (array com `{ servico, valor }`), `prazo`, `termos`, `assinaturaNome`, `aceiteDigital` e `portfolio`. Não envie o JSON aninhado do exemplo "Saída JSON padronizada" — use esses nomes planos para que a inserção no MySQL funcione e o PDF seja salvo em `pdf_blob`.
