@@ -3,6 +3,8 @@ import { pool } from '../db.js';
 const REQUIRED_PASSWORD = 'VfY9KO';
 const MIN_COLUMNS = 46;
 
+export const getCommercialPanelPassword = () => process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
+
 export const PANEL_TO_DB_MAPPING = {
   nome: 'nome',
   empresa: 'empresa',
@@ -77,8 +79,7 @@ const REQUIRED_COLUMNS = [
 let cachedSchema;
 let checkingPromise;
 
-export const isCommercialPasswordValid = () =>
-  process.env.COMMERCIAL_PANEL_PASSWORD === REQUIRED_PASSWORD;
+export const isCommercialPasswordValid = () => getCommercialPanelPassword() === REQUIRED_PASSWORD;
 
 export const getProposalSchemaStatus = async () => {
   if (cachedSchema) return cachedSchema;
