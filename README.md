@@ -114,6 +114,10 @@ Após salvar o `.env`, execute `node scripts/migrate.mjs` dentro da pasta
 `backend/` para criar/atualizar a tabela `propostas_comerciais` e reinicie o
 app no painel Node.js do Plesk para que as variáveis sejam recarregadas.
 
+Consulte também a [checklist de liberação do painel de propostas](docs/propostas-api-setup.md)
+para configurar `COMMERCIAL_PANEL_PASSWORD`, validar o schema com o endpoint
+`/api/propostas/schema` e conferir o payload aceito pelo POST `/api/propostas`.
+
 ### AppUni standalone API
 
 For AppUni/Plesk environments that require a lightweight API dedicated to GPT
