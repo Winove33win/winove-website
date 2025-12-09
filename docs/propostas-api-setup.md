@@ -17,7 +17,7 @@ DB_PASSWORD=9*19avmU0
 COMMERCIAL_PANEL_PASSWORD=VfY9KO
 ```
 
-Salve essas variáveis em `backend/.env` e reinicie o app Node no Plesk (ou o processo local) para recarregar o ambiente.
+Copie `backend/.env.example` para `backend/.env`, ajuste os valores acima e reinicie o app Node no Plesk (ou o processo local) para recarregar o ambiente.
 
 ## Criar/alinhar a tabela `propostas_comerciais`
 
@@ -39,6 +39,8 @@ GET https://winove.com.br/api/propostas/schema
 ```
 
 A resposta deve ser `{ ok: true, columns: [...] }`. Se `ok` vier `false`, o campo `missing` indicará quais colunas precisam ser adicionadas.
+
+> Dica: o arquivo `docs/api-propostas.md` detalha respostas e payloads das rotas `/api/propostas` caso precise checar formatos ou mensagens de erro.
 
 ## Payload esperado no POST `/api/propostas`
 
