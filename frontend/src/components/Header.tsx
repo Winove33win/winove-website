@@ -39,7 +39,6 @@ export const Header = () => {
     { name: "Serviços", href: "#services", type: "anchor" },
     { name: "Libras", href: "/servicos/libras", type: "link" },
     { name: "Templates", href: "/templates", type: "link" },
-    { name: "Propostas", href: "/propostas", type: "link" },
     { name: "E-mail Corporativo", href: "/email-corporativo", type: "link" },
 
     // Novas páginas

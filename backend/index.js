@@ -51,6 +51,42 @@ const sendHtml = (res, html, cacheControl = 'public, max-age=300, s-maxage=300')
     .send(html);
 };
 
+const commercialPanelPassword = process.env.COMMERCIAL_PANEL_PASSWORD;
+const commercialPanelUser = process.env.COMMERCIAL_PANEL_USERNAME || 'comercial';
+const commercialPanelRealm = 'Painel Comercial';
+
+const sendCommercialAuthChallenge = (res) => {
+  res.setHeader('WWW-Authenticate', `Basic realm="${commercialPanelRealm}", charset="UTF-8"`);
+  return res.status(401).send('Autenticação necessária');
+};
+
+const requireCommercialProposalAuth = (req, res, next) => {
+  if (!commercialPanelPassword) {
+    return res.status(404).end();
+  }
+
+  const authHeader = req.headers.authorization || '';
+  const [scheme, encoded] = authHeader.split(' ');
+
+  if (scheme?.toLowerCase() === 'basic' && encoded) {
+    try {
+      const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+      const separatorIndex = decoded.indexOf(':');
+      const username = separatorIndex >= 0 ? decoded.slice(0, separatorIndex) : '';
+      const password = separatorIndex >= 0 ? decoded.slice(separatorIndex + 1) : '';
+
+      if (username === commercialPanelUser && password === commercialPanelPassword) {
+        return next();
+      }
+    } catch (error) {
+      console.error('Erro ao validar autenticação básica do painel comercial:', error);
+      return sendCommercialAuthChallenge(res);
+    }
+  }
+
+  return sendCommercialAuthChallenge(res);
+};
+
 // Middlewares
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
@@ -141,6 +177,7 @@ app.use(
   })
 );
 app.use(express.static(distPath));
+app.use('/comercial-propostas', requireCommercialProposalAuth);
 
 const HOME_DESCRIPTION =
   'A Winove entrega soluções digitais que transformam negócios. Descubra nossos cases de sucesso, serviços e portfólio.';
@@ -192,7 +229,7 @@ app.use('/api', blogRoute);
 app.use('/api/cases', casesRoute);
 app.use('/api/templates', templatesRoute);
 app.use('/api/leads', leadsRoutes);
-app.use('/api/propostas', proposalsRoute);
+app.use('/api/propostas', requireCommercialProposalAuth, proposalsRoute);
 app.use('/', postSeoRoute);
 
 app.get('/', (req, res, next) => {

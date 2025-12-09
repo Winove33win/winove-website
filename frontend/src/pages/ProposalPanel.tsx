@@ -169,7 +169,7 @@ const ProposalPanel = () => {
       <SEO
         title="Painel de Propostas Comerciais | Winove"
         description="Preencha, valide e gere propostas comerciais padronizadas com assinatura digital e exportação em PDF."
-        canonical="https://www.winove.com.br/propostas"
+        canonical="https://www.winove.com.br/comercial-propostas"
       />
 
       <section className="section--first px-4">
