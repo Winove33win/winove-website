@@ -3,6 +3,9 @@ import { pool } from '../db.js';
 const REQUIRED_PASSWORD = 'VfY9KO';
 const MIN_COLUMNS = 46;
 
+// Ensure the environment variable is always populated with the required password value
+process.env.COMMERCIAL_PANEL_PASSWORD = process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
+
 export const getCommercialPanelPassword = () => process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
 
 export const PANEL_TO_DB_MAPPING = {
