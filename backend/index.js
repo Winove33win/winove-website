@@ -12,7 +12,7 @@ import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
-import { isCommercialPasswordValid } from './utils/proposalSchema.js';
+import { getCommercialPanelPassword, isCommercialPasswordValid } from './utils/proposalSchema.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -52,7 +52,7 @@ const sendHtml = (res, html, cacheControl = 'public, max-age=300, s-maxage=300')
     .send(html);
 };
 
-const commercialPanelPassword = process.env.COMMERCIAL_PANEL_PASSWORD;
+const commercialPanelPassword = getCommercialPanelPassword();
 const commercialPanelUser = process.env.COMMERCIAL_PANEL_USERNAME || 'comercial';
 const commercialPanelRealm = 'Painel Comercial';
 
