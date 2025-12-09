@@ -12,6 +12,7 @@ import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
+import { isCommercialPasswordValid } from './utils/proposalSchema.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -61,8 +62,14 @@ const sendCommercialAuthChallenge = (res) => {
 };
 
 const requireCommercialProposalAuth = (req, res, next) => {
-  if (!commercialPanelPassword) {
-    return res.status(404).end();
+  if (!isCommercialPasswordValid()) {
+    return res
+      .status(401)
+      .json({
+        error: 'painel_bloqueado',
+        message:
+          'Variável COMMERCIAL_PANEL_PASSWORD ausente ou divergente. Configure-a exatamente como VfY9KO para habilitar o painel.',
+      });
   }
 
   const authHeader = req.headers.authorization || '';
