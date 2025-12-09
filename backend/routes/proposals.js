@@ -4,8 +4,7 @@ import dotenv from 'dotenv';
 import PDFDocument from 'pdfkit';
 import { pool } from '../db.js';
 import {
-  getProposalSchemaStatus,
-  isCommercialPasswordValid,
+  getProposalReadiness,
   PANEL_TO_DB_MAPPING,
 } from '../utils/proposalSchema.js';
 
@@ -62,18 +61,7 @@ const stringifyServices = (services) => {
   };
 };
 
-const ensureSchemaIsReady = async () => {
-  if (!isCommercialPasswordValid()) {
-    return {
-      ok: false,
-      message:
-        'Variável de ambiente COMMERCIAL_PANEL_PASSWORD ausente ou divergente. Configure-a exatamente como VfY9KO e reinicie o serviço.',
-      missingRequired: ['COMMERCIAL_PANEL_PASSWORD'],
-    };
-  }
-
-  return getProposalSchemaStatus();
-};
+const ensureSchemaIsReady = async () => getProposalReadiness();
 
 const buildMappingNotes = (validationMessage) => ({
   nome_cliente: PANEL_TO_DB_MAPPING.nome,
@@ -143,15 +131,36 @@ const generateProposalPdf = async (proposalId, proposalData) => {
 router.get('/schema', async (_req, res) => {
   const status = await ensureSchemaIsReady();
   if (!status.ok) {
-    return res.status(503).json({ error: 'schema_invalido', message: status.message, missing: status.missingRequired });
+    return res.status(503).json({
+      erro_mapeamento: 'Ambiente ou schema inválido para propostas.',
+      campo_problematico: status.envStatus?.ok ? 'propostas_comerciais.schema' : 'variaveis_de_ambiente',
+      detalhes_checagem: status,
+    });
   }
-  return res.json({ ok: true, columns: status.columnNames });
+  return res.json({ ok: true, columns: status.schemaStatus.columnNames, ambiente: status.envStatus });
+});
+
+router.get('/status', async (_req, res) => {
+  const status = await ensureSchemaIsReady();
+  if (!status.ok) {
+    return res.status(503).json({
+      erro_mapeamento: 'Pré-condições do painel não atendidas.',
+      campo_problematico: status.envStatus?.ok ? 'propostas_comerciais.schema' : 'variaveis_de_ambiente',
+      detalhes_checagem: status,
+    });
+  }
+
+  return res.json({ ok: true, detalhes_checagem: status });
 });
 
 router.get('/:id/pdf', async (req, res) => {
   const status = await ensureSchemaIsReady();
   if (!status.ok) {
-    return res.status(503).json({ error: 'schema_invalido', message: status.message, missing: status.missingRequired });
+    return res.status(503).json({
+      erro_mapeamento: 'Ambiente ou schema inválido para propostas.',
+      campo_problematico: status.envStatus?.ok ? 'propostas_comerciais.schema' : 'variaveis_de_ambiente',
+      detalhes_checagem: status,
+    });
   }
 
   const proposalId = Number(req.params.id);
@@ -183,7 +192,13 @@ router.get('/:id/pdf', async (req, res) => {
 router.post('/', async (req, res) => {
   const status = await ensureSchemaIsReady();
   if (!status.ok) {
-    return res.status(503).json({ error: 'schema_invalido', message: status.message, missing: status.missingRequired });
+    const missingStep = status.envStatus?.ok ? 'propostas_comerciais.schema' : 'variaveis_de_ambiente';
+    return res.status(503).json({
+      erro_mapeamento:
+        'Pré-condições obrigatórias ausentes. Ajuste .env/Plesk, aplique a migração 006_create_propostas_comerciais.sql e reinicie o Node.',
+      campo_problematico: missingStep,
+      detalhes_checagem: status,
+    });
   }
 
   const {
@@ -216,7 +231,7 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'nome, email e empresa são obrigatórios' });
   }
 
-  const schemaColumns = new Set(status.columnNames || []);
+  const schemaColumns = new Set(status.schemaStatus?.columnNames || []);
   const missingFields = Object.values(PANEL_TO_DB_MAPPING).filter((column) => !schemaColumns.has(column));
   if (missingFields.length) {
     return res.status(400).json({
@@ -341,14 +356,33 @@ router.post('/', async (req, res) => {
     }
 
     const mappingObservation =
-      `Schema validado com ${status.columnNames?.length || 0} colunas; ` +
-      'campos nome/empresa/email/portfolio foram cruzados com as colunas correspondentes e o PDF foi salvo em pdf_blob.';
+      `Schema validado com ${status.schemaStatus?.columnNames?.length || 0} colunas; ` +
+      'valores sanitizados, checklist de env aplicado e PDF armazenado em pdf_blob.';
+
+    const mapeamentoDetalhado = {
+      nome_cliente: { coluna: PANEL_TO_DB_MAPPING.nome, valor: sanitizedNome },
+      empresa: { coluna: PANEL_TO_DB_MAPPING.empresa, valor: sanitizedEmpresa },
+      email: { coluna: PANEL_TO_DB_MAPPING.email, valor: sanitizedEmail },
+      portfolio: { coluna: PANEL_TO_DB_MAPPING.portfolio, valor: sanitizeString(portfolio) },
+      descricao: { coluna: `${PANEL_TO_DB_MAPPING.descricao_objetivos} + ${PANEL_TO_DB_MAPPING.descricao_escopo}`, valor: sanitizeString(descricao) },
+      servicos: { coluna: `${PANEL_TO_DB_MAPPING.servicos_incluidos} + ${PANEL_TO_DB_MAPPING.servicos_detalhados}`, valor: servicos },
+      valores: { coluna: PANEL_TO_DB_MAPPING.servicos_detalhados, valor: servicos },
+      prazo_entrega: { coluna: PANEL_TO_DB_MAPPING.prazo, valor: sanitizeString(prazo) },
+      termos_condicoes: { coluna: PANEL_TO_DB_MAPPING.termos_condicoes, valor: sanitizeString(termos) },
+      assinatura: { coluna: PANEL_TO_DB_MAPPING.assinatura, valor: assinaturaDigital },
+      aceite_digital: { coluna: PANEL_TO_DB_MAPPING.aceite_digital, valor: aceiteDigital },
+      pdf_download_url: { coluna: PANEL_TO_DB_MAPPING.pdf_download, valor: `/api/propostas/${proposalId}/pdf` },
+      pdf_storage_info: { coluna: PANEL_TO_DB_MAPPING.pdf_blob, valor: 'pdf_blob' },
+      observacao_validacao: mappingObservation,
+      checklist_ambiente: status.envStatus,
+      checklist_schema: status.schemaStatus,
+    };
 
     return res.status(201).json({
       ...proposalJson,
       pdf_download_url: `/api/propostas/${proposalId}/pdf`,
       pdf_storage_info: 'pdf_blob',
-      mapeamento_indexacao: buildMappingNotes(mappingObservation),
+      mapeamento_indexacao: { ...buildMappingNotes(mappingObservation), ...mapeamentoDetalhado },
       email_enviado: emailSent,
       id: proposalId,
     });

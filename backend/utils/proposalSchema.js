@@ -1,7 +1,25 @@
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import { pool } from '../db.js';
 
 const REQUIRED_PASSWORD = 'VfY9KO';
 const MIN_COLUMNS = 46;
+
+const REQUIRED_ENV_VALUES = {
+  DB_HOST: '127.0.0.1',
+  DB_PORT: '3306',
+  DB_NAME: 'fernando_winove_com_br_',
+  DB_USER: 'winove',
+  DB_PASSWORD: '9*19avmU0',
+  COMMERCIAL_PANEL_USERNAME: 'comercial',
+  COMMERCIAL_PANEL_PASSWORD: REQUIRED_PASSWORD,
+};
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.join(__dirname, '..', '.env');
 
 // Ensure the environment variable is always populated with the required password value
 process.env.COMMERCIAL_PANEL_PASSWORD = process.env.COMMERCIAL_PANEL_PASSWORD || REQUIRED_PASSWORD;
@@ -81,8 +99,71 @@ const REQUIRED_COLUMNS = [
 
 let cachedSchema;
 let checkingPromise;
+let cachedEnvStatus;
+let checkingEnvPromise;
 
 export const isCommercialPasswordValid = () => getCommercialPanelPassword() === REQUIRED_PASSWORD;
+
+const buildEnvStep = (key, value, expected) => {
+  const matchesExpected = value === expected;
+  const isPasswordKey = key === 'COMMERCIAL_PANEL_PASSWORD';
+  const ok = Boolean(value) && (!isPasswordKey || matchesExpected);
+
+  return {
+    key,
+    expected,
+    value: value || null,
+    ok,
+    matchesExpected,
+    action: ok
+      ? 'Variável carregada.'
+      : `Defina ${key} com o valor ${expected} no .env ou no Plesk e reinicie o Node para aplicar.`,
+  };
+};
+
+const getEnvStatus = async () => {
+  if (cachedEnvStatus) return cachedEnvStatus;
+
+  if (!checkingEnvPromise) {
+    checkingEnvPromise = fs
+      .access(envPath)
+      .then(() => true)
+      .catch(() => false)
+      .then((envFileExists) => {
+        const steps = Object.entries(REQUIRED_ENV_VALUES).map(([key, expected]) =>
+          buildEnvStep(key, process.env[key], expected)
+        );
+
+        const envValuesLoaded = steps.every((step) => Boolean(step.value));
+        const passwordOk = steps.find((step) => step.key === 'COMMERCIAL_PANEL_PASSWORD')?.ok ?? false;
+        const ok = (envFileExists || envValuesLoaded) && passwordOk;
+
+        cachedEnvStatus = {
+          ok,
+          envFileExists,
+          steps,
+          message: ok
+            ? 'Variáveis de ambiente carregadas e senha validada.'
+            : 'Configure o arquivo .env (ou variáveis no Plesk) com os valores exigidos antes de registrar propostas.',
+        };
+
+        checkingEnvPromise = null;
+        return cachedEnvStatus;
+      })
+      .catch((error) => {
+        cachedEnvStatus = {
+          ok: false,
+          envFileExists: false,
+          steps: [],
+          message: `Falha ao validar variáveis de ambiente: ${error.message}`,
+        };
+        checkingEnvPromise = null;
+        return cachedEnvStatus;
+      });
+  }
+
+  return checkingEnvPromise;
+};
 
 export const getProposalSchemaStatus = async () => {
   if (cachedSchema) return cachedSchema;
@@ -124,6 +205,17 @@ export const getProposalSchemaStatus = async () => {
   return checkingPromise;
 };
 
+export const getProposalReadiness = async () => {
+  const [envStatus, schemaStatus] = await Promise.all([getEnvStatus(), getProposalSchemaStatus()]);
+
+  return {
+    ok: envStatus.ok && schemaStatus.ok,
+    envStatus,
+    schemaStatus,
+  };
+};
+
 export const invalidateProposalSchemaCache = () => {
   cachedSchema = undefined;
+  cachedEnvStatus = undefined;
 };

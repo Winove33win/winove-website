@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,13 +57,39 @@ type ProposalJson = {
 type ProposalApiResponse = ProposalJson & {
   pdf_download_url?: string;
   pdf_storage_info?: string;
-  mapeamento_indexacao?: Record<string, string>;
+  mapeamento_indexacao?: Record<string, unknown>;
   email_enviado?: boolean;
   id?: number;
   erro_mapeamento?: string;
   campo_problematico?: string | string[];
   error?: string;
   message?: string;
+  detalhes_checagem?: ProposalStatusPayload;
+};
+
+type EnvStep = {
+  key: string;
+  expected: string;
+  value: string | null;
+  ok: boolean;
+  matchesExpected: boolean;
+  action: string;
+};
+
+type ProposalStatusPayload = {
+  ok: boolean;
+  envStatus?: {
+    ok: boolean;
+    envFileExists?: boolean;
+    steps?: EnvStep[];
+    message?: string;
+  };
+  schemaStatus?: {
+    ok: boolean;
+    columnNames?: string[];
+    missingRequired?: string[];
+    message?: string;
+  };
 };
 
 const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
@@ -88,6 +114,9 @@ const ProposalPanel = () => {
   const [proposal, setProposal] = useState<ProposalApiResponse | null>(null);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const [statusPayload, setStatusPayload] = useState<ProposalStatusPayload | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
 
   const form = useForm<ProposalFormData>({
     resolver: zodResolver(proposalSchema),
@@ -116,11 +145,48 @@ const ProposalPanel = () => {
 
   const previewProposal = useMemo(() => buildProposalJson(watchedValues), [watchedValues]);
 
+  useEffect(() => {
+    const fetchStatus = async () => {
+      setLoadingStatus(true);
+      try {
+        const response = await fetch("/api/propostas/status");
+        const data = (await response.json()) as ProposalStatusPayload & { erro_mapeamento?: string };
+
+        if (!response.ok) {
+          setStatusError(
+            data?.erro_mapeamento || "Ambiente não validado. Ajuste .env, senha do painel e schema do banco antes de seguir."
+          );
+          setStatusPayload(data?.detalhes_checagem || { ok: false });
+        } else {
+          setStatusPayload(data?.detalhes_checagem || data);
+          setStatusError(null);
+        }
+      } catch (error) {
+        console.error("Erro ao validar checklist do painel:", error);
+        setStatusError("Não foi possível validar o ambiente. Confira .env, Plesk e migração do banco.");
+        setStatusPayload({ ok: false });
+      } finally {
+        setLoadingStatus(false);
+      }
+    };
+
+    fetchStatus();
+  }, []);
+
   const onSubmit = async (values: ProposalFormData) => {
     const finalizedProposal = buildProposalJson(values);
     setProposal(finalizedProposal);
     setServerMessage(null);
     setSubmitStatus("saving");
+
+    if (!statusPayload?.ok) {
+      setSubmitStatus("error");
+      setServerMessage(
+        statusError ||
+          "Checklist de ambiente não validado. Ajuste o .env/Plesk, migração SQL e senha do painel antes de registrar."
+      );
+      return;
+    }
 
     try {
       const response = await fetch("/api/propostas", {
@@ -205,6 +271,45 @@ const ProposalPanel = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                <p className="text-sm font-semibold">Checklist de pré-condições do backend</p>
+                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                  <div className="space-y-1">
+                    <p className="font-medium">Variáveis de ambiente</p>
+                    <ul className="space-y-1">
+                      {loadingStatus && <li className="text-muted-foreground">Validando .env e senha...</li>}
+                      {!loadingStatus &&
+                        (statusPayload?.envStatus?.steps || []).map((step) => (
+                          <li key={step.key} className={cn(step.ok ? "text-emerald-600" : "text-destructive")}>
+                            {step.key}: {step.value || "não definido"} {step.matchesExpected ? "(ok)" : "(ajustar)"}
+                          </li>
+                        ))}
+                      {!loadingStatus && !statusPayload?.envStatus?.steps?.length && (
+                        <li className="text-destructive">Configuração ausente. Crie o .env ou defina as variáveis no Plesk.</li>
+                      )}
+                    </ul>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-medium">Schema e migração</p>
+                    <p className={cn(statusPayload?.schemaStatus?.ok ? "text-emerald-600" : "text-destructive", "text-sm")}>
+                      {statusPayload?.schemaStatus?.ok
+                        ? "Tabela propostas_comerciais validada com 46 colunas."
+                        : "Execute a migração 006_create_propostas_comerciais.sql e reinicie o Node."}
+                    </p>
+                    {!!statusPayload?.schemaStatus?.missingRequired?.length && (
+                      <p className="text-xs text-destructive">
+                        Faltam colunas: {statusPayload.schemaStatus.missingRequired.join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {statusError && (
+                  <p className="text-xs text-destructive">
+                    {statusError} | Após corrigir, reinicie o Node para carregar as variáveis.
+                  </p>
+                )}
+              </div>
+
               <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -420,7 +525,10 @@ const ProposalPanel = () => {
                       >
                         Exportar PDF
                       </Button>
-                      <Button type="submit" disabled={!isComplete || submitStatus === "saving"}>
+                      <Button
+                        type="submit"
+                        disabled={!isComplete || submitStatus === "saving" || !statusPayload?.ok}
+                      >
                         {submitStatus === "saving" ? "Salvando..." : "Gerar proposta"}
                       </Button>
                     </div>
