@@ -68,7 +68,7 @@ const requireCommercialProposalAuth = (req, res, next) => {
       .json({
         error: 'painel_bloqueado',
         message:
-          'Variável COMMERCIAL_PANEL_PASSWORD ausente ou divergente. Configure-a exatamente como VfY9KO para habilitar o painel.',
+          'Variável COMMERCIAL_PANEL_PASSWORD ausente ou vazia. Defina-a no ambiente para habilitar o painel comercial.',
       });
   }
 

@@ -135,7 +135,7 @@ const checkPanelAuth = () => {
 
   if (!envStatus.ok) {
     log.error(`Painel bloqueado: ${envStatus.message}`);
-    log.info('Defina COMMERCIAL_PANEL_PASSWORD=VfY9KO no Plesk ou em .env');
+    log.info('Defina COMMERCIAL_PANEL_PASSWORD (qualquer valor não vazio) no Plesk ou em .env');
     return false;
   }
 
@@ -178,7 +178,7 @@ const main = async () => {
     log.ok('Todas as verificações passaram! A rota /api/propostas deve funcionar.');
     console.log('\n📝 Próximos passos:');
     console.log('  1. Reinicie o serviço Node no Plesk (ou PM2/systemd)');
-    console.log('  2. Teste: GET https://winove.com.br/api/propostas/schema (Basic Auth: comercial:VfY9KO)');
+    console.log('  2. Teste: GET https://winove.com.br/api/propostas/schema (Basic Auth: comercial:<sua_senha>)');
     console.log('  3. Se ok, teste: POST https://winove.com.br/api/propostas com payload válido\n');
   } else {
     log.error('Algumas verificações falharam. Veja acima o que precisa ser corrigido.');
