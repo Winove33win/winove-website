@@ -54,6 +54,18 @@ type ProposalJson = {
   assinatura: string;
 };
 
+type ProposalApiResponse = ProposalJson & {
+  pdf_download_url?: string;
+  pdf_storage_info?: string;
+  mapeamento_indexacao?: Record<string, string>;
+  email_enviado?: boolean;
+  id?: number;
+  erro_mapeamento?: string;
+  campo_problematico?: string | string[];
+  error?: string;
+  message?: string;
+};
+
 const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
   cliente: {
     nome: values.nome,
@@ -73,7 +85,7 @@ const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
 
 const ProposalPanel = () => {
   const templateRef = useRef<HTMLDivElement>(null);
-  const [proposal, setProposal] = useState<ProposalJson | null>(null);
+  const [proposal, setProposal] = useState<ProposalApiResponse | null>(null);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [serverMessage, setServerMessage] = useState<string | null>(null);
 
@@ -122,46 +134,39 @@ const ProposalPanel = () => {
         }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      const data: ProposalApiResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "Não foi possível salvar a proposta");
+        const problem =
+          data?.erro_mapeamento ||
+          data?.error ||
+          data?.message ||
+          "Erro ao salvar proposta";
+        throw new Error(
+          typeof data?.campo_problematico === "string"
+            ? `${problem} (campo: ${data.campo_problematico})`
+            : problem
+        );
       }
 
-      const idInfo = data?.id ? ` (#${data.id})` : "";
-      setServerMessage(`Proposta salva com sucesso${idInfo}.`);
+      setServerMessage("Proposta registrada e mapeada com sucesso.");
       setSubmitStatus("success");
+      setProposal(data);
     } catch (err) {
       console.error("Erro ao registrar proposta:", err);
-      setServerMessage("Não foi possível salvar a proposta. Tente novamente.");
+      setServerMessage(
+        err instanceof Error ? err.message : "Não foi possível salvar a proposta. Tente novamente."
+      );
       setSubmitStatus("error");
     }
   };
 
   const handleExportPdf = () => {
-    if (!proposal || !templateRef.current) return;
-    const printContents = templateRef.current.innerHTML;
-    const printWindow = window.open("", "printWindow", "width=900,height=650");
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Proposta Comercial</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 32px; color: #0f172a; }
-            h1, h2, h3 { color: #0f172a; margin: 0 0 8px; }
-            .section { margin-bottom: 18px; }
-            .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 12px; }
-            .tag { display: inline-block; padding: 6px 10px; background: #f1f5f9; border-radius: 999px; margin-right: 6px; }
-            ul { padding-left: 18px; }
-          </style>
-        </head>
-        <body>${printContents}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    if (!proposal?.pdf_download_url) {
+      setServerMessage("PDF disponível somente após registro e validação do schema.");
+      return;
+    }
+    window.open(proposal.pdf_download_url, "_blank", "noopener");
   };
 
   return (
@@ -407,7 +412,12 @@ const ProposalPanel = () => {
                       {isComplete ? "Checklist completo. Pronto para gerar a proposta." : "Preencha todos os campos obrigatórios antes de gerar."}
                     </div>
                     <div className="flex gap-2">
-                      <Button type="button" variant="outline" disabled={!proposal} onClick={handleExportPdf}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!proposal?.pdf_download_url || submitStatus !== "success"}
+                        onClick={handleExportPdf}
+                      >
                         Exportar PDF
                       </Button>
                       <Button type="submit" disabled={!isComplete || submitStatus === "saving"}>
