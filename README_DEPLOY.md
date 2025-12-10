@@ -24,6 +24,8 @@ Notes
 - The server maps `/assets/*` to `backend/dist/assets` and serves `backend/dist/index.html` for SPA routes.
 - If assets 404 or load as `text/html`, make sure the files exist in `backend/dist/assets` and that the Node process restarted.
 - Adjust CSP in `backend/index.js` if you add new external sources.
+- Keep the environment variables in `backend/.env` (you can copy from `backend/.env.example`). Loading from that path avoids the
+  "Missing required database environment variables" error when Plesk starts the app from a different working directory.
 - Before running `npm --prefix backend run sitemap`, set the following environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (optionally `DB_PORT`, defaulting to `3306`). All four required variables must be present or the script will exit with an error.
 - Protect the commercial proposals panel by defining `COMMERCIAL_PANEL_PASSWORD` (and optionally `COMMERCIAL_PANEL_USERNAME`) in the environment; without the password the route `/comercial-propostas` will return 404.
 
