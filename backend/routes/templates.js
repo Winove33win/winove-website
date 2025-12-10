@@ -1,6 +1,7 @@
 // backend/routes/templates.js
 import { Router } from 'express';
 import { pool } from '../db.js';
+import { fallbackTemplates } from '../fallbackData.js';
 
 const router = Router();
 
@@ -90,6 +91,13 @@ router.get('/', async (_req, res) => {
     res.json(data);
   } catch (err) {
     console.error('GET /api/templates ->', err);
+    if (fallbackTemplates?.length) {
+      return res
+        .status(200)
+        .setHeader('X-Data-Source', 'fallback')
+        .json(fallbackTemplates.map(normalize));
+    }
+
     res.status(500).json({ error: 'Erro ao listar templates' });
   }
 });
@@ -107,6 +115,16 @@ router.get('/:slug', async (req, res) => {
     res.json(normalize(rows[0]));
   } catch (err) {
     console.error('GET /api/templates/:slug ->', err);
+    if (fallbackTemplates?.length) {
+      const match = fallbackTemplates.find((tpl) => tpl.slug === req.params.slug);
+      if (match) {
+        return res
+          .status(200)
+          .setHeader('X-Data-Source', 'fallback')
+          .json(normalize(match));
+      }
+    }
+
     res.status(500).json({ error: 'Erro ao carregar template' });
   }
 });
