@@ -2,7 +2,7 @@ import { Router } from 'express';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import PDFDocument from 'pdfkit';
-import { pool } from '../db.js';
+import { missingDbEnv, pool } from '../db.js';
 import {
   getProposalSchemaStatus,
   PANEL_TO_DB_MAPPING,
@@ -162,12 +162,19 @@ const generateProposalPdf = async (proposalId, proposalData) => {
   });
 };
 
-const sendEnvOrSchemaError = (res, status) => {
-  return res.status(503).json({
-    erro_mapeamento: status.message,
-    campo_problematico: status.missingRequired,
+const sendEnvOrSchemaError = (res, status) =>
+  res.status(503).json({
+    error: 'schema_invalido',
+    message: status.message,
+    missing: status.missingRequired,
   });
-};
+
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: 'db_config_invalida',
+    message: 'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    missing: missingDbEnv,
+  });
 
 router.get('/schema', async (_req, res) => {
   const status = await ensureSchemaIsReady();
@@ -178,6 +185,7 @@ router.get('/schema', async (_req, res) => {
 router.get('/:id/pdf', async (req, res) => {
   const status = await ensureSchemaIsReady();
   if (!status.ok) return sendEnvOrSchemaError(res, status);
+  if (!pool) return sendDbUnavailable(res);
 
   const proposalId = Number(req.params.id);
   if (!Number.isInteger(proposalId) || proposalId <= 0) {
@@ -208,6 +216,7 @@ router.get('/:id/pdf', async (req, res) => {
 router.post('/', async (req, res) => {
   const status = await ensureSchemaIsReady();
   if (!status.ok) return sendEnvOrSchemaError(res, status);
+  if (!pool) return sendDbUnavailable(res);
 
   const {
     lead_id,

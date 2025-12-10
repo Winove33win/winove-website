@@ -1,4 +1,4 @@
-import { pool } from '../db.js';
+import { missingDbEnv, pool } from '../db.js';
 const MIN_COLUMNS = 46;
 
 export const PANEL_TO_DB_MAPPING = {
@@ -94,13 +94,17 @@ export const validateEnvForProposals = () => {
   const passwordOk = isCommercialPasswordValid();
   const failures = missingEnv.concat(!passwordOk ? ['COMMERCIAL_PANEL_PASSWORD'] : []);
 
+  if (missingDbEnv.length) {
+    failures.push(...missingDbEnv);
+  }
+
   if (failures.length) {
     return {
       ok: false,
       message: !passwordOk
         ? 'Variavel COMMERCIAL_PANEL_PASSWORD ausente ou vazia. Defina uma senha no ambiente para habilitar o painel.'
-        : `Variaveis de ambiente ausentes: ${missingEnv.join(', ')}.`,
-      missingRequired: failures,
+        : `Variaveis de ambiente ausentes: ${[...new Set(failures)].join(', ')}.`,
+      missingRequired: [...new Set(failures)],
     };
   }
 
@@ -109,6 +113,15 @@ export const validateEnvForProposals = () => {
 
 export const getProposalSchemaStatus = async () => {
   if (cachedSchema) return cachedSchema;
+  if (missingDbEnv.length || !pool) {
+    return {
+      ok: false,
+      columnNames: [],
+      missingRequired: REQUIRED_COLUMNS,
+      message:
+        'Variáveis de banco ausentes ou inválidas. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD e DB_NAME no ambiente.',
+    };
+  }
   if (!checkingPromise) {
     checkingPromise = pool
       .query(

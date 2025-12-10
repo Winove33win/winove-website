@@ -101,6 +101,13 @@ const sendFallbackItem = async (res, slug) => {
 
 /** GET /api/templates */
 router.get('/', async (_req, res) => {
+  if (!pool) {
+    return res.status(503).json({
+      error: 'db_config_invalida',
+      message: 'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    });
+  }
+
   try {
     const [rows] = await pool.query(`
       SELECT id, slug, title, content, meta, created_at, updated_at
@@ -120,6 +127,13 @@ router.get('/', async (_req, res) => {
 
 /** GET /api/templates/:slug */
 router.get('/:slug', async (req, res) => {
+  if (!pool) {
+    return res.status(503).json({
+      error: 'db_config_invalida',
+      message: 'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    });
+  }
+
   try {
     const [rows] = await pool.query(
       'SELECT id, slug, title, content, meta, created_at, updated_at FROM templates WHERE slug = ? LIMIT 1',
