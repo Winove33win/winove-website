@@ -26,6 +26,11 @@ Notes
 - Adjust CSP in `backend/index.js` if you add new external sources.
 - Keep the environment variables in `backend/.env` (copy `backend/.env.example` and adjust values). Loading from that path avoids
   the "Missing required database environment variables" error when Plesk starts the app from a different working directory.
+- Minimum variables to define in `backend/.env`:
+  - Database: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (and optionally `DB_CONN_LIMIT`).
+  - Server/Base URLs: `APP_BASE_URL`, `PUBLIC_BASE_URL`, `PORT` (if Passenger does not inject it).
+  - Proposals panel: `COMMERCIAL_PANEL_PASSWORD` (and optionally `COMMERCIAL_PANEL_USERNAME`).
+  - Email: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASS`, `MAIL_FROM`, `CONTACT_EMAIL`.
 - Before running `npm --prefix backend run sitemap`, set the following environment variables: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` (optionally `DB_PORT`, defaulting to `3306`). All four required variables must be present or the script will exit with an error.
 - Protect the commercial proposals panel by defining `COMMERCIAL_PANEL_PASSWORD` (and optionally `COMMERCIAL_PANEL_USERNAME`) in the environment; without the password the route `/comercial-propostas` will return 404.
 
