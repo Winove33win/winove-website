@@ -6,6 +6,12 @@ import { getFallbackBlogPosts } from "../fallbackData.js";
 
 const router = Router();
 
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: "db_config_invalida",
+    message: "Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.",
+  });
+
 // Não crie um novo pool aqui. O pool em db.js centraliza a conexão e valida os
 // valores obrigatórios de ambiente logo no bootstrap da API.
 
@@ -153,6 +159,7 @@ const resolvePagination = (query, { defaultLimit = 10 } = {}) => {
 
 // GET /api/blog-posts?limit=10&offset=0  | ?all=1 para tudo
 router.get("/blog-posts", async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const all = req.query.all === "1";
     const { limit, offset } = resolvePagination(req.query);
@@ -221,6 +228,7 @@ router.get("/blog-posts", async (req, res) => {
 
 // GET /api/blog-posts/categories
 router.get("/blog-posts/categories", async (_req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const [rows] = await pool.query(
       `SELECT categoria AS category, COUNT(*) AS count
@@ -247,6 +255,7 @@ router.get("/blog-posts/categories", async (_req, res) => {
 
 // GET /api/blog-posts/search
 router.get("/blog-posts/search", async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const sanitize = (value) => (value || "").toString().trim();
     const qRaw = sanitize(req.query.q);
@@ -311,6 +320,7 @@ router.get("/blog-posts/search", async (req, res) => {
 
 // GET /api/blog-posts/:slug
 router.get("/blog-posts/:slug", async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const [rows] = await pool.query(
       `SELECT
