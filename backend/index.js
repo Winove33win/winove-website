@@ -13,7 +13,6 @@ import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
-import { getCommercialPanelPassword, isCommercialPasswordValid } from './utils/proposalSchema.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -65,7 +64,7 @@ const sendHtml = (res, html, cacheControl = 'public, max-age=300, s-maxage=300')
     .send(html);
 };
 
-const commercialPanelPassword = getCommercialPanelPassword();
+const commercialPanelPassword = process.env.COMMERCIAL_PANEL_PASSWORD;
 const commercialPanelUser = process.env.COMMERCIAL_PANEL_USERNAME || 'comercial';
 const commercialPanelRealm = 'Painel Comercial';
 
@@ -75,14 +74,8 @@ const sendCommercialAuthChallenge = (res) => {
 };
 
 const requireCommercialProposalAuth = (req, res, next) => {
-  if (!isCommercialPasswordValid()) {
-    return res
-      .status(401)
-      .json({
-        error: 'painel_bloqueado',
-        message:
-          'Variável COMMERCIAL_PANEL_PASSWORD ausente ou vazia. Defina-a no ambiente para habilitar o painel comercial.',
-      });
+  if (!commercialPanelPassword) {
+    return res.status(404).end();
   }
 
   const authHeader = req.headers.authorization || '';
