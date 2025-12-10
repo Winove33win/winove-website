@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
+import { fallbackCases } from '../fallbackData.js';
 
 const router = Router();
 
@@ -73,6 +74,18 @@ router.get('/', async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error('GET /api/cases ->', err);
+    if (fallbackCases?.length) {
+      return res
+        .status(200)
+        .setHeader('X-Data-Source', 'fallback')
+        .json(fallbackCases.map((r) => ({
+          ...r,
+          tags: toArray(r.tags),
+          metrics: toArray(r.metrics),
+          gallery: toArray(r.gallery).map(ABS),
+          coverImage: ABS(r.coverImage),
+        })));
+    }
     res.status(500).json({ error: 'Erro ao carregar cases' });
   }
 });
