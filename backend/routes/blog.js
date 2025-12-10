@@ -2,7 +2,7 @@ import { Router } from "express";
 // Use o pool compartilhado configurado via variáveis de ambiente em db.js.
 // Isso garante uma única origem de configuração para as credenciais do banco.
 import { pool } from "../db.js";
-import { fallbackBlogPosts } from "../fallbackData.js";
+import { getFallbackBlogPosts } from "../fallbackData.js";
 
 const router = Router();
 
@@ -14,11 +14,9 @@ function adapt(row) {
   const title = row.titulo ?? row.title ?? null;
   const excerpt = row.resumo ?? row.excerpt ?? null;
   const content = row.conteudo ?? row.content ?? null;
-  const cover =
-    row.imagem_destacada ?? row.coverUrl ?? row.coverImage ?? row.image ?? null;
+  const cover = row.imagem_destacada ?? row.coverUrl ?? row.coverImage ?? row.image ?? null;
   const author = row.autor ?? row.author ?? null;
-  const publishedAt =
-    row.data_publicacao ?? row.publishedAt ?? row.date ?? row.created_at ?? null;
+  const publishedAt = row.data_publicacao ?? row.publishedAt ?? row.date ?? row.created_at ?? null;
   const category = row.categoria ?? row.category ?? null;
 
   return {
@@ -41,6 +39,71 @@ function adapt(row) {
     category,
   };
 }
+
+const toLower = (value) => (typeof value === "string" ? value.toLowerCase() : "");
+
+const filterByCategory = (posts, category) => {
+  if (!category) return posts;
+  const target = toLower(category);
+  return posts.filter((post) => toLower(post.categoria ?? post.category ?? post.Categoria) === target);
+};
+
+const searchInPosts = (posts, q) => {
+  if (!q) return posts;
+  const needle = toLower(q);
+  return posts.filter((post) =>
+    [post.titulo, post.resumo, post.conteudo, post.title, post.excerpt, post.content]
+      .filter(Boolean)
+      .some((text) => toLower(text).includes(needle))
+  );
+};
+
+const sendFallbackList = async (res, { category, q } = {}) => {
+  const posts = await getFallbackBlogPosts();
+  if (posts?.length) {
+    const filtered = searchInPosts(filterByCategory(posts, category), q);
+    const items = filtered.map(adapt);
+    return res.status(200).setHeader("X-Data-Source", "fallback").json({
+      total: items.length,
+      items,
+      limit: items.length,
+      offset: 0,
+      hasMore: false,
+    });
+  }
+  return res.status(500).json({ error: "Internal server error" });
+};
+
+const sendFallbackCategories = async (res) => {
+  const posts = await getFallbackBlogPosts();
+  if (posts?.length) {
+    const categories = posts.reduce((acc, post) => {
+      const key = post.categoria || post.category || "Sem categoria";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const normalized = Object.entries(categories).map(([category, count]) => ({
+      category,
+      count,
+    }));
+
+    return res.status(200).setHeader("X-Data-Source", "fallback").json(normalized);
+  }
+  return res.status(500).json({ error: "Internal server error" });
+};
+
+const sendFallbackItem = async (res, slug) => {
+  const posts = await getFallbackBlogPosts();
+  if (posts?.length) {
+    const match = posts.find((post) => post.slug === slug);
+    if (match) {
+      return res.status(200).setHeader("X-Data-Source", "fallback").json(adapt(match));
+    }
+    return res.status(404).json({ error: "Post nÇœo encontrado" });
+  }
+  return res.status(500).json({ error: "Internal server error" });
+};
 
 const MAX_PAGE_SIZE = 50;
 
@@ -95,8 +158,7 @@ router.get("/blog-posts", async (req, res) => {
     const { limit, offset } = resolvePagination(req.query);
     // Novo: aceita ?category=NomeDaCategoria (trim na string)
     const category =
-      typeof req.query.category === "string" &&
-      req.query.category.trim().length > 0
+      typeof req.query.category === "string" && req.query.category.trim().length > 0
         ? req.query.category.trim()
         : null;
 
@@ -109,10 +171,7 @@ router.get("/blog-posts", async (req, res) => {
     }
 
     // Aplica o whereClause também na contagem
-    const [countRows] = await pool.query(
-      `SELECT COUNT(*) AS total FROM blog_posts ${whereClause}`,
-      params
-    );
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM blog_posts ${whereClause}`, params);
     const total = countRows?.[0]?.total ?? 0;
 
     // Seleciona também a categoria
@@ -141,7 +200,11 @@ router.get("/blog-posts", async (req, res) => {
       [rows] = await pool.query(sql, [...params, limit, offset]);
     }
 
-    const items = rows.map(adapt);
+    const items = (rows || []).map(adapt);
+
+    if (!items.length || total === 0) {
+      return sendFallbackList(res, { category });
+    }
 
     res.json({
       total,
@@ -152,25 +215,7 @@ router.get("/blog-posts", async (req, res) => {
     });
   } catch (err) {
     console.error("[BLOG] /api/blog-posts error:", err?.code, err?.message);
-    if (fallbackBlogPosts?.length) {
-      const items = (req.query.category
-        ? fallbackBlogPosts.filter((p) => p.categoria === req.query.category)
-        : fallbackBlogPosts
-      ).map(adapt);
-
-      return res
-        .status(200)
-        .setHeader("X-Data-Source", "fallback")
-        .json({
-          total: items.length,
-          items,
-          limit: items.length,
-          offset: 0,
-          hasMore: false,
-        });
-    }
-
-    res.status(500).json({ error: "Internal server error" });
+    return sendFallbackList(res, { category: req.query.category });
   }
 });
 
@@ -189,28 +234,14 @@ router.get("/blog-posts/categories", async (_req, res) => {
       count: Number(row.count || 0),
     }));
 
+    if (!categories.length) {
+      return sendFallbackCategories(res);
+    }
+
     res.json(categories);
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/categories error:", err?.code, err?.message);
-    if (fallbackBlogPosts?.length) {
-      const categories = fallbackBlogPosts.reduce((acc, post) => {
-        const key = post.categoria || "Sem categoria";
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
-
-      const normalized = Object.entries(categories).map(([category, count]) => ({
-        category,
-        count,
-      }));
-
-      return res
-        .status(200)
-        .setHeader("X-Data-Source", "fallback")
-        .json(normalized);
-    }
-
-    res.status(500).json({ error: "Internal server error" });
+    return sendFallbackCategories(res);
   }
 });
 
@@ -238,10 +269,7 @@ router.get("/blog-posts/search", async (req, res) => {
 
     const where = whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "";
 
-    const [countRows] = await pool.query(
-      `SELECT COUNT(*) AS total FROM blog_posts ${where}`,
-      params
-    );
+    const [countRows] = await pool.query(`SELECT COUNT(*) AS total FROM blog_posts ${where}`, params);
     const total = Number(countRows?.[0]?.total || 0);
 
     const [rows] = await pool.query(
@@ -264,6 +292,10 @@ router.get("/blog-posts/search", async (req, res) => {
 
     const items = (rows || []).map(adapt);
 
+    if (!items.length || total === 0) {
+      return sendFallbackList(res, { category: categoryRaw, q: qRaw });
+    }
+
     res.json({
       total,
       items,
@@ -273,35 +305,7 @@ router.get("/blog-posts/search", async (req, res) => {
     });
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/search error:", err?.code, err?.message);
-    if (fallbackBlogPosts?.length) {
-      const qRaw = (req.query.q || "").toString().trim().toLowerCase();
-      const categoryRaw = (req.query.category || "").toString().trim().toLowerCase();
-
-      const items = fallbackBlogPosts
-        .filter((post) => {
-          const matchesCategory = categoryRaw ? post.categoria?.toLowerCase() === categoryRaw : true;
-          const matchesQuery = qRaw
-            ? [post.titulo, post.resumo, post.conteudo]
-                .filter(Boolean)
-                .some((value) => value.toLowerCase().includes(qRaw))
-            : true;
-          return matchesCategory && matchesQuery;
-        })
-        .map(adapt);
-
-      return res
-        .status(200)
-        .setHeader("X-Data-Source", "fallback")
-        .json({
-          total: items.length,
-          items,
-          limit: items.length,
-          offset: 0,
-          hasMore: false,
-        });
-    }
-
-    res.status(500).json({ error: "Internal server error" });
+    return sendFallbackList(res, { category: req.query.category, q: req.query.q });
   }
 });
 
@@ -326,24 +330,14 @@ router.get("/blog-posts/:slug", async (req, res) => {
     );
 
     if (!rows?.length) {
-      return res.status(404).json({ error: "Post não encontrado" });
+      return sendFallbackItem(res, req.params.slug);
     }
 
     const post = adapt(rows[0]);
     res.json(post);
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/:slug error:", err?.code, err?.message);
-    if (fallbackBlogPosts?.length) {
-      const match = fallbackBlogPosts.find((post) => post.slug === req.params.slug);
-      if (match) {
-        return res
-          .status(200)
-          .setHeader("X-Data-Source", "fallback")
-          .json(adapt(match));
-      }
-    }
-
-    res.status(500).json({ error: "Internal server error" });
+    return sendFallbackItem(res, req.params.slug);
   }
 });
 

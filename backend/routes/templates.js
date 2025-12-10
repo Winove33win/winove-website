@@ -1,7 +1,7 @@
 // backend/routes/templates.js
 import { Router } from 'express';
 import { pool } from '../db.js';
-import { fallbackTemplates } from '../fallbackData.js';
+import { getFallbackTemplates } from '../fallbackData.js';
 
 const router = Router();
 
@@ -29,7 +29,7 @@ const ABS = (url) => {
 const normalize = (row) => {
   let meta = {};
   try {
-    meta = typeof row.meta === 'string' ? JSON.parse(row.meta) : (row.meta || {});
+    meta = typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta || {};
   } catch {
     meta = {};
   }
@@ -41,42 +41,62 @@ const normalize = (row) => {
     slug: row.slug,
     title: row.title,
 
-    // --- campos de texto/SEO já existentes ---
-    heading:     meta.heading     || '',
-    subheading:  meta.subheading  || '',
+    // --- campos de texto/SEO jÇ­ existentes ---
+    heading: meta.heading || '',
+    subheading: meta.subheading || '',
     description: meta.description || '',
-    category:    meta.category    || 'Outros',
-    difficulty:  meta.difficulty  || 'Iniciante',
+    category: meta.category || 'Outros',
+    difficulty: meta.difficulty || 'Iniciante',
 
-    // --- preços/infos principais ---
-    price:         Number(meta.price || 0),
+    // --- preÇõos/infos principais ---
+    price: Number(meta.price || 0),
     originalPrice: meta.originalPrice != null ? Number(meta.originalPrice) : undefined,
-    pages:         Number(meta.pages || 0),
+    pages: Number(meta.pages || 0),
 
     // --- listas ---
     features: toArray(meta.features),
     includes: toArray(meta.includes),
-    tags:     toArray(meta.tags),
+    tags: toArray(meta.tags),
 
-    // --- mídia/demo ---
+    // --- mÇðdia/demo ---
     demoUrl: meta.demoUrl || '',
     images: {
-      cover:   ABS(images.cover || ''),
+      cover: ABS(images.cover || ''),
       gallery: gallery,
     },
 
     // ====== NOVOS CAMPOS EXPOSTOS AO FRONT ======
     currency: meta.currency || 'BRL',
-    contact:  meta.contact  || {},                 // { whatsappIntl, defaultMessage }
-    ctaTexts: meta.ctaTexts || {},                 // { buyTemplate, hosting, email, bundle }
-    addons:   meta.addons   || {},                 // { hosting: {...}, email: {...} }
-    bundles:  Array.isArray(meta.bundles) ? meta.bundles : [],
+    contact: meta.contact || {}, // { whatsappIntl, defaultMessage }
+    ctaTexts: meta.ctaTexts || {}, // { buyTemplate, hosting, email, bundle }
+    addons: meta.addons || {}, // { hosting: {...}, email: {...} }
+    bundles: Array.isArray(meta.bundles) ? meta.bundles : [],
 
-    // --- conteúdo HTML e metadados do registro ---
-    content:    row.content,
+    // --- conteÇ§do HTML e metadados do registro ---
+    content: row.content,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
+};
+
+const sendFallbackList = async (res) => {
+  const fallbacks = await getFallbackTemplates();
+  if (fallbacks?.length) {
+    return res.status(200).setHeader('X-Data-Source', 'fallback').json(fallbacks.map(normalize));
+  }
+  return res.status(500).json({ error: 'Erro ao listar templates' });
+};
+
+const sendFallbackItem = async (res, slug) => {
+  const fallbacks = await getFallbackTemplates();
+  if (fallbacks?.length) {
+    const match = fallbacks.find((tpl) => tpl.slug === slug);
+    if (match) {
+      return res.status(200).setHeader('X-Data-Source', 'fallback').json(normalize(match));
+    }
+    return res.status(404).json({ error: 'Template nÇœo encontrado' });
+  }
+  return res.status(500).json({ error: 'Erro ao carregar template' });
 };
 
 /** GET /api/templates */
@@ -88,17 +108,13 @@ router.get('/', async (_req, res) => {
       ORDER BY created_at DESC
     `);
     const data = (rows || []).map(normalize);
+    if (!data.length) {
+      return sendFallbackList(res);
+    }
     res.json(data);
   } catch (err) {
     console.error('GET /api/templates ->', err);
-    if (fallbackTemplates?.length) {
-      return res
-        .status(200)
-        .setHeader('X-Data-Source', 'fallback')
-        .json(fallbackTemplates.map(normalize));
-    }
-
-    res.status(500).json({ error: 'Erro ao listar templates' });
+    return sendFallbackList(res);
   }
 });
 
@@ -110,22 +126,12 @@ router.get('/:slug', async (req, res) => {
       [req.params.slug]
     );
     if (!rows?.length) {
-      return res.status(404).json({ error: 'Template não encontrado' });
+      return sendFallbackItem(res, req.params.slug);
     }
     res.json(normalize(rows[0]));
   } catch (err) {
     console.error('GET /api/templates/:slug ->', err);
-    if (fallbackTemplates?.length) {
-      const match = fallbackTemplates.find((tpl) => tpl.slug === req.params.slug);
-      if (match) {
-        return res
-          .status(200)
-          .setHeader('X-Data-Source', 'fallback')
-          .json(normalize(match));
-      }
-    }
-
-    res.status(500).json({ error: 'Erro ao carregar template' });
+    return sendFallbackItem(res, req.params.slug);
   }
 });
 
