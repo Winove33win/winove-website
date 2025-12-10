@@ -1,26 +1,9 @@
 import { Router } from "express";
-import mysql from "mysql2/promise";
-import dotenv from "dotenv";
-dotenv.config();
+import { pool } from "../db.js";
 
 const router = Router();
 const LEADS_TABLE = process.env.LEADS_TABLE || "leads";
 const LEADS_LIBRAS_TABLE = process.env.LEADS_LIBRAS_TABLE || "leads_libras";
-const DB_HOST = process.env.DB_HOST || "127.0.0.1";
-const DB_PORT = Number(process.env.DB_PORT) || 3306;
-const DB_USER = process.env.DB_USER || "winove";
-const DB_PASSWORD = process.env.DB_PASSWORD || "9*19avmU0";
-const DB_NAME = process.env.DB_NAME || "fernando_winove_com_br_";
-
-async function getConnection() {
-  return await mysql.createConnection({
-    host: DB_HOST,
-    port: DB_PORT,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-  });
-}
 
 const sanitizeString = (value) => {
   if (value === undefined || value === null) return null;
@@ -90,31 +73,21 @@ router.post("/", async (req, res) => {
         ? JSON.stringify(sanitizedExtra)
         : null;
 
-    let conn;
-    try {
-      conn = await getConnection();
-      await conn.execute(
-        `INSERT INTO ${LEADS_TABLE}
-         (nome, email, telefone, interesse, origem, mensagem, extra)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          sanitizedNome,
-          sanitizedEmail,
-          sanitizedTelefone,
-          sanitizedInteresse,
-          sanitizedOrigem,
-          sanitizedMensagem,
-          extraPayload,
-        ]
-      );
-      res.json({ ok: true });
-    } finally {
-      if (conn) {
-        await conn.end().catch((closeErr) =>
-          console.error("POST /api/leads connection close error:", closeErr)
-        );
-      }
-    }
+    await pool.execute(
+      `INSERT INTO ${LEADS_TABLE}
+       (nome, email, telefone, interesse, origem, mensagem, extra)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        sanitizedNome,
+        sanitizedEmail,
+        sanitizedTelefone,
+        sanitizedInteresse,
+        sanitizedOrigem,
+        sanitizedMensagem,
+        extraPayload,
+      ]
+    );
+    res.json({ ok: true });
   } catch (err) {
     logDetailedError("POST /api/leads error", err);
     res.status(500).json({ error: "internal_error" });
@@ -149,36 +122,26 @@ router.post("/libras", async (req, res) => {
         .status(400)
         .json({ error: "nome e email são obrigatórios" });
 
-    let conn;
-    try {
-      conn = await getConnection();
-      await conn.execute(
-        `INSERT INTO ${LEADS_LIBRAS_TABLE}
-         (nome, email, telefone, empresa, tipoServico, dataEvento, local_evento, tamanhoPublico, duracao, linkVideo, descricao, lgpdConsent)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          sanitizedNome,
-          sanitizedEmail,
-          sanitizeString(telefone),
-          sanitizeString(empresa),
-          sanitizeString(tipoServico),
-          sanitizeString(dataEvento),
-          sanitizeString(local_evento),
-          sanitizeString(tamanhoPublico),
-          sanitizeString(duracao),
-          sanitizeString(linkVideo),
-          sanitizeString(descricao),
-          lgpdConsent ? 1 : 0,
-        ]
-      );
-      res.json({ ok: true });
-    } finally {
-      if (conn) {
-        await conn.end().catch((closeErr) =>
-          console.error("POST /api/leads/libras connection close error:", closeErr)
-        );
-      }
-    }
+    await pool.execute(
+      `INSERT INTO ${LEADS_LIBRAS_TABLE}
+       (nome, email, telefone, empresa, tipoServico, dataEvento, local_evento, tamanhoPublico, duracao, linkVideo, descricao, lgpdConsent)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        sanitizedNome,
+        sanitizedEmail,
+        sanitizeString(telefone),
+        sanitizeString(empresa),
+        sanitizeString(tipoServico),
+        sanitizeString(dataEvento),
+        sanitizeString(local_evento),
+        sanitizeString(tamanhoPublico),
+        sanitizeString(duracao),
+        sanitizeString(linkVideo),
+        sanitizeString(descricao),
+        lgpdConsent ? 1 : 0,
+      ]
+    );
+    res.json({ ok: true });
   } catch (err) {
     logDetailedError("POST /api/leads/libras error", err);
     res.status(500).json({ error: "internal_error" });

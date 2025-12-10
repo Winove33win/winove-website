@@ -1,4 +1,8 @@
+import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
+
+// Load environment variables before validating DB config or creating the pool.
+dotenv.config();
 
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
 
