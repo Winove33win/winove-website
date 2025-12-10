@@ -2,6 +2,7 @@ import { Router } from "express";
 // Use o pool compartilhado configurado via variáveis de ambiente em db.js.
 // Isso garante uma única origem de configuração para as credenciais do banco.
 import { pool } from "../db.js";
+import { fallbackBlogPosts } from "../fallbackData.js";
 
 const router = Router();
 
@@ -151,6 +152,24 @@ router.get("/blog-posts", async (req, res) => {
     });
   } catch (err) {
     console.error("[BLOG] /api/blog-posts error:", err?.code, err?.message);
+    if (fallbackBlogPosts?.length) {
+      const items = (req.query.category
+        ? fallbackBlogPosts.filter((p) => p.categoria === req.query.category)
+        : fallbackBlogPosts
+      ).map(adapt);
+
+      return res
+        .status(200)
+        .setHeader("X-Data-Source", "fallback")
+        .json({
+          total: items.length,
+          items,
+          limit: items.length,
+          offset: 0,
+          hasMore: false,
+        });
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -173,6 +192,24 @@ router.get("/blog-posts/categories", async (_req, res) => {
     res.json(categories);
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/categories error:", err?.code, err?.message);
+    if (fallbackBlogPosts?.length) {
+      const categories = fallbackBlogPosts.reduce((acc, post) => {
+        const key = post.categoria || "Sem categoria";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      const normalized = Object.entries(categories).map(([category, count]) => ({
+        category,
+        count,
+      }));
+
+      return res
+        .status(200)
+        .setHeader("X-Data-Source", "fallback")
+        .json(normalized);
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -236,6 +273,34 @@ router.get("/blog-posts/search", async (req, res) => {
     });
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/search error:", err?.code, err?.message);
+    if (fallbackBlogPosts?.length) {
+      const qRaw = (req.query.q || "").toString().trim().toLowerCase();
+      const categoryRaw = (req.query.category || "").toString().trim().toLowerCase();
+
+      const items = fallbackBlogPosts
+        .filter((post) => {
+          const matchesCategory = categoryRaw ? post.categoria?.toLowerCase() === categoryRaw : true;
+          const matchesQuery = qRaw
+            ? [post.titulo, post.resumo, post.conteudo]
+                .filter(Boolean)
+                .some((value) => value.toLowerCase().includes(qRaw))
+            : true;
+          return matchesCategory && matchesQuery;
+        })
+        .map(adapt);
+
+      return res
+        .status(200)
+        .setHeader("X-Data-Source", "fallback")
+        .json({
+          total: items.length,
+          items,
+          limit: items.length,
+          offset: 0,
+          hasMore: false,
+        });
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -268,6 +333,16 @@ router.get("/blog-posts/:slug", async (req, res) => {
     res.json(post);
   } catch (err) {
     console.error("[BLOG] /api/blog-posts/:slug error:", err?.code, err?.message);
+    if (fallbackBlogPosts?.length) {
+      const match = fallbackBlogPosts.find((post) => post.slug === req.params.slug);
+      if (match) {
+        return res
+          .status(200)
+          .setHeader("X-Data-Source", "fallback")
+          .json(adapt(match));
+      }
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
 });
