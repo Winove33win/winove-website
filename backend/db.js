@@ -8,38 +8,29 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config({ path: path.join(__dirname, '..', '.env'), override: false });
 
-const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-
-const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-const dbPort = Number(process.env.DB_PORT);
-
-// Fallback pool: rejects queries but allows server to start and rotas a aplicar fallbacks
-const makeFailingPool = (reason) => {
-  const reject = () => Promise.reject(new Error(reason));
-  return { query: reject, execute: reject };
+const toNumber = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-let resolvedPool;
+// Valores padrão usados no ambiente de Plesk/produção. Se as variáveis não estiverem
+// presentes, usamos estes defaults para permitir que as rotas /api/templates e
+// /api/blog-posts se conectem ao banco imediatamente após o deploy.
+const connectionConfig = {
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: toNumber(process.env.DB_PORT, 3306),
+  user: process.env.DB_USER || 'winove',
+  password: process.env.DB_PASSWORD || '9*19avmU0',
+  database: process.env.DB_NAME || 'fernando_winove_com_br_',
+  waitForConnections: true,
+  connectionLimit: Number(process.env.DB_CONN_LIMIT) || 10,
+  queueLimit: 0,
+};
 
-if (missingVars.length) {
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
   console.warn(
-    `[DB] Variaveis ausentes: ${missingVars.join(', ')}. Usando pool de fallback (consultas serao rejeitadas).`
+    '[DB] Variáveis ausentes; usando configuração padrão para tentar conexão ao banco (recomenda-se definir via ambiente).'
   );
-  resolvedPool = makeFailingPool('Database env vars missing');
-} else if (Number.isNaN(dbPort)) {
-  console.warn('[DB] DB_PORT invalido. Usando pool de fallback (consultas serao rejeitadas).');
-  resolvedPool = makeFailingPool('DB_PORT invalid');
-} else {
-  resolvedPool = mysql.createPool({
-    host: process.env.DB_HOST,
-    port: dbPort,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: Number(process.env.DB_CONN_LIMIT) || 10,
-    queueLimit: 0,
-  });
 }
 
-export const pool = resolvedPool;
+export const pool = mysql.createPool(connectionConfig);
