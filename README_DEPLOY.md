@@ -8,6 +8,7 @@ What is included
 
 Goal
 - After each pull from GitHub, Plesk runs the Node app and it serves the built frontend from `backend/dist` without manual tweaks.
+- Before deploying or merging, run `npm --prefix backend run check:merge-markers` to ensure no Git conflict markers (`<<<` or `>>>`) remain in the working tree.
 
 Recommended steps (Plesk GUI)
 1. Open Domains → your domain → File Manager.
