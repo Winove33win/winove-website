@@ -11,27 +11,35 @@ dotenv.config({ path: path.join(__dirname, '..', '.env'), override: false });
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-
-if (missingVars.length) {
-  throw new Error(
-    `Missing required database environment variables: ${missingVars.join(', ')}. ` +
-      'Set them in your deployment environment or a local .env file before starting the server.'
-  );
-}
-
 const dbPort = Number(process.env.DB_PORT);
 
-if (Number.isNaN(dbPort)) {
-  throw new Error('DB_PORT must be a valid number.');
+// Fallback pool: rejects queries but allows server to start and rotas a aplicar fallbacks
+const makeFailingPool = (reason) => {
+  const reject = () => Promise.reject(new Error(reason));
+  return { query: reject, execute: reject };
+};
+
+let resolvedPool;
+
+if (missingVars.length) {
+  console.warn(
+    `[DB] Variaveis ausentes: ${missingVars.join(', ')}. Usando pool de fallback (consultas serao rejeitadas).`
+  );
+  resolvedPool = makeFailingPool('Database env vars missing');
+} else if (Number.isNaN(dbPort)) {
+  console.warn('[DB] DB_PORT invalido. Usando pool de fallback (consultas serao rejeitadas).');
+  resolvedPool = makeFailingPool('DB_PORT invalid');
+} else {
+  resolvedPool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: dbPort,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: Number(process.env.DB_CONN_LIMIT) || 10,
+    queueLimit: 0,
+  });
 }
 
-export const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: dbPort,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: Number(process.env.DB_CONN_LIMIT) || 10,
-  queueLimit: 0,
-});
+export const pool = resolvedPool;
