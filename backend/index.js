@@ -19,13 +19,25 @@ import {
   renderTemplateWithMeta,
 } from './utils/htmlTemplate.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Env vars
-dotenv.config();
+const envPaths = [path.join(__dirname, '.env'), path.join(__dirname, '../.env')];
+const envResults = envPaths.map((envPath) => dotenv.config({ path: envPath }));
+const envLoaded = envResults.some((result) => !result.error);
+
+if (!envLoaded) {
+  const defaultResult = dotenv.config();
+  if (defaultResult.error) {
+    console.warn(
+      'Nenhum arquivo .env encontrado em backend/.env ou ../.env; prosseguindo apenas com variáveis de ambiente já definidas.'
+    );
+  }
+}
 
 // Express setup
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const BASE_URL = (process.env.APP_BASE_URL || 'https://winove.com.br').replace(/\/$/, '');
 let canonicalUrl;
