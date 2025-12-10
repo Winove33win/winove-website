@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { isDbConfigured, missingDbEnv, pool } from './db.js';
 import sitemapRoute from './routes/sitemap.js';
 import blogRoute from './routes/blog.js';
 import casesRoute from './routes/cases.js';
@@ -293,6 +294,15 @@ app.get('/', (req, res, next) => {
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, env: process.env.NODE_ENV || 'production' });
+});
+
+app.get('/api/health/db', (_req, res) => {
+  res.json({
+    ok: true,
+    configured: isDbConfigured,
+    poolReady: Boolean(pool),
+    missingEnv: missingDbEnv,
+  });
 });
 
 // API 404

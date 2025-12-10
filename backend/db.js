@@ -16,8 +16,9 @@ const missingDbEnv = REQUIRED_DB_VARS.filter((key) => !process.env[key]);
 
 if (missingDbEnv.length) {
   console.error(
-    `Missing required database environment variables: ${missingDbEnv.join(', ')}. ` +
-      'Configure o .env ou as variáveis do Plesk antes de iniciar o app.'
+    '[DB] Variáveis de ambiente ausentes:',
+    missingDbEnv.join(', '),
+    '. Verifique configuração no Plesk ou backend/.env'
   );
 }
 
@@ -26,9 +27,10 @@ const toNumber = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const pool = missingDbEnv.length
-  ? null
-  : mysql.createPool({
+const isDbConfigured = missingDbEnv.length === 0;
+
+const pool = isDbConfigured
+  ? mysql.createPool({
       host: process.env.DB_HOST,
       port: toNumber(process.env.DB_PORT, 3306),
       user: process.env.DB_USER,
@@ -37,6 +39,7 @@ const pool = missingDbEnv.length
       waitForConnections: true,
       connectionLimit: toNumber(process.env.DB_CONN_LIMIT, 10),
       queueLimit: 0,
-    });
+    })
+  : null;
 
-export { pool, missingDbEnv };
+export { pool, missingDbEnv, isDbConfigured };
