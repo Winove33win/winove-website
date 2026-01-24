@@ -1,8 +1,16 @@
 import { Router } from 'express';
-import { pool } from '../db.js';
+import { missingDbEnv, pool } from '../db.js';
 import { fallbackCases } from '../fallbackData.js';
 
 const router = Router();
+
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: 'db_config_invalida',
+    message:
+      'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    missing: missingDbEnv,
+  });
 
 const toArray = (value) => {
   if (!value) return [];
@@ -34,6 +42,7 @@ const ABS = (url) => {
 };
 
 router.get('/', async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const pageSize = Math.max(parseInt(req.query.pageSize, 10) || 10, 1);
@@ -91,6 +100,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:slug', async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const [rows] = await pool.query(
       `
