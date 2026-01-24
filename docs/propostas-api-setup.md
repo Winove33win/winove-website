@@ -15,7 +15,12 @@ DB_PASSWORD=<database-password>
 COMMERCIAL_PANEL_PASSWORD=sua-senha-segura
 ```
 
-Copie `backend/.env.example` para `backend/.env`, ajuste os valores acima e reinicie o app Node no Plesk (ou o processo local) para recarregar o ambiente.
+Passo a passo para garantir que o backend suba corretamente:
+
+1. Copie `backend/.env.example` para `backend/.env`.
+2. Preencha os valores reais (DB_*, COMMERCIAL_PANEL_*, MAIL_*) conforme configurado no Plesk.
+3. Certifique-se de que `APP_BASE_URL=https://winove.com.br` e `PORT=3333` estão presentes (ou deixe o Plesk definir `PORT`).
+4. Salve o arquivo e reinicie o app Node/Passenger no Plesk para que o processo carregue o `.env` atualizado.
 
 ## Criar/alinhar a tabela `propostas_comerciais`
 

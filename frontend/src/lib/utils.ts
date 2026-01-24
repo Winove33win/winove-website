@@ -14,6 +14,9 @@ export function normalizeImageUrl(image: string, width = 600, height = 400) {
   if (/^https?:\/\//i.test(value)) {
     return value
   }
+  if (value.startsWith("//")) {
+    return `https:${value}`
+  }
 
   const origin =
     (typeof window !== "undefined" && window.location.origin) ||

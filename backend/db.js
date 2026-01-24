@@ -3,34 +3,43 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 
-// Load env vars before validating DB config (Plesk may start outside /backend)
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Garante que backend/.env seja carregado mesmo quando o processo inicia em outro diretório
 dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config({ path: path.join(__dirname, '..', '.env'), override: false });
+
+const REQUIRED_DB_VARS = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+
+const missingDbEnv = REQUIRED_DB_VARS.filter((key) => !process.env[key]);
+
+if (missingDbEnv.length) {
+  console.error(
+    '[DB] Variáveis de ambiente ausentes:',
+    missingDbEnv.join(', '),
+    '. Verifique configuração no Plesk ou backend/.env'
+  );
+}
 
 const toNumber = (value, fallback) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-// Valores padrão usados no ambiente de Plesk/produção. Se as variáveis não estiverem
-// presentes, usamos estes defaults para permitir que as rotas /api/templates e
-// /api/blog-posts se conectem ao banco imediatamente após o deploy.
-const connectionConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: toNumber(process.env.DB_PORT, 3306),
-  user: process.env.DB_USER || 'winove',
-  password: process.env.DB_PASSWORD || '9*19avmU0',
-  database: process.env.DB_NAME || 'fernando_winove_com_br_',
-  waitForConnections: true,
-  connectionLimit: Number(process.env.DB_CONN_LIMIT) || 10,
-  queueLimit: 0,
-};
+const isDbConfigured = missingDbEnv.length === 0;
 
-if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
-  console.warn(
-    '[DB] Variáveis ausentes; usando configuração padrão para tentar conexão ao banco (recomenda-se definir via ambiente).'
-  );
-}
+const pool = isDbConfigured
+  ? mysql.createPool({
+      host: process.env.DB_HOST,
+      port: toNumber(process.env.DB_PORT, 3306),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: toNumber(process.env.DB_CONN_LIMIT, 10),
+      queueLimit: 0,
+    })
+  : null;
 
-export const pool = mysql.createPool(connectionConfig);
+export { pool, missingDbEnv, isDbConfigured };

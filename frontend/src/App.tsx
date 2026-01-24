@@ -19,13 +19,13 @@ import ChatWhatsapp from "@/pages/ChatWhatsapp";
 import { CentralAtendimento } from "@/pages/CentralAtendimento";
 import Promocoes from "./pages/Promocoes";
 import NotFound from "./pages/NotFound";
-import LibrasPage from "./pages/Libras";
 import Cursos from "./pages/Cursos";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import CookiesPolicy from "./pages/CookiesPolicy";
 import DataDeletion from "./pages/DataDeletion";
 import ProposalPanel from "./pages/ProposalPanel";
+import ServicesPage from "./pages/Services";
 
 const queryClient = new QueryClient();
 
@@ -51,11 +51,11 @@ const App = () => (
             <Route path="/chatwhatsapp" element={<ChatWhatsapp />} />
             <Route path="/central-atendimento" element={<CentralAtendimento />} />
             <Route path="/comercial-propostas" element={<ProposalPanel />} />
+            <Route path="/servicos" element={<ServicesPage />} />
             <Route path="/promocoes" element={<Promocoes />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/servicos/libras" element={<LibrasPage />} />
             <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
             <Route path="/termos-de-uso" element={<TermsOfUse />} />
             <Route path="/politica-de-cookies" element={<CookiesPolicy />} />

@@ -13,29 +13,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { SEO } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
-const PANEL_USERNAME = import.meta.env.VITE_COMMERCIAL_PANEL_USERNAME || "comercial";
-const PANEL_PASSWORD = import.meta.env.VITE_COMMERCIAL_PANEL_PASSWORD || "";
-const PANEL_AUTH_HEADER =
-  PANEL_PASSWORD && typeof btoa === "function"
-    ? `Basic ${btoa(`${PANEL_USERNAME}:${PANEL_PASSWORD}`)}`
-    : "";
-
 const proposalSchema = z.object({
   nome: z.string().min(3, "Informe o nome completo do cliente"),
-  empresa: z.string().min(2, "Informe a empresa ou organizacao"),
-  email: z.string().email("E-mail invalido"),
-  portfolio: z.string().min(2, "Inclua um link ou referencia de portfolio"),
-  descricao: z.string().min(10, "Descreva o projeto ou solicitacao"),
+  empresa: z.string().min(2, "Informe a empresa ou organização"),
+  email: z.string().email("E-mail inválido"),
+  portfolio: z.string().min(2, "Inclua um link ou referência de portfólio"),
+  descricao: z.string().min(10, "Descreva o projeto ou solicitação"),
   servicos: z
     .array(
       z.object({
-        servico: z.string().min(1, "Informe o servico"),
+        servico: z.string().min(1, "Informe o serviço"),
         valor: z.string().min(1, "Inclua o valor"),
       })
     )
-    .min(1, "Inclua ao menos um servico"),
+    .min(1, "Inclua ao menos um serviço"),
   prazo: z.string().min(2, "Defina o prazo de entrega"),
-  termos: z.string().min(10, "Inclua os termos e condicoes"),
+  termos: z.string().min(10, "Inclua os termos e condições"),
   assinaturaNome: z.string().min(3, "Digite o nome para assinatura"),
   aceiteDigital: z.literal(true, {
     errorMap: () => ({ message: "Confirme o aceite digital" }),
@@ -61,18 +54,6 @@ type ProposalJson = {
   assinatura: string;
 };
 
-type ProposalApiResponse = ProposalJson & {
-  pdf_download_url?: string;
-  pdf_storage_info?: string;
-  mapeamento_indexacao?: Record<string, unknown>;
-  email_enviado?: boolean;
-  id?: number;
-  erro_mapeamento?: string;
-  campo_problematico?: string | string[];
-  error?: string;
-  message?: string;
-};
-
 const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
   cliente: {
     nome: values.nome,
@@ -87,12 +68,12 @@ const buildProposalJson = (values: ProposalFormData): ProposalJson => ({
     prazo_entrega: values.prazo,
   },
   termos_condicoes: values.termos,
-  assinatura: `${values.assinaturaNome} (aceite digital)`,
+  assinatura: `${values.assinaturaNome} (aceite digital)`
 });
 
 const ProposalPanel = () => {
   const templateRef = useRef<HTMLDivElement>(null);
-  const [proposal, setProposal] = useState<ProposalApiResponse | null>(null);
+  const [proposal, setProposal] = useState<ProposalJson | null>(null);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [serverMessage, setServerMessage] = useState<string | null>(null);
 
@@ -134,7 +115,6 @@ const ProposalPanel = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(PANEL_AUTH_HEADER ? { Authorization: PANEL_AUTH_HEADER } : {}),
         },
         body: JSON.stringify({
           ...values,
@@ -142,71 +122,53 @@ const ProposalPanel = () => {
         }),
       });
 
-      const contentType = response.headers.get('content-type') || '';
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const text = await response.text();
-        console.error('Resposta de erro do servidor:', response.status, text);
-        // Tentar extrair mensagem JSON caso o servidor retorne JSON de erro
-        try {
-          const parsed = JSON.parse(text);
-          const problem = parsed?.erro_mapeamento || parsed?.error || parsed?.message || `Erro ${response.status}`;
-          const campo = parsed?.campo_problematico;
-          throw new Error(typeof campo === 'string' ? `${problem} (campo: ${campo})` : problem);
-        } catch (_parseErr) {
-          // Resposta não é JSON — provavelmente HTML. Levantar erro genérico com trecho
-          throw new Error(`Servidor retornou ${response.status}: ${text.slice(0, 200)}`);
-        }
+        throw new Error(data?.error || "Não foi possível salvar a proposta");
       }
 
-      if (!contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Resposta inesperada do servidor (não JSON):', text);
-        throw new Error('Resposta inesperada do servidor (não JSON)');
-      }
-
-      const data: ProposalApiResponse = await response.json();
-
-      setServerMessage("Proposta registrada e mapeada com sucesso.");
+      const idInfo = data?.id ? ` (#${data.id})` : "";
+      setServerMessage(`Proposta salva com sucesso${idInfo}.`);
       setSubmitStatus("success");
-      setProposal(data);
     } catch (err) {
       console.error("Erro ao registrar proposta:", err);
-      setServerMessage(
-        err instanceof Error ? err.message : "Nao foi possivel salvar a proposta. Tente novamente."
-      );
+      setServerMessage("Não foi possível salvar a proposta. Tente novamente.");
       setSubmitStatus("error");
     }
   };
 
   const handleExportPdf = () => {
-    if (!proposal?.pdf_download_url) {
-      setServerMessage("PDF disponivel somente apos registro e validacao do schema.");
-      return;
-    }
-
-    fetch(proposal.pdf_download_url, {
-      headers: PANEL_AUTH_HEADER ? { Authorization: PANEL_AUTH_HEADER } : {},
-    })
-      .then(async (resp) => {
-        if (!resp.ok) {
-          throw new Error("Falha ao baixar PDF. Confirme autenticacao e schema.");
-        }
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank", "noopener");
-      })
-      .catch((err) => {
-        console.error(err);
-        setServerMessage("Erro ao exportar PDF. Verifique autenticacao e tente novamente.");
-      });
+    if (!proposal || !templateRef.current) return;
+    const printContents = templateRef.current.innerHTML;
+    const printWindow = window.open("", "printWindow", "width=900,height=650");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Proposta Comercial</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 32px; color: #0f172a; }
+            h1, h2, h3 { color: #0f172a; margin: 0 0 8px; }
+            .section { margin-bottom: 18px; }
+            .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+            .tag { display: inline-block; padding: 6px 10px; background: #f1f5f9; border-radius: 999px; margin-right: 6px; }
+            ul { padding-left: 18px; }
+          </style>
+        </head>
+        <body>${printContents}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-16">
       <SEO
         title="Painel de Propostas Comerciais | Winove"
-        description="Preencha, valide e gere propostas comerciais padronizadas com assinatura digital e exportacao em PDF."
+        description="Preencha, valide e gere propostas comerciais padronizadas com assinatura digital e exportação em PDF."
         canonical="https://www.winove.com.br/comercial-propostas"
       />
 
@@ -216,13 +178,13 @@ const ProposalPanel = () => {
             <Badge className="rounded-full px-4 py-1">Propostas Padronizadas</Badge>
             <h1 className="text-4xl md:text-5xl font-bold">Painel de Propostas Comerciais</h1>
             <p className="text-lg text-muted-foreground">
-              Centralize informacoes essenciais, valide campos obrigatorios e gere um template
-              padronizado pronto para visualizacao ou exportacao em PDF.
+              Centralize informações essenciais, valide campos obrigatórios e gere um template
+              padronizado pronto para visualização ou exportação em PDF.
             </p>
             <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Checklist de campos obrigatorios</span>
+              <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Checklist de campos obrigatórios</span>
               <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-blue-500" /> Assinatura digital</span>
-              <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-purple-500" /> Exportacao PDF</span>
+              <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-purple-500" /> Exportação PDF</span>
             </div>
           </div>
         </div>
@@ -234,7 +196,7 @@ const ProposalPanel = () => {
             <CardHeader>
               <CardTitle>1. Preencha e valide os dados</CardTitle>
               <CardDescription>
-                Todos os campos abaixo sao obrigatorios para finalizar a proposta comercial.
+                Todos os campos abaixo são obrigatórios para finalizar a proposta comercial.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -248,7 +210,7 @@ const ProposalPanel = () => {
                         <FormItem>
                           <FormLabel>Nome completo do cliente</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex.: Joao Silva" {...field} />
+                            <Input placeholder="Ex.: João Silva" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -259,7 +221,7 @@ const ProposalPanel = () => {
                       name="empresa"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Empresa/Organizacao</FormLabel>
+                          <FormLabel>Empresa/Organização</FormLabel>
                           <FormControl>
                             <Input placeholder="Ex.: Exemplo Ltda" {...field} />
                           </FormControl>
@@ -288,7 +250,7 @@ const ProposalPanel = () => {
                       name="portfolio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Portfolio (link ou referencia)</FormLabel>
+                          <FormLabel>Portfólio (link ou referência)</FormLabel>
                           <FormControl>
                             <Input placeholder="www.exemplo.com/portfolio" {...field} />
                           </FormControl>
@@ -303,7 +265,7 @@ const ProposalPanel = () => {
                     name="descricao"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Descricao do projeto ou solicitacao</FormLabel>
+                        <FormLabel>Descrição do projeto ou solicitação</FormLabel>
                         <FormControl>
                           <Textarea rows={3} placeholder="Explique escopo, objetivo e necessidades do projeto" {...field} />
                         </FormControl>
@@ -314,14 +276,14 @@ const ProposalPanel = () => {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <FormLabel>Servicos propostos e valores</FormLabel>
+                      <FormLabel>Serviços propostos e valores</FormLabel>
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => append({ servico: "", valor: "" })}
                       >
-                        Adicionar servico
+                        Adicionar serviço
                       </Button>
                     </div>
                     <div className="space-y-3">
@@ -332,7 +294,7 @@ const ProposalPanel = () => {
                             name={`servicos.${index}.servico`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm">Servico</FormLabel>
+                                <FormLabel className="text-sm">Serviço</FormLabel>
                                 <FormControl>
                                   <Input placeholder="Ex.: Design" {...field} />
                                 </FormControl>
@@ -376,7 +338,7 @@ const ProposalPanel = () => {
                       <FormItem>
                         <FormLabel>Prazos de entrega previstos</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex.: 30 dias apos aprovacao" {...field} />
+                          <Input placeholder="Ex.: 30 dias após aprovação" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -388,12 +350,12 @@ const ProposalPanel = () => {
                     name="termos"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Termos e condicoes gerais do servico</FormLabel>
+                        <FormLabel>Termos e condições gerais do serviço</FormLabel>
                         <FormControl>
                           <Textarea rows={4} placeholder="Detalhe pagamentos, responsabilidades, garantias e confidencialidade" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Este campo e exibido integralmente no template final.
+                          Este campo é exibido integralmente no template final.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -406,11 +368,11 @@ const ProposalPanel = () => {
                       name="assinaturaNome"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Assinatura eletronica</FormLabel>
+                          <FormLabel>Assinatura eletrônica</FormLabel>
                           <FormControl>
-                            <Input placeholder="Digite o nome do responsavel" {...field} />
+                            <Input placeholder="Digite o nome do responsável" {...field} />
                           </FormControl>
-                          <FormDescription>Este nome sera mostrado no aceite digital.</FormDescription>
+                          <FormDescription>Este nome será mostrado no aceite digital.</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -429,7 +391,7 @@ const ProposalPanel = () => {
                           <div className="space-y-1 leading-tight">
                             <FormLabel>Aceite digital</FormLabel>
                             <FormDescription className="text-xs">
-                              Confirmo que os dados estao corretos e autorizo assinatura digital pelo site.
+                              Confirmo que os dados estão corretos e autorizo assinatura digital pelo site.
                             </FormDescription>
                             <FormMessage />
                           </div>
@@ -442,15 +404,10 @@ const ProposalPanel = () => {
 
                   <div className="flex flex-wrap gap-3 justify-between items-center">
                     <div className={cn("text-sm", isComplete ? "text-emerald-600" : "text-destructive")}>
-                      {isComplete ? "Checklist completo. Pronto para gerar a proposta." : "Preencha todos os campos obrigatorios antes de gerar."}
+                      {isComplete ? "Checklist completo. Pronto para gerar a proposta." : "Preencha todos os campos obrigatórios antes de gerar."}
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={!proposal?.pdf_download_url || submitStatus !== "success"}
-                        onClick={handleExportPdf}
-                      >
+                      <Button type="button" variant="outline" disabled={!proposal} onClick={handleExportPdf}>
                         Exportar PDF
                       </Button>
                       <Button type="submit" disabled={!isComplete || submitStatus === "saving"}>
@@ -481,16 +438,16 @@ const ProposalPanel = () => {
           <div className="space-y-4">
             <Card ref={templateRef} className="shadow-sm border-border/60">
               <CardHeader className="pb-4">
-                <CardTitle>2. Visualizacao da proposta padrao</CardTitle>
+                <CardTitle>2. Visualização da proposta padrão</CardTitle>
                 <CardDescription>
-                  Estrutura padronizada pronta para envio, visualizacao ou exportacao em PDF.
+                  Estrutura padronizada pronta para envio, visualização ou exportação em PDF.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-primary uppercase">Dados do cliente</p>
                   <h2 className="text-2xl font-bold">{previewProposal.cliente.nome || "Nome do cliente"}</h2>
-                  <p className="text-muted-foreground">{previewProposal.cliente.empresa || "Empresa/Organizacao"}</p>
+                  <p className="text-muted-foreground">{previewProposal.cliente.empresa || "Empresa/Organização"}</p>
                   <p className="text-sm text-muted-foreground">{previewProposal.cliente.email || "email@empresa.com"}</p>
                   <a
                     href={previewProposal.cliente.portfolio || "#"}
@@ -498,7 +455,7 @@ const ProposalPanel = () => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {previewProposal.cliente.portfolio || "Portfolio/Referencia"}
+                    {previewProposal.cliente.portfolio || "Portfólio/Referência"}
                   </a>
                 </div>
 
@@ -507,11 +464,11 @@ const ProposalPanel = () => {
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-primary uppercase">Projeto</p>
                   <p className="text-base leading-relaxed">
-                    {previewProposal.projeto.descricao || "Inclua uma breve descricao do projeto."}
+                    {previewProposal.projeto.descricao || "Inclua uma breve descrição do projeto."}
                   </p>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-primary/90">Servicos propostos</p>
+                    <p className="text-sm font-semibold text-primary/90">Serviços propostos</p>
                     <div className="flex flex-wrap gap-2">
                       {previewProposal.projeto.servicos.length ? (
                         previewProposal.projeto.servicos.map((servico, index) => (
@@ -520,7 +477,7 @@ const ProposalPanel = () => {
                           </span>
                         ))
                       ) : (
-                        <span className="text-sm text-muted-foreground">Nenhum servico adicionado.</span>
+                        <span className="text-sm text-muted-foreground">Nenhum serviço adicionado.</span>
                       )}
                     </div>
                   </div>
@@ -536,7 +493,7 @@ const ProposalPanel = () => {
                           </div>
                         ))
                       ) : (
-                        <span className="text-sm text-muted-foreground">Adicione valores para cada servico.</span>
+                        <span className="text-sm text-muted-foreground">Adicione valores para cada serviço.</span>
                       )}
                     </div>
                   </div>
@@ -550,17 +507,17 @@ const ProposalPanel = () => {
                 <Separator />
 
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-primary uppercase">Termos e condicoes</p>
+                  <p className="text-sm font-semibold text-primary uppercase">Termos e condições</p>
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {previewProposal.termos_condicoes || "Descreva pagamentos, responsabilidades, confidencialidade e demais condicoes."}
+                    {previewProposal.termos_condicoes || "Descreva pagamentos, responsabilidades, confidencialidade e demais condições."}
                   </p>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-primary uppercase">Assinatura eletronica</p>
-                  <p className="text-base font-semibold">{previewProposal.assinatura || "Nome do responsavel"}</p>
+                  <p className="text-sm font-semibold text-primary uppercase">Assinatura eletrônica</p>
+                  <p className="text-base font-semibold">{previewProposal.assinatura || "Nome do responsável"}</p>
                   <p className="text-xs text-muted-foreground">Aceite digital registrado neste painel.</p>
                 </div>
               </CardContent>
@@ -568,7 +525,7 @@ const ProposalPanel = () => {
 
             <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
               <CardHeader className="pb-3">
-                <CardTitle>3. Saida JSON padronizada</CardTitle>
+                <CardTitle>3. Saída JSON padronizada</CardTitle>
                 <CardDescription>
                   Confirmamos todos os campos antes de gerar a proposta final.
                 </CardDescription>
@@ -580,7 +537,7 @@ const ProposalPanel = () => {
                   </pre>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Preencha todos os dados obrigatorios e clique em "Gerar proposta" para exibir o JSON pronto para exportacao.
+                    Preencha todos os dados obrigatórios e clique em "Gerar proposta" para exibir o JSON pronto para exportação.
                   </p>
                 )}
               </CardContent>

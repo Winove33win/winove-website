@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { isDbConfigured, missingDbEnv, pool } from './db.js';
 import sitemapRoute from './routes/sitemap.js';
 import blogRoute from './routes/blog.js';
 import casesRoute from './routes/cases.js';
@@ -12,7 +13,6 @@ import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
-import { getCommercialPanelPassword, isCommercialPasswordValid } from './utils/proposalSchema.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -64,7 +64,7 @@ const sendHtml = (res, html, cacheControl = 'public, max-age=300, s-maxage=300')
     .send(html);
 };
 
-const commercialPanelPassword = getCommercialPanelPassword();
+const commercialPanelPassword = process.env.COMMERCIAL_PANEL_PASSWORD;
 const commercialPanelUser = process.env.COMMERCIAL_PANEL_USERNAME || 'comercial';
 const commercialPanelRealm = 'Painel Comercial';
 
@@ -74,14 +74,8 @@ const sendCommercialAuthChallenge = (res) => {
 };
 
 const requireCommercialProposalAuth = (req, res, next) => {
-  if (!isCommercialPasswordValid()) {
-    return res
-      .status(401)
-      .json({
-        error: 'painel_bloqueado',
-        message:
-          'Variável COMMERCIAL_PANEL_PASSWORD ausente ou vazia. Defina-a no ambiente para habilitar o painel comercial.',
-      });
+  if (!commercialPanelPassword) {
+    return res.status(404).end();
   }
 
   const authHeader = req.headers.authorization || '';
@@ -293,6 +287,15 @@ app.get('/', (req, res, next) => {
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, env: process.env.NODE_ENV || 'production' });
+});
+
+app.get('/api/health/db', (_req, res) => {
+  res.json({
+    ok: true,
+    configured: isDbConfigured,
+    poolReady: Boolean(pool),
+    missingEnv: missingDbEnv,
+  });
 });
 
 // API 404

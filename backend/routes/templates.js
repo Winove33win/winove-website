@@ -1,9 +1,17 @@
 // backend/routes/templates.js
 import { Router } from 'express';
-import { pool } from '../db.js';
+import { missingDbEnv, pool } from '../db.js';
 import { getFallbackTemplates } from '../fallbackData.js';
 
 const router = Router();
+
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: 'db_config_invalida',
+    message:
+      'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    missing: missingDbEnv,
+  });
 
 /** Normaliza qualquer valor possivelmente string/JSON para array */
 const toArray = (value) => {
@@ -20,6 +28,7 @@ const toArray = (value) => {
 const ABS = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('//')) return `https:${url}`;
   const base = process.env.PUBLIC_BASE_URL || 'https://winove.com.br';
   const clean = url.startsWith('/assets') ? url : url.replace(/^assets\//, '/assets/');
   return `${base}${clean.startsWith('/') ? '' : '/'}${clean}`;
@@ -101,6 +110,8 @@ const sendFallbackItem = async (res, slug) => {
 
 /** GET /api/templates */
 router.get('/', async (_req, res) => {
+  if (!pool) return sendDbUnavailable(res);
+
   try {
     const [rows] = await pool.query(`
       SELECT id, slug, title, content, meta, created_at, updated_at
@@ -120,6 +131,8 @@ router.get('/', async (_req, res) => {
 
 /** GET /api/templates/:slug */
 router.get('/:slug', async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
+
   try {
     const [rows] = await pool.query(
       'SELECT id, slug, title, content, meta, created_at, updated_at FROM templates WHERE slug = ? LIMIT 1',

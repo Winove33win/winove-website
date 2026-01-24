@@ -91,9 +91,14 @@ variáveis de ambiente (configure-as no painel da hospedagem ou em um arquivo
 - `MAIL_USER` – usuário ou remetente autenticado no servidor SMTP.
 - `MAIL_PASS` – senha do usuário SMTP.
 - `CONTACT_EMAIL` – e-mail que receberá as propostas enviadas pelo site.
+- `COMMERCIAL_PANEL_PASSWORD` – senha obrigatória para habilitar o painel e as
+  rotas protegidas de propostas.
 
-Opcionalmente, defina `MAIL_FROM` para personalizar o endereço "from". Caso
-não seja informado, o valor de `MAIL_USER` será utilizado.
+Opcionalmente, defina:
+
+- `MAIL_FROM` para personalizar o endereço "from" (padrão: `MAIL_USER`).
+- `COMMERCIAL_PANEL_USERNAME` para alterar o usuário do Basic Auth (padrão:
+  `comercial`).
 
 #### Conexão com o banco de produção
 
@@ -120,6 +125,22 @@ os novos valores fornecidos pelo provedor.
 Consulte também a [checklist de liberação do painel de propostas](docs/propostas-api-setup.md)
 para configurar `COMMERCIAL_PANEL_PASSWORD`, validar o schema com o endpoint
 `/api/propostas/schema` e conferir o payload aceito pelo POST `/api/propostas`.
+
+### Endpoint de propostas (`/api/propostas`)
+
+- **Autenticação:** a rota usa Basic Auth. Defina `COMMERCIAL_PANEL_PASSWORD`
+  (obrigatório) e, se quiser, `COMMERCIAL_PANEL_USERNAME` (padrão: `comercial`).
+  Inclua o cabeçalho `Authorization: Basic <base64(username:password)>` ao
+  consumir a API. Sem a senha configurada, a rota retorna `404`.
+- **Envio:** envie um `POST /api/propostas` com `Content-Type: application/json`.
+  Os campos mínimos aceitos pelo backend são `nome`, `email` e `empresa`; o
+  painel de propostas do frontend envia também `portfolio`, `descricao`,
+  `servicos` (array com `servico` e `valor`), `prazo`, `termos`,
+  `assinaturaNome` e `aceiteDigital` para registrar uma proposta completa.
+- **Notificação por e-mail:** o backend tenta disparar um aviso para
+  `CONTACT_EMAIL` usando as credenciais SMTP (`MAIL_*`). Se qualquer variável
+  SMTP estiver ausente, o registro ainda ocorre, mas o e-mail é ignorado e o
+  log indicará a ausência das variáveis.
 
 **Se receber erro 500 em `/api/propostas`**, siga o guia de resolução:
 [Troubleshooting Plesk /api/propostas](docs/plesk-propostas-troubleshooting.md).
