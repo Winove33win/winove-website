@@ -2,13 +2,8 @@
 // Lista simples de posts (sem paginação), usada na home e fallback
 header("Content-Type: application/json; charset=UTF-8");
 
-$conn = new mysqli("localhost", "winove", "9*19avmU0", "fernando_winove_com_br_");
-
-if ($conn->connect_error) {
-  http_response_code(500);
-  echo json_encode(["error" => "Erro de conexao com o banco"]);
-  exit;
-}
+require_once __DIR__ . '/db.php';
+$conn = winove_connect_db();
 
 $sql = "SELECT id,
                titulo           AS title,
@@ -34,4 +29,3 @@ if ($result) {
 echo json_encode($posts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 $conn->close();
 ?>
-
