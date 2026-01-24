@@ -28,6 +28,7 @@ const toArray = (value) => {
 const ABS = (url) => {
   if (!url) return '';
   if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('//')) return `https:${url}`;
   const base = process.env.PUBLIC_BASE_URL || 'https://winove.com.br';
   const clean = url.startsWith('/assets') ? url : url.replace(/^assets\//, '/assets/');
   return `${base}${clean.startsWith('/') ? '' : '/'}${clean}`;
