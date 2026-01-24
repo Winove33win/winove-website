@@ -9,6 +9,4 @@ npm ci --prefix "$FRONTEND_DIR"
 npm run build --prefix "$FRONTEND_DIR"
 
 mkdir -p "$HTTPDOCS_DIR"
-rm -rf "$HTTPDOCS_DIR"/*
-cp -r "$FRONTEND_DIR/dist"/* "$HTTPDOCS_DIR"/
-
+rsync -av --delete --exclude api --exclude blog "$FRONTEND_DIR/dist/" "$HTTPDOCS_DIR/"
