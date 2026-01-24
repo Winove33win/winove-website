@@ -1,9 +1,17 @@
 import { Router } from "express";
-import { pool } from "../db.js";
+import { missingDbEnv, pool } from "../db.js";
 
 const router = Router();
 const LEADS_TABLE = process.env.LEADS_TABLE || "leads";
 const LEADS_LIBRAS_TABLE = process.env.LEADS_LIBRAS_TABLE || "leads_libras";
+
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: "db_config_invalida",
+    message:
+      "Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.",
+    missing: missingDbEnv,
+  });
 
 const sanitizeString = (value) => {
   if (value === undefined || value === null) return null;
@@ -40,6 +48,7 @@ const logDetailedError = (context, err) => {
 };
 
 router.post("/", async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const {
       hp_field,
@@ -95,6 +104,7 @@ router.post("/", async (req, res) => {
 });
 
 router.post("/libras", async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   try {
     const hp = sanitizeString(req.body?.hp_field);
     if (hp) return res.status(200).json({ ok: true });

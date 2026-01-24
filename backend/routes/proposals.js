@@ -1,11 +1,19 @@
 import { Router } from 'express';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-import { pool } from '../db.js';
+import { missingDbEnv, pool } from '../db.js';
 
 dotenv.config();
 
 const router = Router();
+
+const sendDbUnavailable = (res) =>
+  res.status(503).json({
+    error: 'db_config_invalida',
+    message:
+      'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
+    missing: missingDbEnv,
+  });
 
 const requiredMailEnv = ['MAIL_HOST', 'MAIL_PORT', 'MAIL_USER', 'MAIL_PASS'];
 const missingEnv = requiredMailEnv.filter((key) => !process.env[key]);
@@ -57,6 +65,7 @@ const stringifyServices = (services) => {
 };
 
 router.post('/', async (req, res) => {
+  if (!pool) return sendDbUnavailable(res);
   const {
     lead_id,
     template_id,
