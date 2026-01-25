@@ -103,6 +103,8 @@ export type BlogPostsResponse = {
   message?: string;
 };
 
+export const API_BASE_URL = API_BASE;
+
 const toNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -347,6 +349,27 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
       message,
     };
   }
+}
+
+export async function fetchBlogPostBySlug(slug: string): Promise<BlogItem | null> {
+  if (!slug) return null;
+
+  const response = await fetch(`${API_BASE}/blog-posts/${encodeURIComponent(slug)}`, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Erro ao carregar post (${response.status})`);
+  }
+
+  const data = await parseJson<UnknownRecord>(response);
+  return data && typeof data === 'object' ? parseBlogItem(data) : null;
 }
 
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {

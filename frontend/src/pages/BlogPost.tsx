@@ -3,7 +3,13 @@ import { Calendar, User, ArrowLeft, Clock, Share2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { SEO } from "@/lib/seo";
-import { API_BASE, LEGACY_API_BASE, fetchBlogPosts, type BlogItem } from "@/lib/api";
+import {
+  API_BASE,
+  LEGACY_API_BASE,
+  fetchBlogPostBySlug,
+  fetchBlogPosts,
+  type BlogItem,
+} from "@/lib/api";
 
 interface BlogPost {
   id: number;
@@ -45,6 +51,18 @@ const mapLegacyToRelated = (item: any): RelatedPost => ({
   coverImage: item.coverImage ?? item.coverUrl ?? null,
   date: item.date ?? item.publishedAt ?? "",
   author: item.author ?? null,
+});
+
+const mapItemToPost = (item: BlogItem): BlogPost => ({
+  id: item.id,
+  title: item.title,
+  slug: item.slug,
+  excerpt: item.excerpt,
+  content: item.content ?? "",
+  coverImage: item.coverUrl ?? "",
+  date: item.publishedAt ?? "",
+  author: item.author ?? "",
+  category: item.category ?? "",
 });
 
 function calcReadingTime(content: string): string {
@@ -104,10 +122,13 @@ export const BlogPost = () => {
     const load = async () => {
       if (!slug) return;
       try {
-        const data = await fetchJsonFallback<BlogPost>([
-          `${API_BASE}/blog-posts/${slug}`,
-          `${LEGACY_API_BASE}/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`,
+        const [apiPost, legacyPost] = await Promise.all([
+          fetchBlogPostBySlug(slug),
+          fetchJsonFallback<BlogPost>([
+            `${LEGACY_API_BASE}/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`,
+          ]),
         ]);
+        const data = apiPost ? mapItemToPost(apiPost) : legacyPost;
         let postData = data;
         if (!postData) {
           const all = normalizeList(
