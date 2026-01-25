@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SEO } from "@/lib/seo";
+import { API_BASE } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const proposalSchema = z.object({
@@ -111,7 +112,7 @@ const ProposalPanel = () => {
     setSubmitStatus("saving");
 
     try {
-      const response = await fetch("/api/propostas", {
+      const response = await fetch(`${API_BASE}/propostas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

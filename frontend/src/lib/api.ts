@@ -61,7 +61,9 @@ export type Template = {
   updated_at?: string;
 };
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
+export const LEGACY_API_BASE =
+  (import.meta.env.VITE_LEGACY_API_URL as string | undefined) || '/api';
 
 type UnknownRecord = Record<string, unknown>;
 
