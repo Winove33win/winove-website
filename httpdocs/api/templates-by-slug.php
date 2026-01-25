@@ -11,24 +11,45 @@ if (!isset($_GET['slug']) || $_GET['slug'] === '') {
   exit;
 }
 
-$slug = $conn->real_escape_string($_GET['slug']);
-$sql = "SELECT id,
-               slug,
-               title,
-               content,
-               meta,
-               created_at,
-               updated_at
-        FROM templates
-        WHERE slug = '$slug' LIMIT 1";
+$slugParam = $_GET['slug'];
 
-$result = $conn->query($sql);
-if ($result && $row = $result->fetch_assoc()) {
-  echo json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if ($conn) {
+  $slug = $conn->real_escape_string($slugParam);
+  $sql = "SELECT id,
+                 slug,
+                 title,
+                 content,
+                 meta,
+                 created_at,
+                 updated_at
+          FROM templates
+          WHERE slug = '$slug' LIMIT 1";
+
+  $result = $conn->query($sql);
+  if ($result && $row = $result->fetch_assoc()) {
+    echo json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  } else {
+    http_response_code(404);
+    echo json_encode(["error" => "nao_encontrado"]);
+  }
+
+  $conn->close();
+  exit;
+}
+
+$templates = winove_read_fallback_table('templates', ['templates.json', 'templates.dump.json', 'templates-data.json']);
+$match = null;
+foreach ($templates as $template) {
+  if (($template['slug'] ?? null) === $slugParam) {
+    $match = $template;
+    break;
+  }
+}
+
+if ($match) {
+  echo json_encode($match, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } else {
   http_response_code(404);
   echo json_encode(["error" => "nao_encontrado"]);
 }
-
-$conn->close();
 ?>
