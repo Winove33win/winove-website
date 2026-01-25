@@ -11,26 +11,47 @@ if (!isset($_GET['slug']) || $_GET['slug'] === '') {
   exit;
 }
 
-$slug = $conn->real_escape_string($_GET['slug']);
-$sql = "SELECT id,
-               titulo           AS title,
-               slug             AS slug,
-               resumo           AS excerpt,
-               conteudo         AS content,
-               imagem_destacada AS coverImage,
-               data_publicacao  AS date,
-               autor            AS author,
-               categoria        AS category
-        FROM blog_posts
-        WHERE slug = '$slug' LIMIT 1";
+$slugParam = $_GET['slug'];
 
-$result = $conn->query($sql);
-if ($result && $row = $result->fetch_assoc()) {
-  echo json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if ($conn) {
+  $slug = $conn->real_escape_string($slugParam);
+  $sql = "SELECT id,
+                 titulo           AS title,
+                 slug             AS slug,
+                 resumo           AS excerpt,
+                 conteudo         AS content,
+                 imagem_destacada AS coverImage,
+                 data_publicacao  AS date,
+                 autor            AS author,
+                 categoria        AS category
+          FROM blog_posts
+          WHERE slug = '$slug' LIMIT 1";
+
+  $result = $conn->query($sql);
+  if ($result && $row = $result->fetch_assoc()) {
+    echo json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  } else {
+    http_response_code(404);
+    echo json_encode(["error" => "nao_encontrado"]);
+  }
+
+  $conn->close();
+  exit;
+}
+
+$fallback = winove_read_fallback_table('blog_posts', ['blog_posts.json', 'blog-posts.json', 'blog-posts.dump.json']);
+$match = null;
+foreach ($fallback as $row) {
+  if (($row['slug'] ?? null) === $slugParam) {
+    $match = winove_normalize_blog_row($row);
+    break;
+  }
+}
+
+if ($match) {
+  echo json_encode($match, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } else {
   http_response_code(404);
   echo json_encode(["error" => "nao_encontrado"]);
 }
-
-$conn->close();
 ?>

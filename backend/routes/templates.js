@@ -1,17 +1,9 @@
 // backend/routes/templates.js
 import { Router } from 'express';
-import { missingDbEnv, pool } from '../db.js';
+import { pool } from '../db.js';
 import { getFallbackTemplates } from '../fallbackData.js';
 
 const router = Router();
-
-const sendDbUnavailable = (res) =>
-  res.status(503).json({
-    error: 'db_config_invalida',
-    message:
-      'Variáveis de banco ausentes. Verifique DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.',
-    missing: missingDbEnv,
-  });
 
 /** Normaliza qualquer valor possivelmente string/JSON para array */
 const toArray = (value) => {
@@ -110,7 +102,7 @@ const sendFallbackItem = async (res, slug) => {
 
 /** GET /api/templates */
 router.get('/', async (_req, res) => {
-  if (!pool) return sendDbUnavailable(res);
+  if (!pool) return sendFallbackList(res);
 
   try {
     const [rows] = await pool.query(`
@@ -131,7 +123,7 @@ router.get('/', async (_req, res) => {
 
 /** GET /api/templates/:slug */
 router.get('/:slug', async (req, res) => {
-  if (!pool) return sendDbUnavailable(res);
+  if (!pool) return sendFallbackItem(res, req.params.slug);
 
   try {
     const [rows] = await pool.query(
