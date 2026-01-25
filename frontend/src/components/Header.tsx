@@ -36,7 +36,7 @@ export const Header = () => {
   // Removed "Sobre" and "Portfolio"
   const navItems: NavItem[] = [
     { name: "Início", href: "/", type: "link" },
-    { name: "Serviços", href: "#services", type: "anchor" },
+    { name: "Serviços", href: "/#services", type: "anchor" },
     { name: "Templates", href: "/templates", type: "link" },
     { name: "E-mail Corporativo", href: "/email-corporativo", type: "link" },
 
@@ -46,7 +46,7 @@ export const Header = () => {
 
     { name: "Blog", href: "/blog", type: "link" },
     { name: "Cases", href: "/cases", type: "link" },
-    { name: "Contato", href: "#contact", type: "anchor" },
+    { name: "Contato", href: "/#contact", type: "anchor" },
   ];
 
   return (
