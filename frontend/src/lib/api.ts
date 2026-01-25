@@ -61,9 +61,18 @@ export type Template = {
   updated_at?: string;
 };
 
-export const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '/api';
-export const LEGACY_API_BASE =
-  (import.meta.env.VITE_LEGACY_API_URL as string | undefined) || '/api';
+const normalizeApiBase = (base: string): string => base.replace(/\/+$/, '');
+const joinApiPath = (base: string, path: string): string => {
+  if (!path) return base;
+  return `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
+export const API_BASE = normalizeApiBase(
+  (import.meta.env.VITE_API_URL as string | undefined) || '/api'
+);
+export const LEGACY_API_BASE = normalizeApiBase(
+  (import.meta.env.VITE_LEGACY_API_URL as string | undefined) || '/api'
+);
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -168,42 +177,106 @@ const parseBundle = (value: unknown): TemplateBundle => {
   };
 };
 
+const parseTemplateMeta = (raw: UnknownRecord): UnknownRecord => {
+  const metaRaw = raw.meta;
+  if (typeof metaRaw === 'string') {
+    try {
+      return ensureRecord(JSON.parse(metaRaw));
+    } catch {
+      return {};
+    }
+  }
+  return ensureRecord(metaRaw);
+};
+
 const parseTemplate = (raw: UnknownRecord): Template | null => {
   const slug = typeof raw.slug === 'string' ? raw.slug : '';
   const title = typeof raw.title === 'string' ? raw.title : '';
   if (!slug || !title) return null;
 
+  const meta = parseTemplateMeta(raw);
   const imagesRaw = ensureRecord(raw.images);
+  const imagesMeta = ensureRecord(meta.images as UnknownRecord);
+  const images = Object.keys(imagesRaw).length ? imagesRaw : imagesMeta;
   const gallery = Array.isArray(imagesRaw.gallery)
     ? imagesRaw.gallery.map((item) => normalizeImageUrl(String(item)))
-    : [];
+    : Array.isArray(imagesMeta.gallery)
+      ? imagesMeta.gallery.map((item) => normalizeImageUrl(String(item)))
+      : [];
+
+  const description =
+    typeof raw.description === 'string'
+      ? raw.description
+      : typeof meta.description === 'string'
+        ? meta.description
+        : undefined;
+  const category =
+    typeof raw.category === 'string'
+      ? raw.category
+      : typeof meta.category === 'string'
+        ? meta.category
+        : undefined;
+  const difficulty =
+    typeof raw.difficulty === 'string'
+      ? raw.difficulty
+      : typeof meta.difficulty === 'string'
+        ? meta.difficulty
+        : undefined;
+  const heading =
+    typeof raw.heading === 'string'
+      ? raw.heading
+      : typeof meta.heading === 'string'
+        ? meta.heading
+        : undefined;
+  const subheading =
+    typeof raw.subheading === 'string'
+      ? raw.subheading
+      : typeof meta.subheading === 'string'
+        ? meta.subheading
+        : undefined;
+  const demoUrl =
+    typeof raw.demoUrl === 'string'
+      ? raw.demoUrl
+      : typeof meta.demoUrl === 'string'
+        ? meta.demoUrl
+        : undefined;
 
   return {
     slug,
     title,
-    heading: typeof raw.heading === 'string' ? raw.heading : undefined,
-    subheading: typeof raw.subheading === 'string' ? raw.subheading : undefined,
-    description: typeof raw.description === 'string' ? raw.description : undefined,
-    category: typeof raw.category === 'string' ? raw.category : undefined,
-    difficulty: typeof raw.difficulty === 'string' ? raw.difficulty : undefined,
-    price: toNumber(raw.price),
-    originalPrice: toOptionalNumber(raw.originalPrice),
-    currency: typeof raw.currency === 'string' ? raw.currency : undefined,
-    pages: toOptionalNumber(raw.pages),
-    features: toArray(raw.features),
-    includes: toArray(raw.includes),
-    tags: toArray(raw.tags),
-    demoUrl: typeof raw.demoUrl === 'string' ? raw.demoUrl : undefined,
+    heading,
+    subheading,
+    description,
+    category,
+    difficulty,
+    price: toNumber(raw.price ?? meta.price),
+    originalPrice: toOptionalNumber(raw.originalPrice ?? meta.originalPrice),
+    currency: typeof raw.currency === 'string' ? raw.currency : typeof meta.currency === 'string' ? meta.currency : undefined,
+    pages: toOptionalNumber(raw.pages ?? meta.pages),
+    features: toArray(raw.features ?? meta.features),
+    includes: toArray(raw.includes ?? meta.includes),
+    tags: toArray(raw.tags ?? meta.tags),
+    demoUrl,
     images: {
-      cover: normalizeImageUrl(typeof imagesRaw.cover === 'string' ? imagesRaw.cover : ''),
+      cover: normalizeImageUrl(typeof images.cover === 'string' ? images.cover : ''),
       gallery,
     },
-    contact: ensureRecord(raw.contact) as TemplateContact,
-    ctaTexts: ensureRecord(raw.ctaTexts) as TemplateCtaTexts,
+    contact: (Object.keys(ensureRecord(raw.contact)).length
+      ? ensureRecord(raw.contact)
+      : ensureRecord(meta.contact)) as TemplateContact,
+    ctaTexts: (Object.keys(ensureRecord(raw.ctaTexts)).length
+      ? ensureRecord(raw.ctaTexts)
+      : ensureRecord(meta.ctaTexts)) as TemplateCtaTexts,
     addons: Object.fromEntries(
-      Object.entries(ensureRecord(raw.addons)).map(([key, value]) => [key, parseAddon(value)])
+      Object.entries(
+        Object.keys(ensureRecord(raw.addons)).length ? ensureRecord(raw.addons) : ensureRecord(meta.addons)
+      ).map(([key, value]) => [key, parseAddon(value)])
     ),
-    bundles: Array.isArray(raw.bundles) ? raw.bundles.map(parseBundle) : undefined,
+    bundles: Array.isArray(raw.bundles)
+      ? raw.bundles.map(parseBundle)
+      : Array.isArray(meta.bundles)
+        ? meta.bundles.map(parseBundle)
+        : undefined,
     content: typeof raw.content === 'string' ? raw.content : undefined,
     created_at: typeof raw.created_at === 'string' ? raw.created_at : undefined,
     updated_at: typeof raw.updated_at === 'string' ? raw.updated_at : undefined,
@@ -216,6 +289,22 @@ const parseJson = async <T>(response: Response): Promise<T> => {
     throw new Error('Resposta vazia do servidor');
   }
   return JSON.parse(text) as T;
+};
+
+const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      ...(options?.headers || {}),
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erro ao carregar dados (${response.status})`);
+  }
+
+  return parseJson<T>(response);
 };
 
 const parseBlogItem = (raw: UnknownRecord): BlogItem | null => {
@@ -254,17 +343,15 @@ const parseBlogItem = (raw: UnknownRecord): BlogItem | null => {
 };
 
 export async function fetchTemplates(): Promise<Template[]> {
-  const response = await fetch(`${API_BASE}/templates`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const primaryUrl = joinApiPath(API_BASE, 'templates');
+  const legacyUrl = joinApiPath(LEGACY_API_BASE, 'templates.php');
+  let data: unknown[];
 
-  if (!response.ok) {
-    throw new Error(`Erro ao carregar templates (${response.status})`);
+  try {
+    data = await fetchJson<unknown[]>(primaryUrl);
+  } catch (_error) {
+    data = await fetchJson<unknown[]>(legacyUrl);
   }
-
-  const data = await parseJson<unknown[]>(response);
   const list = Array.isArray(data) ? data : [];
   const parsed = list
     .map((item) => (item && typeof item === 'object' ? parseTemplate(item as UnknownRecord) : null))
@@ -276,23 +363,36 @@ export async function fetchTemplates(): Promise<Template[]> {
 export async function fetchTemplate(slug: string): Promise<Template | null> {
   if (!slug) return null;
 
-  const response = await fetch(`${API_BASE}/templates/${encodeURIComponent(slug)}`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const primaryUrl = joinApiPath(API_BASE, `templates/${encodeURIComponent(slug)}`);
+  const legacyUrl = joinApiPath(
+    LEGACY_API_BASE,
+    `templates-by-slug.php?slug=${encodeURIComponent(slug)}`
+  );
 
-  if (response.status === 404) {
-    return null;
+  const fetchTemplateFromUrl = async (url: string): Promise<Template | null> => {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Erro ao carregar template (${response.status})`);
+    }
+
+    const data = await parseJson<UnknownRecord>(response);
+    return parseTemplate(data);
+  };
+
+  try {
+    return await fetchTemplateFromUrl(primaryUrl);
+  } catch (_error) {
+    return await fetchTemplateFromUrl(legacyUrl);
   }
-
-  if (!response.ok) {
-    throw new Error(`Erro ao carregar template (${response.status})`);
-  }
-
-  const data = await parseJson<UnknownRecord>(response);
-  const parsed = parseTemplate(data);
-  return parsed;
 }
 
 export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise<BlogPostsResponse> {
@@ -304,21 +404,10 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
   if (params.search) query.set('q', params.search);
 
   const qs = query.toString();
-  const url = `${API_BASE}/blog-posts${qs ? `?${qs}` : ''}`;
+  const url = joinApiPath(API_BASE, `blog-posts${qs ? `?${qs}` : ''}`);
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-      },
-      signal: params.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro ao carregar posts (${response.status})`);
-    }
-
-    const payload = ensureRecord(await parseJson<UnknownRecord>(response));
+    const payload = ensureRecord(await fetchJson<UnknownRecord>(url, { signal: params.signal }));
     const itemsRaw = Array.isArray(payload.items) ? payload.items : [];
     const items = itemsRaw
       .map((item) => (item && typeof item === 'object' ? parseBlogItem(item as UnknownRecord) : null))
@@ -329,61 +418,125 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
     const offset = toNumber(payload.offset, params.offset ?? 0);
     const hasMore = Boolean(payload.hasMore);
 
-    return {
-      success: true,
-      items,
-      total,
-      limit,
-      offset,
-      hasMore,
-    };
+    return { success: true, items, total, limit, offset, hasMore };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro ao carregar posts';
-    return {
-      success: false,
-      items: [],
-      total: 0,
-      limit: params.limit ?? 0,
-      offset: params.offset ?? 0,
-      hasMore: false,
-      message,
-    };
+    try {
+      const legacyBase = LEGACY_API_BASE;
+      if (params.all) {
+        const legacyAllUrl = joinApiPath(legacyBase, 'blog-posts.php');
+        const legacyPosts = await fetchJson<unknown[]>(legacyAllUrl, { signal: params.signal });
+        const rawList = Array.isArray(legacyPosts) ? legacyPosts : [];
+        const parsed = rawList
+          .map((item) => (item && typeof item === 'object' ? parseBlogItem(item as UnknownRecord) : null))
+          .filter((item): item is BlogItem => item !== null);
+
+        const filtered = parsed.filter((item) => {
+          if (params.category && item.category !== params.category) return false;
+          if (params.search) {
+            const needle = params.search.toLowerCase();
+            const haystack = `${item.title} ${item.excerpt} ${item.content || ''}`.toLowerCase();
+            if (!haystack.includes(needle)) return false;
+          }
+          return true;
+        });
+
+        return {
+          success: true,
+          items: filtered,
+          total: filtered.length,
+          limit: filtered.length,
+          offset: 0,
+          hasMore: false,
+        };
+      }
+
+      const limit = params.limit ?? 10;
+      const offset = params.offset ?? 0;
+      const page = Math.floor(offset / limit) + 1;
+      const legacyQuery = new URLSearchParams();
+      legacyQuery.set('page', String(page));
+      legacyQuery.set('pageSize', String(limit));
+      if (params.search) legacyQuery.set('q', params.search);
+      if (params.category) legacyQuery.set('category', params.category);
+      const legacyUrl = joinApiPath(legacyBase, `blog-posts-search.php?${legacyQuery.toString()}`);
+      const legacyPayload = ensureRecord(
+        await fetchJson<UnknownRecord>(legacyUrl, { signal: params.signal })
+      );
+      const itemsRaw = Array.isArray(legacyPayload.items) ? legacyPayload.items : [];
+      const items = itemsRaw
+        .map((item) => (item && typeof item === 'object' ? parseBlogItem(item as UnknownRecord) : null))
+        .filter((item): item is BlogItem => item !== null);
+      const total = toNumber(legacyPayload.total, items.length);
+      const hasMore = offset + items.length < total;
+
+      return {
+        success: true,
+        items,
+        total,
+        limit,
+        offset,
+        hasMore,
+      };
+    } catch (legacyError) {
+      const message = legacyError instanceof Error ? legacyError.message : 'Erro ao carregar posts';
+      return {
+        success: false,
+        items: [],
+        total: 0,
+        limit: params.limit ?? 0,
+        offset: params.offset ?? 0,
+        hasMore: false,
+        message,
+      };
+    }
   }
 }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogItem | null> {
   if (!slug) return null;
 
-  const response = await fetch(`${API_BASE}/blog-posts/${encodeURIComponent(slug)}`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const primaryUrl = joinApiPath(API_BASE, `blog-posts/${encodeURIComponent(slug)}`);
+  const legacyUrl = joinApiPath(
+    LEGACY_API_BASE,
+    `blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`
+  );
 
-  if (response.status === 404) {
-    return null;
+  const fetchBlogItem = async (url: string): Promise<BlogItem | null> => {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Erro ao carregar post (${response.status})`);
+    }
+
+    const data = await parseJson<UnknownRecord>(response);
+    return data && typeof data === 'object' ? parseBlogItem(data) : null;
+  };
+
+  try {
+    return await fetchBlogItem(primaryUrl);
+  } catch (_error) {
+    return await fetchBlogItem(legacyUrl);
   }
-
-  if (!response.ok) {
-    throw new Error(`Erro ao carregar post (${response.status})`);
-  }
-
-  const data = await parseJson<UnknownRecord>(response);
-  return data && typeof data === 'object' ? parseBlogItem(data) : null;
 }
 
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
-  const response = await fetch(`${API_BASE}/blog-posts/categories`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const primaryUrl = joinApiPath(API_BASE, 'blog-posts/categories');
+  const legacyUrl = joinApiPath(LEGACY_API_BASE, 'blog-posts-categories.php');
+  let data: unknown[];
 
-  if (!response.ok) {
-    throw new Error(`Erro ao carregar categorias (${response.status})`);
+  try {
+    data = await fetchJson<unknown[]>(primaryUrl);
+  } catch (_error) {
+    data = await fetchJson<unknown[]>(legacyUrl);
   }
-
-  const data = await parseJson<unknown[]>(response);
   const list = Array.isArray(data) ? data : [];
   return list.map((item) => {
     const record = ensureRecord(item);
