@@ -119,6 +119,12 @@ export const BlogPost = () => {
       return [];
     };
 
+    const fallbackListUrls = [
+      `${API_BASE}/blog-posts`,
+      `${LEGACY_API_BASE}/blog-posts.php`,
+      `/assets/blog-fallback.json`,
+    ];
+
     const load = async () => {
       if (!slug) return;
       try {
@@ -132,11 +138,7 @@ export const BlogPost = () => {
         let postData = data;
         if (!postData) {
           const all = normalizeList(
-            await fetchJsonFallback<any>([
-              `${API_BASE}/blog-posts`,
-              `${LEGACY_API_BASE}/blog-posts.php`,
-              `/assets/blog-fallback.json`,
-            ])
+            await fetchJsonFallback<any>(fallbackListUrls)
           );
           postData = all.find((p: any) => p.slug === slug) || null;
           if (!postData) return;
@@ -146,11 +148,7 @@ export const BlogPost = () => {
         let related = await loadRelatedFromApi(postData.slug);
         if (related.length === 0) {
           const fallbackList = normalizeList(
-            await fetchJsonFallback<any>([
-              `${API_BASE}/blog-posts`,
-              `${LEGACY_API_BASE}/blog-posts.php`,
-              `/assets/blog-fallback.json`,
-            ])
+            await fetchJsonFallback<any>(fallbackListUrls)
           );
           related = fallbackList
             .filter((p: any) => p.slug !== postData.slug)
