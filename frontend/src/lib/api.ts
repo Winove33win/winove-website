@@ -250,7 +250,7 @@ const parseBlogItem = (raw: UnknownRecord): BlogItem | null => {
 };
 
 export async function fetchTemplates(): Promise<Template[]> {
-  const response = await fetch(`${API_BASE}/templates`, {
+  const response = await fetch(buildApiUrl('templates'), {
     headers: {
       Accept: 'application/json',
     },
@@ -272,7 +272,7 @@ export async function fetchTemplates(): Promise<Template[]> {
 export async function fetchTemplate(slug: string): Promise<Template | null> {
   if (!slug) return null;
 
-  const response = await fetch(`${API_BASE}/templates/${encodeURIComponent(slug)}`, {
+  const response = await fetch(buildApiUrl(`templates/${encodeURIComponent(slug)}`), {
     headers: {
       Accept: 'application/json',
     },
@@ -300,7 +300,7 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
   if (params.search) query.set('q', params.search);
 
   const qs = query.toString();
-  const url = `${API_BASE}/blog-posts${qs ? `?${qs}` : ''}`;
+  const url = `${buildApiUrl('blog-posts')}${qs ? `?${qs}` : ''}`;
 
   try {
     const response = await fetch(url, {
@@ -348,7 +348,7 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
 }
 
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
-  const response = await fetch(`${API_BASE}/blog-posts/categories`, {
+  const response = await fetch(buildApiUrl('blog-posts/categories'), {
     headers: {
       Accept: 'application/json',
     },

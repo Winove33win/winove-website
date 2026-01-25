@@ -103,20 +103,11 @@ export const BlogPost = () => {
 
     const load = async () => {
       if (!slug) return;
-      const API = import.meta.env.VITE_API_URL || "/api";
-      try {
-        const data = await fetchJsonFallback<BlogPost>([
-          `${API}/blog-posts/${slug}`,
-          `/api/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`,
-        ]);
-        let postData = data;
-        if (!postData) {
-          const all = normalizeList(
-            await fetchJsonFallback<any>([
-              `${API}/blog-posts`,
-              `/api/blog-posts.php`,
-              `/assets/blog-fallback.json`,
-            ])
+      const legacyPostUrl = `/api/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`;
+      const legacyListUrls = [`/api/blog-posts.php`, `/assets/blog-fallback.json`];
+        const data = await fetchJsonFallback<BlogPost>([blogPostUrl, legacyPostUrl]);
+            await fetchJsonFallback<any>([blogPostsUrl, ...legacyListUrls])
+            await fetchJsonFallback<any>([blogPostsUrl, ...legacyListUrls])
           );
           postData = all.find((p: any) => p.slug === slug) || null;
           if (!postData) return;

@@ -3,10 +3,10 @@ import { Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "luc
 export const Footer = () => {
   const quickLinks = [
     { name: "Sobre Nós", href: "#about" },
-    { name: "Serviços", href: "#services" },
+    { name: "Serviços", href: "/#services" },
     { name: "Portfolio", href: "#portfolio" },
     { name: "Blog", href: "#blog" },
-    { name: "Contato", href: "#contact" }
+    { name: "Contato", href: "/#contact" }
   ];
 
   const services = [
