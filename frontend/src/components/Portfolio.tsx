@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ExternalLink, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
+import { API_BASE } from "@/lib/api";
 import { normalizeImageUrl } from "@/lib/utils";
 
 interface Case {
@@ -28,7 +29,7 @@ export const Portfolio = () => {
   useEffect(() => {
     const loadCases = async () => {
       try {
-        const res = await fetch("/api/cases");
+        const res = await fetch(`${API_BASE}/cases`);
         if (res.ok) {
           const data: Case[] = await res.json();
           setCases(data.slice(0, 4));

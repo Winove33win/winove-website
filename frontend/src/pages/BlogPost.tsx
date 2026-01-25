@@ -3,7 +3,7 @@ import { Calendar, User, ArrowLeft, Clock, Share2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { SEO } from "@/lib/seo";
-import { fetchBlogPosts, type BlogItem } from "@/lib/api";
+import { API_BASE, LEGACY_API_BASE, fetchBlogPosts, type BlogItem } from "@/lib/api";
 
 interface BlogPost {
   id: number;
@@ -103,18 +103,17 @@ export const BlogPost = () => {
 
     const load = async () => {
       if (!slug) return;
-      const API = import.meta.env.VITE_API_URL || "/api";
       try {
         const data = await fetchJsonFallback<BlogPost>([
-          `${API}/blog-posts/${slug}`,
-          `/api/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`,
+          `${API_BASE}/blog-posts/${slug}`,
+          `${LEGACY_API_BASE}/blog-posts-by-slug.php?slug=${encodeURIComponent(slug)}`,
         ]);
         let postData = data;
         if (!postData) {
           const all = normalizeList(
             await fetchJsonFallback<any>([
-              `${API}/blog-posts`,
-              `/api/blog-posts.php`,
+              `${API_BASE}/blog-posts`,
+              `${LEGACY_API_BASE}/blog-posts.php`,
               `/assets/blog-fallback.json`,
             ])
           );
@@ -127,8 +126,8 @@ export const BlogPost = () => {
         if (related.length === 0) {
           const fallbackList = normalizeList(
             await fetchJsonFallback<any>([
-              `${API}/blog-posts`,
-              `/api/blog-posts.php`,
+              `${API_BASE}/blog-posts`,
+              `${LEGACY_API_BASE}/blog-posts.php`,
               `/assets/blog-fallback.json`,
             ])
           );
