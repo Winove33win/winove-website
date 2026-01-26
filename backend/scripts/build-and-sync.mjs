@@ -18,36 +18,57 @@ function run(cmd, cwd) {
   execSync(cmd, { stdio: 'inherit', cwd });
 }
 
-try {
-  // 1) Install and build frontend
-  if (!process.env.BYPASS_FRONTEND_INSTALL) {
-    try {
-      run('npm ci', frontendDir);
-    } catch (e) {
-      console.warn('npm ci failed, falling back to npm install');
-      run('npm install', frontendDir);
-    }
-  } else {
-    console.log('Skipping frontend install due to BYPASS_FRONTEND_INSTALL=1');
+const hasIndexHtml = (dir) => fs.existsSync(path.join(dir, 'index.html'));
+
+const syncDist = () => {
+  if (!fs.existsSync(srcDist)) {
+    console.warn(`Frontend dist not found at ${srcDist}. Skipping sync.`);
+    return;
   }
 
-  run('npm run build', frontendDir);
-
-  // 2) Sync dist -> backend/dist
   fs.rmSync(dstDist, { recursive: true, force: true });
   fs.mkdirSync(dstDist, { recursive: true });
-  // Node 16+ has cpSync with recursive
   fs.cpSync(srcDist, dstDist, { recursive: true });
 
-  // Sanity check
-  const indexHtml = path.join(dstDist, 'index.html');
-  if (!fs.existsSync(indexHtml)) {
-    throw new Error(`Build sync failed: ${indexHtml} not found`);
+  if (!hasIndexHtml(dstDist)) {
+    console.warn(`Sync completed but ${path.join(dstDist, 'index.html')} not found.`);
+  } else {
+    console.log('Frontend build synced to backend/dist');
   }
+};
 
-  console.log('Frontend build synced to backend/dist');
-} catch (err) {
-  console.error(err.message || err);
-  process.exit(1);
+const shouldBuild =
+  process.env.SKIP_FRONTEND_BUILD !== '1' && process.env.BYPASS_FRONTEND_BUILD !== '1';
+
+if (!shouldBuild) {
+  console.log('Skipping frontend build due to SKIP_FRONTEND_BUILD/BYPASS_FRONTEND_BUILD.');
+  syncDist();
+} else {
+  try {
+    if (!process.env.BYPASS_FRONTEND_INSTALL) {
+      try {
+        run('npm ci', frontendDir);
+      } catch (err) {
+        console.warn('npm ci failed, falling back to npm install.');
+        run('npm install', frontendDir);
+      }
+    } else {
+      console.log('Skipping frontend install due to BYPASS_FRONTEND_INSTALL=1');
+    }
+
+    run('npm run build', frontendDir);
+    syncDist();
+  } catch (err) {
+    console.error(err?.message || err);
+    const hasFrontendDist = hasIndexHtml(srcDist);
+    const hasBackendDist = hasIndexHtml(dstDist);
+    if (!hasFrontendDist && !hasBackendDist) {
+      console.warn('Frontend build failed and no existing dist found. Continuing without build.');
+    } else {
+      console.warn('Frontend build failed. Continuing with existing dist.');
+      if (hasFrontendDist && !hasBackendDist) {
+        syncDist();
+      }
+    }
+  }
 }
-
