@@ -253,7 +253,7 @@ const SistemaGestaoDocumental = () => {
                     poster="https://www.winove.com.br/favicon.png"
                   >
                     <source
-                      src="https://www.dokmee.com/wp-content/uploads/2025/11/dokmee_video_1440x760_workflow.mp4"
+                      src="/assets/dokmee_video_1440x760_workflow.mp4"
                       type="video/mp4"
                     />
                     Seu navegador não suporta vídeo HTML5.
