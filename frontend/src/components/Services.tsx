@@ -1,4 +1,4 @@
-import { Search, Megaphone, Code, Palette, TrendingUp } from "lucide-react";
+import { Search, Megaphone, Code, Palette, TrendingUp, FolderOpen } from "lucide-react";
 import { useState } from "react";
 export const Services = () => {
   const [hoveredService, setHoveredService] = useState<number | null>(null);
@@ -32,6 +32,12 @@ export const Services = () => {
     description: "Estratégias personalizadas para acelerar o crescimento do seu negócio online.",
     features: ["Estratégia digital", "Análise de mercado", "Planejamento", "Growth hacking"],
     color: "from-orange-500 to-orange-600"
+  }, {
+    icon: FolderOpen,
+    title: "Sistema de Gestão Documental",
+    description: "Centralize documentos na nuvem com controle de acesso, busca avançada e backup automático.",
+    features: ["Armazenamento em nuvem", "Controle de permissões", "Busca avançada", "Backup automático"],
+    color: "from-red-500 to-red-700"
   }];
   return <section id="services" className="py-24 bg-background relative overflow-hidden">
       {/* Background Elements */}
