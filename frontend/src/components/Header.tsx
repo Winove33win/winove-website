@@ -39,6 +39,7 @@ export const Header = () => {
     { name: "Serviços", href: "/servicos", type: "link" },
     { name: "Templates", href: "/templates", type: "link" },
     { name: "E-mail Corporativo", href: "/email-corporativo", type: "link" },
+    { name: "Gestão Documental", href: "/sistema-gestao-documental", type: "link" },
 
     // Novas páginas
     { name: "Chat WhatsApp", href: "/chat-whatsapp", type: "link" },
