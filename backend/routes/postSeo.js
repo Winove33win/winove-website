@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
+import { getFallbackBlogPosts } from '../fallbackData.js';
 import {
   absoluteUrl,
   ensureTemplateIsFresh,
@@ -27,34 +28,53 @@ const toISODate = (value) => {
 
 const ensureAbsoluteUrl = (value) => absoluteUrl(BASE_URL, value);
 
+const findFallbackPostBySlug = async (slug) => {
+  const posts = await getFallbackBlogPosts();
+  if (!Array.isArray(posts) || !posts.length) {
+    return null;
+  }
+
+  return posts.find((item) => item.slug === slug) || null;
+};
+
 router.get('/blog/:slug([^/.]+)/?', async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const [rows] = await pool.query(
-      `SELECT
-         id,
-         slug,
-         titulo,
-         titulo AS title,
-         resumo,
-         resumo AS description,
-         imagem_destacada,
-         imagem_destacada AS image,
-         data_publicacao,
-         data_publicacao AS published_at,
-         data_publicacao AS updated_at,
-         data_publicacao AS created_at,
-         autor,
-         autor AS author,
-         categoria,
-         categoria AS category
-       FROM blog_posts
-       WHERE slug = ?
-       LIMIT 1`,
-      [slug]
-    );
+    let post = null;
 
-    if (!rows?.length) {
+    if (pool) {
+      const [rows] = await pool.query(
+        `SELECT
+           id,
+           slug,
+           titulo,
+           titulo AS title,
+           resumo,
+           resumo AS description,
+           imagem_destacada,
+           imagem_destacada AS image,
+           data_publicacao,
+           data_publicacao AS published_at,
+           data_publicacao AS updated_at,
+           data_publicacao AS created_at,
+           autor,
+           autor AS author,
+           categoria,
+           categoria AS category
+         FROM blog_posts
+         WHERE slug = ?
+         LIMIT 1`,
+        [slug]
+      );
+
+      post = rows?.[0] || null;
+    }
+
+    if (!post) {
+      post = await findFallbackPostBySlug(slug);
+    }
+
+    if (!post) {
       return res.status(404).send('Post não encontrado');
     }
 
@@ -63,7 +83,6 @@ router.get('/blog/:slug([^/.]+)/?', async (req, res, next) => {
       return next();
     }
 
-    const post = rows[0];
     const canonical = `${BASE_URL}/blog/${post.slug}/`;
     const postTitle = (post.title || post.titulo || '').trim();
     const title = postTitle ? `${postTitle} | Winove` : 'Post do Blog | Winove';
@@ -138,40 +157,48 @@ router.get('/api/post/:slug/seo', async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const [rows] = await pool.query(
-      `SELECT
-         id,
-         titulo,
-         titulo AS title,
-         slug,
-         resumo,
-         resumo AS description,
-         resumo AS excerpt,
-         conteudo,
-         conteudo AS content,
-         imagem_destacada,
-         imagem_destacada AS coverImage,
-         imagem_destacada AS coverUrl,
-         imagem_destacada AS image,
-         data_publicacao,
-         data_publicacao AS date,
-         data_publicacao AS published_at,
-         data_publicacao AS updated_at,
-         data_publicacao AS created_at,
-         autor,
-         autor AS author,
-         categoria,
-         categoria AS category
-       FROM blog_posts
-       WHERE slug = ?
-       LIMIT 1`,
-      [slug]
-    );
-    if (!rows?.length) {
-      return res.status(404).json({ error: 'Post não encontrado' });
+    let post = null;
+
+    if (pool) {
+      const [rows] = await pool.query(
+        `SELECT
+           id,
+           titulo,
+           titulo AS title,
+           slug,
+           resumo,
+           resumo AS description,
+           resumo AS excerpt,
+           conteudo,
+           conteudo AS content,
+           imagem_destacada,
+           imagem_destacada AS coverImage,
+           imagem_destacada AS coverUrl,
+           imagem_destacada AS image,
+           data_publicacao,
+           data_publicacao AS date,
+           data_publicacao AS published_at,
+           data_publicacao AS updated_at,
+           data_publicacao AS created_at,
+           autor,
+           autor AS author,
+           categoria,
+           categoria AS category
+         FROM blog_posts
+         WHERE slug = ?
+         LIMIT 1`,
+        [slug]
+      );
+      post = rows?.[0] || null;
     }
 
-    const post = rows[0];
+    if (!post) {
+      post = await findFallbackPostBySlug(slug);
+    }
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post não encontrado' });
+    }
     const title = post.title || post.titulo || '';
     const summary = post.summary || post.resumo || '';
     const image = ensureAbsoluteUrl(post.image || post.imagem_destacada);
