@@ -26,6 +26,7 @@ import CookiesPolicy from "./pages/CookiesPolicy";
 import DataDeletion from "./pages/DataDeletion";
 import ProposalPanel from "./pages/ProposalPanel";
 import ServicesPage from "./pages/Services";
+import SobreFernandoSouza from "./pages/SobreFernandoSouza";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/central-atendimento" element={<CentralAtendimento />} />
             <Route path="/comercial-propostas" element={<ProposalPanel />} />
             <Route path="/servicos" element={<ServicesPage />} />
+            <Route path="/sobre-fernando-souza" element={<SobreFernandoSouza />} />
             <Route path="/promocoes" element={<Promocoes />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />

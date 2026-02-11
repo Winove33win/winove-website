@@ -37,6 +37,7 @@ export const Header = () => {
   const navItems: NavItem[] = [
     { name: "Início", href: "/", type: "link" },
     { name: "Serviços", href: "/servicos", type: "link" },
+    { name: "Fernando Souza", href: "/sobre-fernando-souza", type: "link" },
     { name: "Templates", href: "/templates", type: "link" },
     { name: "E-mail Corporativo", href: "/email-corporativo", type: "link" },
 
