@@ -73,6 +73,8 @@ export const API_BASE = normalizeApiBase(
 export const LEGACY_API_BASE = normalizeApiBase(
   (import.meta.env.VITE_LEGACY_API_URL as string | undefined) || '/api'
 );
+const ENABLE_LEGACY_API_FALLBACK =
+  String(import.meta.env.VITE_ENABLE_LEGACY_API_FALLBACK || '').toLowerCase() === 'true';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -349,7 +351,10 @@ export async function fetchTemplates(): Promise<Template[]> {
 
   try {
     data = await fetchJson<unknown[]>(primaryUrl);
-  } catch (_error) {
+  } catch (primaryError) {
+    if (!ENABLE_LEGACY_API_FALLBACK) {
+      throw primaryError;
+    }
     data = await fetchJson<unknown[]>(legacyUrl);
   }
   const list = Array.isArray(data) ? data : [];
@@ -390,7 +395,10 @@ export async function fetchTemplate(slug: string): Promise<Template | null> {
 
   try {
     return await fetchTemplateFromUrl(primaryUrl);
-  } catch (_error) {
+  } catch (primaryError) {
+    if (!ENABLE_LEGACY_API_FALLBACK) {
+      throw primaryError;
+    }
     return await fetchTemplateFromUrl(legacyUrl);
   }
 }
@@ -420,6 +428,19 @@ export async function fetchBlogPosts(params: FetchBlogPostsParams = {}): Promise
 
     return { success: true, items, total, limit, offset, hasMore };
   } catch (error) {
+    if (!ENABLE_LEGACY_API_FALLBACK) {
+      const message = error instanceof Error ? error.message : 'Erro ao carregar posts';
+      return {
+        success: false,
+        items: [],
+        total: 0,
+        limit: params.limit ?? 0,
+        offset: params.offset ?? 0,
+        hasMore: false,
+        message,
+      };
+    }
+
     try {
       const legacyBase = LEGACY_API_BASE;
       if (params.all) {
@@ -522,7 +543,10 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogItem | null
 
   try {
     return await fetchBlogItem(primaryUrl);
-  } catch (_error) {
+  } catch (primaryError) {
+    if (!ENABLE_LEGACY_API_FALLBACK) {
+      throw primaryError;
+    }
     return await fetchBlogItem(legacyUrl);
   }
 }
@@ -534,7 +558,10 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
 
   try {
     data = await fetchJson<unknown[]>(primaryUrl);
-  } catch (_error) {
+  } catch (primaryError) {
+    if (!ENABLE_LEGACY_API_FALLBACK) {
+      throw primaryError;
+    }
     data = await fetchJson<unknown[]>(legacyUrl);
   }
   const list = Array.isArray(data) ? data : [];
