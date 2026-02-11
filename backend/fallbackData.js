@@ -47,6 +47,8 @@ const cached = {
   blog: null,
 };
 
+export const fallbackCases = [];
+
 const loadDumpTable = async (tableName, filenames) => {
   const candidates = filenames.map((file) => path.join(__dirname, 'data', file));
   const found = await readFirstExistingJson(candidates);
