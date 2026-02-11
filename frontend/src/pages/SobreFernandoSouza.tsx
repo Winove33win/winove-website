@@ -59,6 +59,30 @@ const education = [
   "The Next MBA — Executive MBA, Special Products Marketing Operations (2022–2023)",
 ];
 
+const seoEducationHighlights = [
+  {
+    title: "University of California, Davis",
+    focus: "Search Engine Optimization (SEO)",
+    period: "2021–2022",
+    description:
+      "Especialização com foco em estratégia de conteúdo, autoridade de domínio e otimização técnica para posicionamento orgânico sustentável.",
+  },
+  {
+    title: "University of California, Davis",
+    focus: "SEO Specialization",
+    period: "2020",
+    description:
+      "Formação internacional direcionada à aplicação prática de SEO on-page, pesquisa de palavras-chave e crescimento orientado por dados.",
+  },
+  {
+    title: "NEXT MBA",
+    focus: "MBA em Marketing",
+    period: "2022–2024",
+    description:
+      "Base estratégica para integrar SEO, marca e performance em operações de aquisição e retenção de clientes.",
+  },
+];
+
 const faqs = [
   {
     question: "Como Fernando Souza atua em projetos de SEO e crescimento digital?",
@@ -120,7 +144,7 @@ export default function SobreFernandoSouza() {
     <>
       <SEO
         title="Fernando Souza | Especialista em SEO, Inovação e Estratégia Digital"
-        description="Conheça Fernando Souza: empreendedor, professor de MBA, especialista em SEO e fundador da Winove.online. Mais de 100 negócios acelerados com foco em crescimento digital sustentável."
+        description="Conheça Fernando Souza: empreendedor, professor de MBA, especialista em SEO e fundador da Winove.online. Mais de 1.000 negócios com atuação internacional em criação e crescimento digital."
         canonical="https://www.winove.com.br/sobre-fernando-souza"
         jsonLd={[personJsonLd, breadcrumbJsonLd, faqJsonLd]}
       />
@@ -149,27 +173,6 @@ export default function SobreFernandoSouza() {
                 Acredito que negócios, carreiras e vidas são construídos como projetos: com visão, estratégia, ajustes e evolução contínua.
                 Meu trabalho une tecnologia, marketing e execução prática para gerar resultados consistentes e impacto duradouro.
               </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8">
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-2xl font-bold">+100</p>
-                    <p className="text-sm text-muted-foreground">negócios acelerados</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-2xl font-bold">9+ anos</p>
-                    <p className="text-sm text-muted-foreground">de liderança executiva</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <p className="text-2xl font-bold">SEO + Growth</p>
-                    <p className="text-sm text-muted-foreground">estratégia orientada por dados</p>
-                  </CardContent>
-                </Card>
-              </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <a href="https://api.whatsapp.com/send?phone=5519982403845" target="_blank" rel="noopener noreferrer">
@@ -262,8 +265,23 @@ export default function SobreFernandoSouza() {
 
         <section className="container mx-auto px-4 py-10" aria-labelledby="formacao-academica">
           <h2 id="formacao-academica" className="text-2xl md:text-3xl font-semibold tracking-tight mb-6">Formação acadêmica e certificações</h2>
+          <div className="grid gap-4 lg:grid-cols-3 mb-6">
+            {seoEducationHighlights.map((item) => (
+              <Card key={`${item.title}-${item.focus}`} className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg leading-tight">{item.focus}</CardTitle>
+                  <p className="text-sm font-medium text-primary">{item.title} • {item.period}</p>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">{item.description}</CardContent>
+              </Card>
+            ))}
+          </div>
+
           <Card>
-            <CardContent className="pt-6">
+            <CardHeader>
+              <CardTitle className="text-lg">Demais formações e certificações</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ul className="space-y-3 text-sm text-muted-foreground list-disc pl-5">
                 {education.map((item) => (
                   <li key={item}>{item}</li>
@@ -284,6 +302,27 @@ export default function SobreFernandoSouza() {
                 <CardContent className="text-sm text-muted-foreground">{faq.answer}</CardContent>
               </Card>
             ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10" aria-label="destaques-profissionais-fernando-souza">
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-2xl font-bold">+1.000</p>
+                <p className="text-sm text-muted-foreground">negócios na criação e aceleração</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-2xl font-bold">+10 países</p>
+                <p className="text-sm text-muted-foreground">de atuação internacional em negócios</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-2xl font-bold">SEO forte</p>
+                <p className="text-sm text-muted-foreground">especialização aplicada para crescimento orgânico</p>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </div>
