@@ -40,15 +40,29 @@ export function normalizeImageUrl(image: string, width = 600, height = 400) {
       .toLowerCase()
 
   const mapLegacyWinoveTemplatePath = (url: URL) => {
-    const [firstSegmentRaw, ...restSegmentsRaw] = url.pathname.split("/").filter(Boolean)
-    if (!firstSegmentRaw || restSegmentsRaw.length === 0) {
+    const segments = url.pathname.split("/").filter(Boolean)
+    if (segments.length < 2) {
       return ""
     }
 
+    const [firstSegmentRaw, secondSegmentRaw, ...tailSegmentsRaw] = segments
     const firstSegment = cleanSegment(decodeURIComponent(firstSegmentRaw))
+
+    // Legacy paths can come as /assets/<slug>/<image>.
+    if (firstSegment === "assets" && secondSegmentRaw && tailSegmentsRaw.length > 0) {
+      const slugSegment = cleanSegment(decodeURIComponent(secondSegmentRaw))
+      const slug = slugAliases[slugSegment] || slugSegment
+      const filePath = tailSegmentsRaw.map((segment) => decodeURIComponent(segment)).join("/")
+      return encodeURI(`https://winove.com.br/assets/templates/${slug}/${filePath}`)
+    }
+
+    // Legacy paths can also come as /<slug>/<image>.
     const slug = slugAliases[firstSegment] || firstSegment
-    const filePath = restSegmentsRaw.map((segment) => decodeURIComponent(segment)).join("/")
-    return encodeURI(`https://winove.com.br/assets/templates/${slug}/${filePath}`)
+    const filePath = [secondSegmentRaw, ...tailSegmentsRaw]
+      .map((segment) => decodeURIComponent(segment))
+      .join("/")
+
+    return filePath ? encodeURI(`https://winove.com.br/assets/templates/${slug}/${filePath}`) : ""
   }
 
   if (/^https?:\/\//i.test(value)) {
