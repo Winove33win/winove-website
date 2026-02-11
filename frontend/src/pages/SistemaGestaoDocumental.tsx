@@ -106,26 +106,26 @@ const SistemaGestaoDocumental = () => {
       />
 
       <div className="min-h-screen bg-background text-foreground">
-        <section className="section--first px-4 bg-gradient-to-br from-[#210409] via-[#4d0914] to-[#100308]">
+        <section className="section--first px-4 pb-14 pt-10 md:pt-14 bg-gradient-to-br from-[#030712] via-[#071226] to-[#02050b]">
           <div className="container mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              <div>
-                <Badge className="mb-4 px-4 py-2">ECM para empresas</Badge>
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white leading-tight">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-8 lg:gap-12 items-center">
+              <div className="space-y-6 md:space-y-7">
+                <Badge className="px-4 py-2 w-fit">ECM para empresas</Badge>
+                <h1 className="text-4xl md:text-6xl font-bold text-white leading-[1.05] tracking-tight">
                   Gestão Documental
                   <span className="block text-primary">Rápida, Segura e Escalável</span>
                 </h1>
-                <p className="text-xl text-white/85 mb-6 max-w-2xl">
+                <p className="text-lg md:text-xl text-white/85 max-w-2xl">
                   Centralize, digitalize, pesquise, automatize e acompanhe resultados
                   em uma única plataforma de <strong>Enterprise Content Management</strong>.
                 </p>
-                <p className="text-base text-white/70 mb-8 max-w-2xl">
+                <p className="text-base md:text-lg text-white/70 max-w-2xl">
                   Chega de arquivos espalhados em pastas, e-mails e servidores diferentes.
                   Sua equipe ganha velocidade para encontrar documentos, aprovar processos
                   e manter conformidade com muito mais controle.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2">
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
                     <Button size="lg" className="btn-primary w-full sm:w-auto">
                       <MessageCircle className="w-5 h-5 mr-2" />
@@ -141,12 +141,12 @@ const SistemaGestaoDocumental = () => {
                 </div>
               </div>
 
-              <Card className="bg-black/25 border-white/15 backdrop-blur-sm">
-                <CardHeader>
+              <Card className="bg-black/35 border-white/15 backdrop-blur-sm shadow-xl shadow-primary/5">
+                <CardHeader className="pb-4">
                   <CardTitle className="text-2xl text-white">Por que as empresas escolhem ECM?</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-4 text-white/90">
+                  <ul className="space-y-5 text-white/90">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 mt-0.5 text-primary" />
                       <span>Redução de até 80% no tempo de cadastro e localização de informações</span>
@@ -251,8 +251,8 @@ const SistemaGestaoDocumental = () => {
                     poster="https://www.winove.com.br/favicon.png"
                   >
                     <source
-                      src="https://www.dokmee.com/wp-content/uploads/2026/01/dokmee_video_1920x1080.webm"
-                      type="video/webm"
+                      src="https://www.dokmee.com/wp-content/uploads/2025/11/dokmee_video_1440x760_workflow.mp4"
+                      type="video/mp4"
                     />
                     Seu navegador não suporta vídeo HTML5.
                   </video>
