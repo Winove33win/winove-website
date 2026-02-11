@@ -6,6 +6,7 @@ export const Footer = () => {
     { name: "Serviços", href: "#services" },
     { name: "Portfolio", href: "#portfolio" },
     { name: "Blog", href: "#blog" },
+    { name: "Fernando Souza", href: "/sobre-fernando-souza" },
     { name: "Contato", href: "#contact" }
   ];
 

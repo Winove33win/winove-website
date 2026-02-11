@@ -1,8 +1,9 @@
+import { Footer } from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SEO } from "@/lib/seo";
-import { BriefcaseBusiness, GraduationCap, Lightbulb, LineChart, Target, Users, CheckCircle2 } from "lucide-react";
+import { BriefcaseBusiness, CheckCircle2, GraduationCap, Lightbulb, LineChart, Target, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const experiences = [
@@ -149,7 +150,7 @@ export default function SobreFernandoSouza() {
         jsonLd={[personJsonLd, breadcrumbJsonLd, faqJsonLd]}
       />
 
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
         <section className="section--first pb-8" aria-label="breadcrumb">
           <div className="container mx-auto px-4 text-sm text-muted-foreground">
             <Link to="/" className="hover:text-primary transition-colors">Início</Link>
@@ -158,33 +159,57 @@ export default function SobreFernandoSouza() {
           </div>
         </section>
 
-        <section className="pb-10" aria-labelledby="sobre-fernando-title">
+        <section className="pb-12" aria-labelledby="sobre-fernando-title">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl">
-              <Badge variant="secondary" className="mb-4">Sobre Fernando Souza</Badge>
-              <h1 id="sobre-fernando-title" className="text-3xl md:text-5xl font-bold tracking-tight">
-                Innovation | MBA Professor | SEO Specialist | CEO, CMO, Board Member, Consultant e Speaker
-              </h1>
-              <p className="mt-6 text-lg text-muted-foreground">
-                Empreendedor, estrategista digital e engenheiro de mundos em constante construção. Ao longo da trajetória,
-                participei da construção e aceleração de mais de 100 negócios, transformando presença digital em crescimento real.
-              </p>
-              <p className="mt-4 text-muted-foreground">
-                Acredito que negócios, carreiras e vidas são construídos como projetos: com visão, estratégia, ajustes e evolução contínua.
-                Meu trabalho une tecnologia, marketing e execução prática para gerar resultados consistentes e impacto duradouro.
-              </p>
+            <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr] items-start">
+              <Card className="border-primary/30 shadow-sm">
+                <CardContent className="pt-8">
+                  <Badge variant="secondary" className="mb-4">Sobre Fernando Souza</Badge>
+                  <h1 id="sobre-fernando-title" className="text-3xl md:text-5xl font-bold tracking-tight">
+                    Innovation | MBA Professor | SEO Specialist | CEO, CMO, Board Member, Consultant e Speaker
+                  </h1>
+                  <p className="mt-6 text-lg text-muted-foreground">
+                    Empreendedor, estrategista digital e engenheiro de mundos em constante construção. Ao longo da trajetória,
+                    participei da construção e aceleração de mais de 100 negócios, transformando presença digital em crescimento real.
+                  </p>
+                  <p className="mt-4 text-muted-foreground">
+                    Acredito que negócios, carreiras e vidas são construídos como projetos: com visão, estratégia, ajustes e evolução contínua.
+                    Meu trabalho une tecnologia, marketing e execução prática para gerar resultados consistentes e impacto duradouro.
+                  </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href="https://api.whatsapp.com/send?phone=5519982403845" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg">Falar com Fernando</Button>
-                </a>
-                <Link to="/servicos">
-                  <Button size="lg" variant="outline">Conhecer serviços de SEO</Button>
-                </Link>
-                <Link to="/cases">
-                  <Button size="lg" variant="ghost" className="underline-offset-4 hover:underline">Ver cases de crescimento</Button>
-                </Link>
-              </div>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <a href="https://api.whatsapp.com/send?phone=5519982403845" target="_blank" rel="noopener noreferrer">
+                      <Button size="lg">Falar com Fernando</Button>
+                    </a>
+                    <Link to="/servicos">
+                      <Button size="lg" variant="outline">Conhecer serviços de SEO</Button>
+                    </Link>
+                    <Link to="/cases">
+                      <Button size="lg" variant="ghost" className="underline-offset-4 hover:underline">Ver cases de crescimento</Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Destaques profissionais</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-lg border border-border/50 p-4">
+                    <p className="text-2xl font-bold">+1.000</p>
+                    <p className="text-sm text-muted-foreground">negócios na criação e aceleração</p>
+                  </div>
+                  <div className="rounded-lg border border-border/50 p-4">
+                    <p className="text-2xl font-bold">+10 países</p>
+                    <p className="text-sm text-muted-foreground">de atuação internacional em negócios</p>
+                  </div>
+                  <div className="rounded-lg border border-border/50 p-4">
+                    <p className="text-2xl font-bold">SEO forte</p>
+                    <p className="text-sm text-muted-foreground">especialização aplicada para crescimento orgânico</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -303,28 +328,9 @@ export default function SobreFernandoSouza() {
               </Card>
             ))}
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10" aria-label="destaques-profissionais-fernando-souza">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-2xl font-bold">+1.000</p>
-                <p className="text-sm text-muted-foreground">negócios na criação e aceleração</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-2xl font-bold">+10 países</p>
-                <p className="text-sm text-muted-foreground">de atuação internacional em negócios</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-2xl font-bold">SEO forte</p>
-                <p className="text-sm text-muted-foreground">especialização aplicada para crescimento orgânico</p>
-              </CardContent>
-            </Card>
-          </div>
         </section>
+
+        <Footer />
       </div>
     </>
   );
