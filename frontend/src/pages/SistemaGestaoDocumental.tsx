@@ -106,7 +106,11 @@ const SistemaGestaoDocumental = () => {
       />
 
       <div className="min-h-screen bg-background text-foreground">
+
         <section className="section--first px-4 pb-14 pt-[calc(var(--header-h)+1.5rem)] md:pt-[calc(var(--header-h)+2.5rem)] bg-gradient-to-br from-[#030712] via-[#071226] to-[#02050b]">
+
+        <section className="section--first px-4 pb-14 pt-10 md:pt-14 bg-gradient-to-br from-[#030712] via-[#071226] to-[#02050b]">
+
           <div className="container mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] gap-8 lg:gap-12 items-center">
               <div className="space-y-6 md:space-y-7">
@@ -251,7 +255,11 @@ const SistemaGestaoDocumental = () => {
                     poster="https://www.winove.com.br/favicon.png"
                   >
                     <source
+
                       src="/assets/dokmee_video_1440x760_workflow.mp4"
+
+                      src="https://www.dokmee.com/wp-content/uploads/2025/11/dokmee_video_1440x760_workflow.mp4"
+
                       type="video/mp4"
                     />
                     Seu navegador não suporta vídeo HTML5.
