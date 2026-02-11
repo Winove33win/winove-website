@@ -39,6 +39,12 @@ export function normalizeImageUrl(image: string, width = 600, height = 400) {
       .replace(/^-|-$/g, "")
       .toLowerCase()
 
+  const isLegacyTemplateSlug = (segment: string) => {
+    if (!segment) return false
+    if (Object.prototype.hasOwnProperty.call(slugAliases, segment)) return true
+    return segment.startsWith("template-") || segment === "templates-eventos"
+  }
+
   const mapLegacyWinoveTemplatePath = (url: URL) => {
     const segments = url.pathname.split("/").filter(Boolean)
     if (segments.length < 2) {
@@ -51,12 +57,23 @@ export function normalizeImageUrl(image: string, width = 600, height = 400) {
     // Legacy paths can come as /assets/<slug>/<image>.
     if (firstSegment === "assets" && secondSegmentRaw && tailSegmentsRaw.length > 0) {
       const slugSegment = cleanSegment(decodeURIComponent(secondSegmentRaw))
+      if (!isLegacyTemplateSlug(slugSegment)) {
+        return ""
+      }
       const slug = slugAliases[slugSegment] || slugSegment
       const filePath = tailSegmentsRaw.map((segment) => decodeURIComponent(segment)).join("/")
       return encodeURI(`https://winove.com.br/assets/templates/${slug}/${filePath}`)
     }
 
+    if (firstSegment === "assets") {
+      return ""
+    }
+
     // Legacy paths can also come as /<slug>/<image>.
+    if (!isLegacyTemplateSlug(firstSegment)) {
+      return ""
+    }
+
     const slug = slugAliases[firstSegment] || firstSegment
     const filePath = [secondSegmentRaw, ...tailSegmentsRaw]
       .map((segment) => decodeURIComponent(segment))
