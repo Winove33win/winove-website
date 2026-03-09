@@ -1,109 +1,110 @@
-import { Search, Megaphone, Code, Palette, TrendingUp, FolderOpen } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Layers, LineChart, Rocket } from "lucide-react";
+
 export const Services = () => {
-  const [hoveredService, setHoveredService] = useState<number | null>(null);
-  const services = [{
-    icon: Search,
-    title: "SEO Estratégico",
-    description: "Otimização completa para posicionar sua marca no topo dos resultados de busca.",
-    features: ["Auditoria técnica", "Pesquisa de palavras-chave", "Otimização on-page", "Link building"],
-    color: "from-blue-500 to-blue-600"
-  }, {
-    icon: Megaphone,
-    title: "Gestão de Tráfego Pago",
-    description: "Campanhas de alta performance no Google Ads, Facebook e outras plataformas.",
-    features: ["Google Ads", "Facebook Ads", "LinkedIn Ads", "Análise de ROI"],
-    color: "from-green-500 to-green-600"
-  }, {
-    icon: Code,
-    title: "Desenvolvimento Web",
-    description: "Sites e aplicações web modernas, rápidas e otimizadas para conversão.",
-    features: ["Sites responsivos", "E-commerce", "Aplicações web", "Performance"],
-    color: "from-purple-500 to-purple-600"
-  }, {
-    icon: Palette,
-    title: "Branding e Design",
-    description: "Identidade visual única que conecta sua marca com o público-alvo.",
-    features: ["Identidade visual", "Design gráfico", "UI/UX Design", "Material gráfico"],
-    color: "from-pink-500 to-pink-600"
-  }, {
-    icon: TrendingUp,
-    title: "Consultoria de Negócios Digitais",
-    description: "Estratégias personalizadas para acelerar o crescimento do seu negócio online.",
-    features: ["Estratégia digital", "Análise de mercado", "Planejamento", "Growth hacking"],
-    color: "from-orange-500 to-orange-600"
-  }, {
-    icon: FolderOpen,
-    title: "Sistema de Gestão Documental",
-    description: "Centralize documentos na nuvem com controle de acesso, busca avançada e backup automático.",
-    features: ["Armazenamento em nuvem", "Controle de permissões", "Busca avançada", "Backup automático"],
-    color: "from-red-500 to-red-700"
-  }];
-  return <section id="services" className="py-24 bg-background relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-primary/3 rounded-full blur-3xl" style={{
-        animationDelay: '3s'
-      }} />
-      </div>
+  const plans = [
+    {
+      icon: Layers,
+      title: "Iniciante",
+      audience: "Para empresas que precisam entrar no digital com estrutura profissional.",
+      idealFor: "Negócios que precisam de presença digital confiável e bem posicionada.",
+      includes: [
+        "Site profissional em Wix",
+        "Páginas institucionais",
+        "Integração com WhatsApp",
+        "Formulário de contato",
+        "SEO básico",
+        "Publicação e configuração inicial",
+      ],
+      outcome: "Uma presença digital profissional, clara e pronta para atender clientes.",
+      cta: "Quero começar",
+    },
+    {
+      icon: LineChart,
+      title: "Crescimento",
+      audience: "Para empresas que querem transformar o site em canal de geração de leads.",
+      idealFor: "Negócios que já validaram sua operação e querem captar mais oportunidades.",
+      includes: [
+        "Tudo do Iniciante",
+        "Páginas estratégicas de conversão",
+        "Integração com CRM",
+        "Automação básica",
+        "Captação e organização de leads",
+        "Estrutura orientada para vendas",
+      ],
+      outcome: "Mais organização comercial e mais oportunidades chegando pelo digital.",
+      cta: "Quero crescer",
+    },
+    {
+      icon: Rocket,
+      title: "Escala",
+      audience: "Para empresas que precisam de sistemas, lógica personalizada e automação inteligente.",
+      idealFor: "Negócios que querem operação digital mais robusta, com eficiência e inteligência.",
+      includes: [
+        "Tudo do Crescimento",
+        "Desenvolvimento com lógica personalizada",
+        "Integrações e APIs",
+        "Dashboards",
+        "Automações avançadas",
+        "IA aplicada ao atendimento e operação",
+        "Treinamento e suporte",
+      ],
+      outcome: "Uma estrutura digital que sustenta crescimento com menos dependência operacional.",
+      cta: "Quero escalar",
+    },
+  ];
 
+  return (
+    <section id="services" className="py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                Nossos Serviços
-              </span>
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Soluções completas e integradas para transformar sua presença digital e acelerar seus resultados
-            </p>
-          </div>
+        <div className="text-center max-w-4xl mx-auto mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+              Soluções Winove para cada estágio do seu negócio
+            </span>
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Projetos sob medida para cada estágio do negócio. Atendemos desde estruturas de entrada até projetos avançados com sistemas, automação e IA.
+          </p>
+        </div>
 
-          {/* Services Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => {
-            const IconComponent = service.icon;
-            const isHovered = hoveredService === index;
-            return <div key={service.title} className={`glass rounded-2xl p-8 cursor-pointer transition-all duration-500 hover-lift animate-fade-in-up ${isHovered ? 'glow-primary scale-105' : ''}`} style={{
-              animationDelay: `${index * 0.1}s`
-            }} onMouseEnter={() => setHoveredService(index)} onMouseLeave={() => setHoveredService(null)}>
-                  <div className="flex flex-col h-full">
-                    {/* Icon */}
-                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 ${isHovered ? 'bg-gradient-primary scale-110' : 'bg-secondary'}`}>
-                      <IconComponent className={`w-8 h-8 transition-colors duration-300 ${isHovered ? 'text-primary-foreground' : 'text-primary'}`} />
-                    </div>
+        <div className="grid lg:grid-cols-3 gap-8">
+          {plans.map((plan) => {
+            const Icon = plan.icon;
+            return (
+              <article key={plan.title} className="glass rounded-2xl p-8 flex flex-col gap-5">
+                <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">{plan.title}</h3>
+                <p className="text-muted-foreground">{plan.audience}</p>
 
-                    {/* Content */}
-                    <h3 className="text-xl font-bold mb-4 text-slate-50">
-                      {service.title}
-                    </h3>
-                    
-                    <p className="text-muted-foreground mb-6 flex-grow">
-                      {service.description}
-                    </p>
+                <div>
+                  <p className="font-semibold mb-1 text-foreground">Ideal para</p>
+                  <p className="text-muted-foreground">{plan.idealFor}</p>
+                </div>
 
-                    {/* Features */}
-                    <div className={`transition-all duration-300 ${isHovered ? 'opacity-100 max-h-40' : 'opacity-70 max-h-0 overflow-hidden'}`}>
-                      <ul className="space-y-2">
-                        {service.features.map((feature, featureIndex) => <li key={feature} className="text-sm text-muted-foreground flex items-center" style={{
-                      animationDelay: `${isHovered ? featureIndex * 0.05 : 0}s`,
-                      opacity: isHovered ? 1 : 0,
-                      transform: isHovered ? 'translateX(0)' : 'translateX(-10px)',
-                      transition: 'all 0.3s ease'
-                    }}>
-                            <div className="w-1 h-1 bg-primary rounded-full mr-3" />
-                            {feature}
-                          </li>)}
-                      </ul>
-                    </div>
-                  </div>
-                </div>;
+                <div>
+                  <p className="font-semibold mb-2 text-foreground">Inclui</p>
+                  <ul className="space-y-1 text-muted-foreground list-disc list-inside">
+                    {plan.includes.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="mt-auto">
+                  <p className="font-semibold mb-1 text-foreground">Resultado esperado</p>
+                  <p className="text-muted-foreground mb-5">{plan.outcome}</p>
+                  <a href="https://api.whatsapp.com/send?phone=5519982403845" target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full btn-primary">{plan.cta}</Button>
+                  </a>
+                </div>
+              </article>
+            );
           })}
-          </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };

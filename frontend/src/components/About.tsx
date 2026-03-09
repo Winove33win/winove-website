@@ -1,81 +1,66 @@
-import { Lightbulb, Eye, Target } from "lucide-react";
+import { BrainCircuit, Handshake, Network, Workflow } from "lucide-react";
 
 export const About = () => {
-  const values = [
+  const steps = [
     {
-      icon: Lightbulb,
-      title: "Inovação",
-      description: "Sempre na vanguarda das tendências digitais, criamos soluções únicas e eficazes para cada desafio."
+      title: "1. Diagnóstico",
+      description: "Entendemos o momento do seu negócio e a necessidade real.",
     },
     {
-      icon: Eye,
-      title: "Transparência",
-      description: "Processos claros, comunicação direta e relatórios detalhados mantêm você informado sobre cada etapa."
+      title: "2. Estruturação",
+      description: "Definimos a melhor solução entre site, automação, CRM, IA e integrações.",
     },
     {
-      icon: Target,
-      title: "Resultados",
-      description: "Focamos em métricas que importam e estratégias que geram retorno real para o seu investimento."
-    }
+      title: "3. Implementação",
+      description: "Desenvolvemos e colocamos tudo em operação com agilidade.",
+    },
+    {
+      title: "4. Evolução",
+      description: "Acompanhamos crescimento, melhorias e expansão da estrutura digital.",
+    },
+  ];
+
+  const differentials = [
+    { icon: Handshake, text: "Parceria oficial com ecossistemas líderes." },
+    { icon: Network, text: "Experiência em Wix, automação, IA e infraestrutura." },
+    { icon: Workflow, text: "Projetos pensados para negócio, não apenas para design." },
+    { icon: BrainCircuit, text: "Foco em crescimento, eficiência e recorrência." },
   ];
 
   return (
     <section id="about" className="py-24 bg-gradient-navy relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-2xl" />
-      </div>
+      <div className="container mx-auto px-4 relative z-10 max-w-6xl">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            Como construímos sua solução
+          </h2>
+        </div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                Sobre a Winove
-              </span>
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Somos uma agência de estratégia digital especializada em transformar ideias em resultados tangíveis. 
-                Com uma abordagem inovadora e foco em performance, desenvolvemos soluções completas que conectam 
-                marcas ao seu público-alvo de forma autêntica e eficaz.
-              </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Nossa missão é acelerar o crescimento de negócios através de estratégias digitais inteligentes, 
-                tecnologia de ponta e design que encanta.
-              </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {steps.map((step) => (
+            <div key={step.title} className="glass rounded-2xl p-6">
+              <h3 className="text-xl font-bold mb-3 text-foreground">{step.title}</h3>
+              <p className="text-muted-foreground">{step.description}</p>
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Values Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {values.map((value, index) => {
-              const IconComponent = value.icon;
-              return (
-                <div
-                  key={value.title}
-                  className="glass rounded-2xl p-8 hover-lift group animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.2}s` }}
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent className="w-8 h-8 text-primary-foreground" />
-                    </div>
-                    
-                    <h3 className="text-2xl font-bold mb-4 text-foreground">
-                      {value.title}
-                    </h3>
-                    
-                    <p className="text-muted-foreground leading-relaxed">
-                      {value.description}
-                    </p>
-                  </div>
+        <div className="text-center mb-10">
+          <h3 className="text-3xl font-bold mb-2 text-foreground">Por que a Winove</h3>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-5">
+          {differentials.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.text} className="glass rounded-2xl p-6 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-primary" />
                 </div>
-              );
-            })}
-          </div>
+                <p className="text-muted-foreground">{item.text}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
