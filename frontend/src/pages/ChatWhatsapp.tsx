@@ -54,8 +54,8 @@ export default function ChatWhatsapp() {
   return (
     <>
       <SEO
-        title="CRM para WhatsApp | Automação, Atendimento e IA | Winove"
-        description="Transforme seu WhatsApp em uma central de vendas e atendimento com CRM, automação, chatbot, IA e operação multiusuário para empresas."
+        title="CRM para WhatsApp com Automação e IA | Winove"
+        description="Transforme seu WhatsApp em uma central profissional de atendimento, vendas e automação com CRM, chatbot e inteligência artificial."
         canonical="https://www.winove.com.br/chat-whatsapp"
         jsonLd={[
           {
