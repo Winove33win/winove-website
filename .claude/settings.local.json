@@ -6,7 +6,10 @@
       "Bash(npm install:*)",
       "Bash(timeout 10 node index.js)",
       "Bash(node backend/scripts/seed-zpro-posts.mjs)",
-      "Bash(node backend/scripts/dump-blog-fallback.mjs)"
+      "Bash(node backend/scripts/dump-blog-fallback.mjs)",
+      "Bash(npm run:*)",
+      "Bash(npx vite:*)",
+      "Bash(node_modules/.bin/vite build:*)"
     ]
   }
 }
