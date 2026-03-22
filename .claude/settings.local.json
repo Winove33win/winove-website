@@ -4,7 +4,9 @@
       "Bash(xargs grep:*)",
       "Bash(node -e \":*)",
       "Bash(npm install:*)",
-      "Bash(timeout 10 node index.js)"
+      "Bash(timeout 10 node index.js)",
+      "Bash(node backend/scripts/seed-zpro-posts.mjs)",
+      "Bash(node backend/scripts/dump-blog-fallback.mjs)"
     ]
   }
 }
