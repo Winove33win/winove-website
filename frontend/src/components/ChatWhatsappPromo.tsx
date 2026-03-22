@@ -90,7 +90,7 @@ export const ChatWhatsappPromo = () => {
             </Button>
           </a>
           <a
-            href="https://wa.me/5511999999999?text=Quero+saber+mais+sobre+o+Chat+WhatsApp"
+            href="https://api.whatsapp.com/send?phone=5519982403845"
             target="_blank"
             rel="noopener noreferrer"
           >
