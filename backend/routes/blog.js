@@ -9,12 +9,15 @@ const router = Router();
 // Não crie um novo pool aqui. O pool em db.js centraliza a conexão e valida os
 // valores obrigatórios de ambiente logo no bootstrap da API.
 
+const DEFAULT_COVER = 'https://winove.com.br/assets/hero-background-BoObiYUn.jpg';
+
 // Normaliza o formato para o frontend
 function adapt(row) {
   const title = row.titulo ?? row.title ?? null;
   const excerpt = row.resumo ?? row.excerpt ?? null;
   const content = row.conteudo ?? row.content ?? null;
-  const cover = row.imagem_destacada ?? row.coverUrl ?? row.coverImage ?? row.image ?? null;
+  const coverRaw = row.imagem_destacada ?? row.coverUrl ?? row.coverImage ?? row.image ?? null;
+  const cover = coverRaw || DEFAULT_COVER;
   const author = row.autor ?? row.author ?? null;
   const publishedAt = row.data_publicacao ?? row.publishedAt ?? row.date ?? row.created_at ?? null;
   const category = row.categoria ?? row.category ?? null;
