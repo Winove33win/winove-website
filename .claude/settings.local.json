@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(node -e \":*)",
+      "Bash(npm install:*)",
+      "Bash(timeout 10 node index.js)"
+    ]
+  }
+}
