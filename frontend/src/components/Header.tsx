@@ -51,7 +51,15 @@ function NavDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isActive = items.some((i) => pathname.startsWith(i.href));
+
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+  const cancelClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -66,8 +74,8 @@ function NavDropdown({
     <div
       ref={ref}
       className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={() => { cancelClose(); setOpen(true); }}
+      onMouseLeave={scheduleClose}
     >
       <button
         onClick={() => setOpen((o) => !o)}
@@ -87,9 +95,12 @@ function NavDropdown({
       {/* Active underline */}
       {isActive && <span className="absolute -bottom-0.5 left-0 right-0 h-0.5 rounded-full bg-primary" />}
 
+      {/* Invisible bridge fills the gap so mouse never leaves the hover zone */}
+      {open && <div className="absolute top-full left-1/2 -translate-x-1/2 w-72 h-4" />}
+
       {/* Dropdown panel */}
       <div
-        className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-72 transition-all duration-200 origin-top ${
+        className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 w-72 transition-all duration-200 origin-top ${
           open ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"
         }`}
       >
