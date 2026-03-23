@@ -1,21 +1,24 @@
+import { Link } from "react-router-dom";
 import { Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
 export const Footer = () => {
   const quickLinks = [
-    { name: "Sobre Nós", href: "#about" },
-    { name: "Serviços", href: "#services" },
-    { name: "Portfolio", href: "#portfolio" },
-    { name: "Blog", href: "#blog" },
+    { name: "Início", href: "/" },
+    { name: "Serviços", href: "/servicos" },
+    { name: "Templates", href: "/templates" },
+    { name: "Blog", href: "/blog" },
+    { name: "Cases", href: "/cases" },
+    { name: "Promoções", href: "/promocoes" },
     { name: "Fernando Souza", href: "/sobre-fernando-souza" },
-    { name: "Contato", href: "#contact" }
   ];
 
   const services = [
-    { name: "SEO Estratégico", href: "#" },
-    { name: "Tráfego Pago", href: "#" },
-    { name: "Desenvolvimento Web", href: "#" },
-    { name: "Branding & Design", href: "#" },
-    { name: "Consultoria Digital", href: "#" }
+    { name: "Web Design & Desenvolvimento", href: "/servicos" },
+    { name: "Templates Wix Studio", href: "/templates" },
+    { name: "E-mail Corporativo", href: "/email-corporativo" },
+    { name: "Chat WhatsApp & CRM", href: "/chat-whatsapp" },
+    { name: "Gestão Documental", href: "/sistema-gestao-documental" },
+    { name: "Cursos Online", href: "/cursos" },
   ];
 
   const socialLinks = [
@@ -89,12 +92,12 @@ export const Footer = () => {
               <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="text-muted-foreground hover:text-primary transition-colors duration-300"
                     >
                       {link.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -108,12 +111,12 @@ export const Footer = () => {
               <ul className="space-y-3">
                 {services.map((service) => (
                   <li key={service.name}>
-                    <a
-                      href={service.href}
+                    <Link
+                      to={service.href}
                       className="text-muted-foreground hover:text-primary transition-colors duration-300"
                     >
                       {service.name}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -151,34 +154,22 @@ export const Footer = () => {
         <div className="border-t border-border/20 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-muted-foreground text-sm">
-              © 2024 Winove. Todos os direitos reservados.
+              © 2025 Winove. Todos os direitos reservados.
             </div>
             
-            <div className="flex gap-6 text-sm">
-              <a
-                href="/politica-de-privacidade"
-                className="text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm justify-center md:justify-end">
+              <Link to="/politica-de-privacidade" className="text-muted-foreground hover:text-primary transition-colors duration-300">
                 Política de Privacidade
-              </a>
-              <a
-                href="/termos-de-uso"
-                className="text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
+              </Link>
+              <Link to="/termos-de-uso" className="text-muted-foreground hover:text-primary transition-colors duration-300">
                 Termos de Uso
-              </a>
-              <a
-                href="/politica-de-cookies"
-                className="text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
+              </Link>
+              <Link to="/politica-de-cookies" className="text-muted-foreground hover:text-primary transition-colors duration-300">
                 Cookies
-              </a>
-              <a
-                href="/excluir-dados"
-                className="text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
+              </Link>
+              <Link to="/excluir-dados" className="text-muted-foreground hover:text-primary transition-colors duration-300">
                 Exclusão de Dados
-              </a>
+              </Link>
             </div>
           </div>
         </div>

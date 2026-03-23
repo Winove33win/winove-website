@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { Footer } from "@/components/Footer";
 import {
   Card,
   CardHeader,
@@ -80,7 +79,6 @@ const NotFound = () => {
         </div>
           </div>
 
-          <Footer />
         </div>
     </>
   );

@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ExternalLink, TrendingUp } from "lucide-react";
-import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { CaseItem, Metric, safeArray } from "@/lib/caseUtils";
 import { SEO } from "@/lib/seo";
@@ -227,7 +226,6 @@ export const CasesList = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
     </>
   );

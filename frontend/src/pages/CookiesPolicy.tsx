@@ -1,4 +1,3 @@
-import { Footer } from "@/components/Footer";
 import { SEO } from "@/lib/seo";
 
 interface CookieType {
@@ -90,7 +89,6 @@ const CookiesPolicy = () => {
           </div>
         </section>
 
-        <Footer />
       </div>
     </>
   );

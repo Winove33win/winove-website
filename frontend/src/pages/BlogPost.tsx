@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { Calendar, User, ArrowLeft, Clock, Share2 } from "lucide-react";
-import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { SEO } from "@/lib/seo";
 import {
@@ -185,7 +184,6 @@ export const BlogPost = () => {
               </div>
             </div>
           </div>
-          <Footer />
         </div>
       </>
     );
@@ -358,7 +356,6 @@ export const BlogPost = () => {
         </section>
       )}
 
-      <Footer />
     </div>
     </>
   );

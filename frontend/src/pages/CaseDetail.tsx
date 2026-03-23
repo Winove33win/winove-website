@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, TrendingUp, Target, Lightbulb, Trophy, ArrowRight } from "lucide-react";
-import { Footer } from "@/components/Footer";
 import { useEffect, useState } from "react";
 import { CaseItem, Metric, safeArray } from "@/lib/caseUtils";
 import { SEO } from "@/lib/seo";
@@ -70,7 +69,6 @@ export const CaseDetail = () => {
               </div>
             </div>
           </div>
-          <Footer />
         </div>
       </>
     );
@@ -353,7 +351,6 @@ export const CaseDetail = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
     </>
   );

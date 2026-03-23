@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { SEO } from "@/lib/seo";
 
-import { Footer } from "@/components/Footer";
 
 import "./Cursos.css";
 
@@ -213,7 +212,6 @@ const Cursos = () => {
       </section>
 
 
-      <Footer />
 
       <footer>
         <div className="container" style={{ borderTop: "1px solid var(--line)", paddingTop: "18px" }}>

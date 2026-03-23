@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Services as ServicesSection } from "@/components/Services";
 import { CTA } from "@/components/CTA";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/lib/seo";
 
@@ -54,7 +53,6 @@ const ServicesPage = () => {
 
         <ServicesSection />
         <CTA />
-        <Footer />
       </div>
     </>
   );

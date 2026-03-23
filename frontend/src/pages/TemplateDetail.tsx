@@ -1,5 +1,4 @@
 import { useParams, Link } from "react-router-dom";
-import { Footer } from "@/components/Footer";
 import { useQuery } from '@tanstack/react-query';
 import { fetchTemplate } from '@/lib/api';
 import { Button } from "@/components/ui/button";
@@ -146,7 +145,6 @@ const TemplateDetail = () => {
         />
         <div className="min-h-screen bg-background text-foreground">
           <DetailSkeleton />
-          <Footer />
         </div>
       </>
     );
@@ -173,7 +171,6 @@ const TemplateDetail = () => {
               </Link>
             </div>
           </div>
-          <Footer />
         </div>
       </>
     );
@@ -533,7 +530,6 @@ const TemplateDetail = () => {
         </div>
       </div>
 
-      <Footer />
     </div>
     </>
   );

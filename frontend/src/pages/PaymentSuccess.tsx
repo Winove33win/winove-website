@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Download, ArrowLeft, Mail } from "lucide-react";
@@ -75,7 +74,6 @@ const PaymentSuccess = () => {
             </div>
           </div>
 
-          <Footer />
         </div>
     </>
   );

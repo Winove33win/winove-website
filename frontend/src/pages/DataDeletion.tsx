@@ -1,4 +1,3 @@
-import { Footer } from "@/components/Footer";
 import { SEO } from "@/lib/seo";
 
 const steps = [
@@ -122,7 +121,6 @@ const DataDeletion = () => {
           </div>
         </section>
 
-        <Footer />
       </div>
     </>
   );

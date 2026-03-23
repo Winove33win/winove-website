@@ -1,4 +1,3 @@
-import { Footer } from "@/components/Footer";
 import { SEO } from "@/lib/seo";
 
 interface PolicySection {
@@ -115,7 +114,6 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        <Footer />
       </div>
     </>
   );

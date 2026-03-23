@@ -6,7 +6,6 @@ import { ChatWhatsappPromo } from "@/components/ChatWhatsappPromo";
 import { TemplatesCarousel } from "@/components/TemplatesCarousel";
 import { Testimonials } from "@/components/Testimonials";
 import { CTA } from "@/components/CTA";
-import { Footer } from "@/components/Footer";
 import { SEO } from "@/lib/seo";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
@@ -35,7 +34,6 @@ const Index = () => {
         <TemplatesCarousel />
         <Testimonials />
         <CTA />
-        <Footer />
       </div>
     </>
   );

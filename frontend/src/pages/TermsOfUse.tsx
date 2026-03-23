@@ -1,4 +1,3 @@
-import { Footer } from "@/components/Footer";
 import { SEO } from "@/lib/seo";
 
 interface TermSection {
@@ -78,7 +77,6 @@ const TermsOfUse = () => {
           </div>
         </section>
 
-        <Footer />
       </div>
     </>
   );
