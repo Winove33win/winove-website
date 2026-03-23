@@ -27,15 +27,45 @@ const EmailCorporativo = () => {
         title="E-mail Corporativo Profissional | Winove"
         description="Contas a partir de 5 GB com Antivirus, Antispam com 3 níveis de filtragem, acesso por Webmail, POP e IMAP."
         canonical="https://www.winove.com.br/email-corporativo"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Service",
-          name: "E-mail Corporativo",
-          provider: { "@type": "Organization", name: "Winove" },
-          areaServed: "Brasil",
-          serviceType: "E-mail corporativo profissional",
-          url: "https://www.winove.com.br/email-corporativo",
-        }}
+        keywords={["email corporativo profissional", "email com domínio próprio", "email empresarial", "email antispam antivírus", "webmail imap pop3"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "@id": "https://www.winove.com.br/email-corporativo#service",
+            name: "E-mail Corporativo Profissional",
+            description: "Contas de e-mail com domínio próprio, antivírus, antispam, calendário, contatos e reuniões integradas.",
+            provider: { "@id": "https://www.winove.com.br/#organization" },
+            areaServed: { "@type": "Country", name: "Brasil" },
+            serviceType: "E-mail corporativo",
+            url: "https://www.winove.com.br/email-corporativo",
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: "Planos de E-mail Corporativo",
+              itemListElement: [
+                { "@type": "Offer", name: "Plano Inicial – 5 GB", description: "1 conta de e-mail com 5 GB", priceCurrency: "BRL", availability: "https://schema.org/InStock" },
+                { "@type": "Offer", name: "Pacote 5 contas – 3 GB cada", description: "5 contas de e-mail com 3 GB cada por R$ 433/ano", price: "433.00", priceCurrency: "BRL", availability: "https://schema.org/InStock" },
+              ],
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "E-mail Corporativo", item: "https://www.winove.com.br/email-corporativo" },
+            ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "Qual a diferença entre POP3 e IMAP?", acceptedAnswer: { "@type": "Answer", text: "IMAP sincroniza os e-mails em todos os dispositivos em tempo real. POP3 baixa os e-mails para um dispositivo local. Para uso corporativo, recomendamos IMAP." } },
+              { "@type": "Question", name: "O e-mail corporativo tem antispam?", acceptedAnswer: { "@type": "Answer", text: "Sim. Nosso sistema possui 3 níveis de filtragem antispam (baixo, médio e alto), além de proteção antivírus em todos os e-mails recebidos." } },
+              { "@type": "Question", name: "Posso usar meu próprio domínio?", acceptedAnswer: { "@type": "Answer", text: "Sim. O e-mail corporativo da Winove é configurado com o seu domínio (ex: voce@suaempresa.com.br)." } },
+            ],
+          },
+        ]}
       />
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}

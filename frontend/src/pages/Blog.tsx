@@ -1,7 +1,50 @@
 import BlogList from "@/components/BlogList";
+import { SEO } from "@/lib/seo";
 
 export default function BlogPage() {
   return (
+    <>
+      <SEO
+        title="Blog Winove | Marketing Digital, Wix, SEO e Tecnologia"
+        description="Artigos, guias e cases sobre criação de sites, SEO, automação, CRM WhatsApp e estratégias digitais para empresas que querem crescer online."
+        canonical="https://www.winove.com.br/blog"
+        keywords={["blog marketing digital", "criação de sites wix", "seo para empresas", "automação whatsapp", "dicas de vendas online"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://www.winove.com.br/blog#webpage",
+            name: "Blog Winove – Marketing Digital e Tecnologia",
+            url: "https://www.winove.com.br/blog",
+            description: "Conteúdos sobre marketing digital, SEO, criação de sites e estratégias digitais.",
+            isPartOf: { "@id": "https://www.winove.com.br/#website" },
+            publisher: { "@id": "https://www.winove.com.br/#organization" },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+                { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.winove.com.br/blog" },
+              ],
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "@id": "https://www.winove.com.br/blog#blog",
+            name: "Blog Winove",
+            url: "https://www.winove.com.br/blog",
+            description: "Artigos e guias sobre marketing digital, SEO, Wix Studio, automação e CRM.",
+            publisher: {
+              "@type": "Organization",
+              name: "Winove",
+              url: "https://www.winove.com.br",
+              logo: { "@type": "ImageObject", url: "https://www.winove.com.br/logo.png" },
+            },
+            inLanguage: "pt-BR",
+          },
+        ]}
+      />
+
     <main className="relative min-h-screen bg-background text-foreground">
       <div className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-navy via-background to-background">
         <div className="pointer-events-none absolute inset-0 opacity-60">
@@ -30,5 +73,6 @@ export default function BlogPage() {
         <BlogList />
       </div>
     </main>
+    </>
   );
 }

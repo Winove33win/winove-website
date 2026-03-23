@@ -53,9 +53,36 @@ const PrivacyPolicy = () => {
   return (
     <>
       <SEO
-        title="Política de Privacidade | Winove"
-        description="Saiba como a Winove trata dados pessoais, quais informações coletamos e quais são seus direitos conforme a LGPD."
+        title="Política de Privacidade | Winove – LGPD"
+        description="Saiba como a Winove coleta, armazena e trata seus dados pessoais em conformidade com a LGPD. Conheça seus direitos como titular de dados."
         canonical="https://www.winove.com.br/politica-de-privacidade"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.winove.com.br/politica-de-privacidade#webpage",
+            name: "Política de Privacidade – Winove",
+            url: "https://www.winove.com.br/politica-de-privacidade",
+            description: "Política de privacidade e tratamento de dados da Winove conforme LGPD.",
+            isPartOf: { "@id": "https://www.winove.com.br/#website" },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+                { "@type": "ListItem", position: 2, name: "Política de Privacidade", item: "https://www.winove.com.br/politica-de-privacidade" },
+              ],
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "Quais dados a Winove coleta?", acceptedAnswer: { "@type": "Answer", text: "Coletamos dados de contato (nome, e-mail, telefone), dados de uso do site e informações técnicas para prestação dos serviços." } },
+              { "@type": "Question", name: "Posso solicitar a exclusão dos meus dados?", acceptedAnswer: { "@type": "Answer", text: "Sim. Conforme a LGPD, você pode solicitar a exclusão dos seus dados a qualquer momento pelo e-mail criacao@winove.com.br." } },
+              { "@type": "Question", name: "A Winove compartilha meus dados com terceiros?", acceptedAnswer: { "@type": "Answer", text: "Não compartilhamos seus dados com terceiros para fins comerciais. Podemos utilizar parceiros técnicos para prestação dos serviços contratados." } },
+            ],
+          },
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <section className="py-20 px-4 bg-gradient-to-b from-primary/10 via-background to-background">

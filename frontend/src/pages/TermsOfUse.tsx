@@ -43,8 +43,24 @@ const TermsOfUse = () => {
     <>
       <SEO
         title="Termos de Uso | Winove"
-        description="Conheça as regras para utilização do site, contratações e direitos de propriedade intelectual da Winove."
+        description="Conheça as condições de uso do site da Winove, regras de contratação, propriedade intelectual e responsabilidades."
         canonical="https://www.winove.com.br/termos-de-uso"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "@id": "https://www.winove.com.br/termos-de-uso#webpage",
+          name: "Termos de Uso – Winove",
+          url: "https://www.winove.com.br/termos-de-uso",
+          description: "Termos e condições de uso dos serviços e site da Winove.",
+          isPartOf: { "@id": "https://www.winove.com.br/#website" },
+          breadcrumb: {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Termos de Uso", item: "https://www.winove.com.br/termos-de-uso" },
+            ],
+          },
+        }}
       />
       <div className="min-h-screen bg-background text-foreground">
         <section className="py-20 px-4 bg-gradient-to-b from-background via-primary/5 to-background">

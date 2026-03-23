@@ -38,8 +38,34 @@ const CookiesPolicy = () => {
     <>
       <SEO
         title="Política de Cookies | Winove"
-        description="Entenda como utilizamos cookies para oferecer uma experiência personalizada, segura e alinhada às melhores práticas de privacidade."
+        description="Entenda como a Winove usa cookies para personalização, segurança e análise de navegação. Saiba como gerenciar suas preferências."
         canonical="https://www.winove.com.br/politica-de-cookies"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.winove.com.br/politica-de-cookies#webpage",
+            name: "Política de Cookies – Winove",
+            url: "https://www.winove.com.br/politica-de-cookies",
+            isPartOf: { "@id": "https://www.winove.com.br/#website" },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+                { "@type": "ListItem", position: 2, name: "Política de Cookies", item: "https://www.winove.com.br/politica-de-cookies" },
+              ],
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "O que são cookies?", acceptedAnswer: { "@type": "Answer", text: "Cookies são pequenos arquivos armazenados no seu navegador que permitem que o site reconheça suas preferências e melhore sua experiência de navegação." } },
+              { "@type": "Question", name: "Como desativar cookies?", acceptedAnswer: { "@type": "Answer", text: "Você pode gerenciar cookies nas configurações do seu navegador. Desativar cookies essenciais pode afetar o funcionamento do site." } },
+              { "@type": "Question", name: "A Winove usa cookies de terceiros?", acceptedAnswer: { "@type": "Answer", text: "Sim, utilizamos cookies analíticos de terceiros (como Google Analytics) para entender o comportamento de navegação e melhorar nossos serviços." } },
+            ],
+          },
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <section className="py-20 px-4 bg-gradient-to-b from-primary/10 via-background to-background">

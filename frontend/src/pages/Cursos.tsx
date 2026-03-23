@@ -85,18 +85,44 @@ const Cursos = () => {
   return (
     <>
       <SEO
-        title="Curso Wix – Winove"
-        description="Domine a plataforma Wix, crie sites incríveis e gerencie seu negócio online de forma profissional. Aulas gratuitas com base no nosso canal oficial."
+        title="Curso Wix Studio Completo – Crie Sites Profissionais | Winove"
+        description="Aprenda Wix Studio do zero ao avançado. Aulas gratuitas com especialistas da Winove. Inclui e-commerce, SEO, CMS e design responsivo."
         canonical="https://www.winove.com.br/cursos"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Course",
-          name: "Curso Wix – Winove",
-          description:
-            "Domine a plataforma Wix, crie sites incríveis e gerencie seu negócio online de forma profissional.",
-          provider: { "@type": "Organization", name: "Winove" },
-          url: "https://www.winove.com.br/cursos",
-        }}
+        keywords={["curso wix", "curso wix studio", "aprender wix", "curso criação de sites", "wix gratuito", "wix stores", "wix seo"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Course",
+            "@id": "https://www.winove.com.br/cursos#course",
+            name: "Curso Wix Studio – Do Iniciante ao Profissional",
+            description: "Domine a plataforma Wix Studio, crie sites incríveis, lojas virtuais e gerencie seu negócio online de forma profissional.",
+            url: "https://www.winove.com.br/cursos",
+            provider: { "@id": "https://www.winove.com.br/#organization" },
+            inLanguage: "pt-BR",
+            isAccessibleForFree: true,
+            teaches: ["Criação de sites no Wix Studio", "Design responsivo", "Wix Stores – e-commerce", "SEO no Wix", "CMS e blog no Wix"],
+            coursePrerequisites: "Nenhum. Iniciantes são bem-vindos.",
+            educationalLevel: "Iniciante a Avançado",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Cursos", item: "https://www.winove.com.br/cursos" },
+            ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "O curso é gratuito?", acceptedAnswer: { "@type": "Answer", text: "Sim. As aulas em vídeo são gratuitas e disponíveis no canal oficial da Winove no YouTube." } },
+              { "@type": "Question", name: "Preciso saber programar para aprender Wix?", acceptedAnswer: { "@type": "Answer", text: "Não. O editor Wix é visual (arrastar e soltar). Para recursos avançados, apresentamos Velo de forma opcional, sempre com exemplos práticos." } },
+              { "@type": "Question", name: "O curso cobre Wix Studio e Editor clássico?", acceptedAnswer: { "@type": "Answer", text: "Sim. Começamos pelo Editor tradicional e mostramos o que muda no Wix Studio em tópicos de design profissional e CMS." } },
+              { "@type": "Question", name: "Posso criar loja online completa?", acceptedAnswer: { "@type": "Answer", text: "Sim. O curso inclui aulas de Wix Stores: cadastro de produtos, checkout, meios de pagamento e gestão de pedidos." } },
+            ],
+          },
+        ]}
       />
       <header className="container" style={{ marginTop: "var(--header-h)", padding: "16px 24px 0" }}>
         <div className="badge">Curso Wix • Winove</div>

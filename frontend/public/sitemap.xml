@@ -1,37 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Homepage -->
   <url>
-    <loc>https://winove.com.br/</loc>
-    <lastmod>2026-02-11</lastmod>
+    <loc>https://www.winove.com.br/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
+  <!-- Core service pages -->
   <url>
-    <loc>https://winove.com.br/servicos</loc>
-    <lastmod>2026-02-11</lastmod>
+    <loc>https://www.winove.com.br/servicos</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/templates</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
-    <loc>https://winove.com.br/sobre-fernando-souza</loc>
-    <lastmod>2026-02-11</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.winove.com.br/chat-whatsapp</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
-    <loc>https://winove.com.br/cases</loc>
-    <lastmod>2026-02-11</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.winove.com.br/email-corporativo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/sistema-gestao-documental</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
+  <!-- Content & marketing -->
   <url>
-    <loc>https://winove.com.br/blog</loc>
-    <lastmod>2026-02-11</lastmod>
+    <loc>https://www.winove.com.br/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/cases</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://www.winove.com.br/cursos</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/promocoes</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- About -->
+  <url>
+    <loc>https://www.winove.com.br/sobre-fernando-souza</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Legal -->
+  <url>
+    <loc>https://www.winove.com.br/politica-de-privacidade</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/termos-de-uso</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/politica-de-cookies</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
 </urlset>

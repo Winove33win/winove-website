@@ -10,7 +10,9 @@
       "Bash(npm run:*)",
       "Bash(npx vite:*)",
       "Bash(node_modules/.bin/vite build:*)",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(\"c:\\\\Users\\\\Nrtfe\\\\winove-website-2\\\\frontend\\\\public\\\\robots.txt\":*)",
+      "Bash(\"c:\\\\Users\\\\Nrtfe\\\\winove-website-2\\\\frontend\\\\public\\\\sitemap.xml\":*)"
     ]
   }
 }

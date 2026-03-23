@@ -1,16 +1,14 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
 
-Sitemap: https://winove.com.br/sitemap.xml
+# Disallow admin and private routes
+Disallow: /admin
+Disallow: /comercial-propostas
+Disallow: /central-atendimento
+Disallow: /excluir-dados
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://www.winove.com.br/sitemap.xml

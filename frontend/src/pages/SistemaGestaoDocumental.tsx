@@ -93,15 +93,38 @@ const SistemaGestaoDocumental = () => {
         title="Sistema de Gestão Documental (ECM) em Nuvem | Winove"
         description="Organize, digitalize, localize e automatize documentos da sua empresa em uma única plataforma. ECM em nuvem com segurança, OCR, workflows e relatórios."
         canonical="https://www.winove.com.br/sistema-gestao-documental"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Service",
-          name: "Sistema de Gestão Documental em Nuvem",
-          provider: { "@type": "Organization", name: "Winove" },
-          areaServed: "Brasil",
-          serviceType: "Enterprise Content Management (ECM)",
-          url: "https://www.winove.com.br/sistema-gestao-documental",
-        }}
+        keywords={["gestão documental", "ecm nuvem", "digitalização de documentos", "workflow documental", "ocr documentos", "assinatura digital"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "@id": "https://www.winove.com.br/sistema-gestao-documental#service",
+            name: "Sistema de Gestão Documental (ECM) em Nuvem",
+            description: "Plataforma ECM em nuvem para digitalizar, organizar, localizar e automatizar documentos corporativos com OCR, workflows e assinatura digital.",
+            provider: { "@id": "https://www.winove.com.br/#organization" },
+            areaServed: { "@type": "Country", name: "Brasil" },
+            serviceType: "Enterprise Content Management (ECM)",
+            url: "https://www.winove.com.br/sistema-gestao-documental",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Serviços", item: "https://www.winove.com.br/servicos" },
+              { "@type": "ListItem", position: 3, name: "Gestão Documental", item: "https://www.winove.com.br/sistema-gestao-documental" },
+            ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              { "@type": "Question", name: "O que é um sistema ECM?", acceptedAnswer: { "@type": "Answer", text: "ECM (Enterprise Content Management) é uma plataforma para capturar, organizar, gerenciar e distribuir documentos e conteúdos corporativos de forma centralizada na nuvem." } },
+              { "@type": "Question", name: "O sistema tem OCR?", acceptedAnswer: { "@type": "Answer", text: "Sim. O sistema inclui OCR (reconhecimento ótico de caracteres) para digitalizar e indexar documentos físicos, tornando o conteúdo pesquisável." } },
+              { "@type": "Question", name: "É possível assinar documentos digitalmente?", acceptedAnswer: { "@type": "Answer", text: "Sim. A plataforma suporta assinatura digital com validade jurídica, em conformidade com a legislação brasileira." } },
+            ],
+          },
+        ]}
       />
 
       <div className="min-h-screen bg-background text-foreground">

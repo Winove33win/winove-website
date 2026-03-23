@@ -42,24 +42,39 @@ export const CasesList = () => {
 
   const safeItems = Array.isArray(items) ? items : [];
 
-  const casesJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "Cases de Sucesso",
-    url: "https://www.winove.com.br/cases",
-    hasPart: safeItems.map((c) => ({
-      "@type": "CaseStudy",
-      name: c.title,
-      url: `https://www.winove.com.br/cases/${c.slug}`,
-    })),
-  };
+  const casesJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": "https://www.winove.com.br/cases#webpage",
+      name: "Cases de Sucesso – Winove",
+      url: "https://www.winove.com.br/cases",
+      description: "Projetos reais com resultados mensuráveis. Veja como a Winove transformou negócios com design, SEO e automação.",
+      isPartOf: { "@id": "https://www.winove.com.br/#website" },
+      hasPart: safeItems.map((c) => ({
+        "@type": "Article",
+        name: c.title,
+        url: `https://www.winove.com.br/cases/${c.slug}`,
+        author: { "@id": "https://www.winove.com.br/#organization" },
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+        { "@type": "ListItem", position: 2, name: "Cases", item: "https://www.winove.com.br/cases" },
+      ],
+    },
+  ];
 
   return (
     <>
       <SEO
-        title="Cases de Sucesso | Winove"
-        description="Projetos que transformaram negócios e geraram resultados excepcionais para nossos clientes"
+        title="Cases de Sucesso | Projetos Reais e Resultados Mensuráveis – Winove"
+        description="Veja cases reais de criação de sites, SEO, automação e CRM WhatsApp que transformaram negócios e geraram resultados excepcionais para os clientes da Winove."
         canonical="https://www.winove.com.br/cases"
+        keywords={["cases de sucesso agência digital", "projetos wix studio", "resultados seo", "cases marketing digital"]}
         jsonLd={casesJsonLd}
       />
     <div className="min-h-screen bg-background">

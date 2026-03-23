@@ -25,9 +25,71 @@ const Promocoes = () => {
   return (
     <>
       <SEO
-        title="Promoções e ofertas | Winove"
-        description="Ofertas vigentes de e-mail corporativo, templates Wix Studio e soluções omnichannel da Winove."
+        title="Promoções e Ofertas Especiais | Winove – Até 20% de Desconto"
+        description="Aproveite as promoções da Winove: e-mail corporativo, templates Wix Studio e CRM WhatsApp com desconto por tempo limitado."
         canonical="https://www.winove.com.br/promocoes"
+        keywords={["promoções agência digital", "desconto e-mail corporativo", "templates wix barato", "crm whatsapp desconto", "oferta winove"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "@id": "https://www.winove.com.br/promocoes#webpage",
+            name: "Promoções e Ofertas – Winove",
+            url: "https://www.winove.com.br/promocoes",
+            isPartOf: { "@id": "https://www.winove.com.br/#website" },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+                { "@type": "ListItem", position: 2, name: "Promoções", item: "https://www.winove.com.br/promocoes" },
+              ],
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Ofertas Winove",
+            itemListElement: [
+              {
+                "@type": "ListItem", position: 1,
+                item: {
+                  "@type": "Offer",
+                  name: "Pacote com 5 contas de e-mail corporativo (3 GB)",
+                  description: "5 contas de e-mail corporativo com 3 GB cada por R$ 433 por ano.",
+                  price: "433.00",
+                  priceCurrency: "BRL",
+                  availability: "https://schema.org/InStock",
+                  url: "https://www.winove.com.br/email-corporativo",
+                  seller: { "@id": "https://www.winove.com.br/#organization" },
+                },
+              },
+              {
+                "@type": "ListItem", position: 2,
+                item: {
+                  "@type": "Offer",
+                  name: "Templates Wix Studio com 10% de desconto",
+                  description: "Modelos profissionais do Wix Studio com 10% de desconto.",
+                  priceSpecification: { "@type": "PriceSpecification", priceCurrency: "BRL" },
+                  availability: "https://schema.org/InStock",
+                  url: "https://www.winove.com.br/templates",
+                  seller: { "@id": "https://www.winove.com.br/#organization" },
+                },
+              },
+              {
+                "@type": "ListItem", position: 3,
+                item: {
+                  "@type": "Offer",
+                  name: "Chat WhatsApp com 20% de desconto",
+                  description: "20% de desconto no plano anual do CRM WhatsApp com IA.",
+                  priceSpecification: { "@type": "PriceSpecification", priceCurrency: "BRL" },
+                  availability: "https://schema.org/InStock",
+                  url: "https://www.winove.com.br/chat-whatsapp",
+                  seller: { "@id": "https://www.winove.com.br/#organization" },
+                },
+              },
+            ],
+          },
+        ]}
       />
         <div className="min-h-screen bg-background text-foreground">
           <section className="section--first pb-16 px-4">
