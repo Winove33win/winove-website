@@ -44,9 +44,30 @@ const DataDeletion = () => {
   return (
     <>
       <SEO
-        title="Excluir Dados | Winove"
-        description="Saiba como solicitar a exclusão ou anonimização dos seus dados pessoais tratados pela Winove, em conformidade com a LGPD."
+        title="Excluir Dados Pessoais | Winove – Solicitação LGPD"
+        description="Saiba como solicitar a exclusão ou anonimização dos seus dados pessoais tratados pela Winove, em conformidade com a LGPD. Resposta em até 15 dias corridos."
         canonical="https://www.winove.com.br/excluir-dados"
+        keywords={["excluir dados pessoais", "lgpd exclusão de dados", "direito ao esquecimento", "proteção de dados winove", "solicitação lgpd"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "@id": "https://www.winove.com.br/excluir-dados#webpage",
+            name: "Solicitação de Exclusão de Dados Pessoais – Winove",
+            description: "Canal oficial para titulares solicitarem exclusão ou anonimização de dados pessoais conforme a LGPD.",
+            url: "https://www.winove.com.br/excluir-dados",
+            isPartOf: { "@id": "https://www.winove.com.br/#website" },
+            publisher: { "@id": "https://www.winove.com.br/#organization" },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Excluir Dados", item: "https://www.winove.com.br/excluir-dados" },
+            ],
+          },
+        ]}
       />
       <div className="min-h-screen bg-background text-foreground">
         <section className="py-20 px-4 bg-gradient-to-b from-primary/5 via-background to-background">

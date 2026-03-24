@@ -270,6 +270,7 @@ export default function ChatWhatsapp() {
         title="CRM para WhatsApp com Automação e IA | Winove"
         description="Transforme seu WhatsApp em uma central profissional de atendimento, vendas e automação com CRM, chatbot e inteligência artificial."
         canonical="https://www.winove.com.br/chat-whatsapp"
+        keywords={["crm whatsapp", "whatsapp para empresas", "chatbot whatsapp", "automação whatsapp", "atendimento whatsapp", "ia whatsapp", "whatsapp business api", "crm para pequenas empresas"]}
         jsonLd={[
           {
             "@context": "https://schema.org",

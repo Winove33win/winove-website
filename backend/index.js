@@ -198,44 +198,206 @@ const BLOG_DESCRIPTION =
   'Conteúdos exclusivos, tendências e estratégias para manter seu negócio sempre à frente no mundo digital';
 const DEFAULT_IMAGE = 'https://www.winove.com.br/imagem-de-compartilhamento.png';
 
-app.get('/blog/', (req, res, next) => {
-  const template = getTemplate();
-  if (!template) {
-    return next();
-  }
-
-  const canonical = `${BASE_URL}/blog/`;
-  const html = renderTemplateWithMeta(template, {
-    title: 'Blog & Insights | Winove',
-    description: BLOG_DESCRIPTION,
-    canonical,
-    openGraph: {
-      'og:type': 'website',
-      'og:title': 'Blog & Insights | Winove',
-      'og:description': BLOG_DESCRIPTION,
-      'og:image': DEFAULT_IMAGE,
-    },
-    twitter: {
-      'twitter:card': 'summary_large_image',
-      'twitter:title': 'Blog & Insights | Winove',
-      'twitter:description': BLOG_DESCRIPTION,
-      'twitter:image': DEFAULT_IMAGE,
-    },
+// ── SSR pages metadata ────────────────────────────────────────────────────────
+const SSR_PAGES = [
+  {
+    path: '/servicos',
+    title: 'Serviços Digitais | Criação de Sites, SEO, Automação e IA – Winove',
+    description: 'Criação de sites profissionais, lojas virtuais, SEO avançado, automação de processos e inteligência artificial para empresas que querem crescer no digital.',
     jsonLd: {
       '@context': 'https://schema.org',
-      '@type': 'Blog',
-      name: 'Winove Blog',
-      description: BLOG_DESCRIPTION,
-      url: canonical,
+      '@type': 'CollectionPage',
+      name: 'Serviços Digitais – Winove',
+      url: `${BASE_URL}/servicos`,
+      description: 'Serviços de criação de sites, SEO, automação e IA para empresas.',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
     },
+  },
+  {
+    path: '/templates',
+    title: 'Templates Wix Studio Profissionais | Winove',
+    description: 'Acelere seu projeto com templates Wix Studio prontos, responsivos e otimizados para SEO. Design moderno, conversão alta e fácil personalização.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Templates Wix Studio – Winove',
+      url: `${BASE_URL}/templates`,
+      description: 'Templates Wix Studio prontos para uso com design profissional.',
+    },
+  },
+  {
+    path: '/chat-whatsapp',
+    title: 'CRM para WhatsApp com Automação e IA | Winove',
+    description: 'Transforme seu WhatsApp em uma central profissional de atendimento, vendas e automação com CRM, chatbot e inteligência artificial integrada.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'CRM para WhatsApp com Automação e IA',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      serviceType: 'Atendimento WhatsApp para empresas',
+      url: `${BASE_URL}/chat-whatsapp`,
+    },
+  },
+  {
+    path: '/email-corporativo',
+    title: 'E-mail Corporativo Profissional com Domínio Próprio | Winove',
+    description: 'Configure e-mail corporativo com seu domínio, Google Workspace, Microsoft 365 ou Titan Mail. Segurança, confiabilidade e suporte especializado.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'E-mail Corporativo Profissional',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      serviceType: 'E-mail Corporativo',
+      url: `${BASE_URL}/email-corporativo`,
+    },
+  },
+  {
+    path: '/sistema-gestao-documental',
+    title: 'Sistema de Gestão Documental (ECM) em Nuvem | Winove',
+    description: 'Organize, digitalize, localize e automatize documentos com nosso sistema ECM em nuvem. Conformidade legal, assinatura digital e busca inteligente por IA.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'Sistema de Gestão Documental ECM em Nuvem',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      serviceType: 'Gestão Documental',
+      url: `${BASE_URL}/sistema-gestao-documental`,
+    },
+  },
+  {
+    path: '/cases',
+    title: 'Cases de Sucesso | Projetos Reais e Resultados Mensuráveis – Winove',
+    description: 'Conheça os cases de sucesso da Winove: projetos reais com resultados mensuráveis em criação de sites, SEO, automação e crescimento digital para empresas.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Cases de Sucesso – Winove',
+      url: `${BASE_URL}/cases`,
+      description: 'Cases de sucesso com resultados reais em marketing digital e criação de sites.',
+    },
+  },
+  {
+    path: '/cursos',
+    title: 'Curso Wix Studio Completo – Crie Sites Profissionais do Zero | Winove',
+    description: 'Aprenda Wix Studio do zero ao avançado com Fernando Souza. Módulos práticos, projetos reais, certificado e acesso vitalício. Para iniciantes e profissionais.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: 'Curso Wix Studio Completo',
+      description: 'Aprenda Wix Studio do zero ao avançado com projetos reais e certificado.',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      url: `${BASE_URL}/cursos`,
+      inLanguage: 'pt-BR',
+    },
+  },
+  {
+    path: '/promocoes',
+    title: 'Promoções e Ofertas Especiais | Winove – Até 20% de Desconto',
+    description: 'Aproveite as promoções e ofertas especiais da Winove em criação de sites, templates, cursos e automação digital. Descontos por tempo limitado.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Promoções e Ofertas Especiais – Winove',
+      url: `${BASE_URL}/promocoes`,
+      description: 'Promoções e descontos em serviços digitais da Winove.',
+    },
+  },
+  {
+    path: '/sobre-fernando-souza',
+    title: 'Fernando Souza | Especialista em SEO, Wix Studio e Estratégia Digital',
+    description: 'Conheça Fernando Souza, fundador da Winove, especialista em SEO técnico, Wix Studio e estratégia digital com mais de 10 anos de experiência.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: 'Fernando Souza',
+      jobTitle: 'Especialista em SEO, Wix Studio e Estratégia Digital',
+      worksFor: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      url: `${BASE_URL}/sobre-fernando-souza`,
+    },
+  },
+  {
+    path: '/central-atendimento',
+    title: 'Central de Atendimento WhatsApp com Funil de Vendas | Winove',
+    description: 'Gerencie todos os atendimentos do WhatsApp em um único painel kanban. Funil de vendas visual, automação de fluxos e métricas em tempo real para sua equipe.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'Central de Atendimento WhatsApp com Funil de Vendas',
+      provider: { '@type': 'Organization', name: 'Winove', url: BASE_URL },
+      serviceType: 'Software de Atendimento',
+      url: `${BASE_URL}/central-atendimento`,
+    },
+  },
+  {
+    path: '/politica-de-privacidade',
+    title: 'Política de Privacidade | Winove – LGPD',
+    description: 'Leia a Política de Privacidade da Winove. Saiba como coletamos, usamos e protegemos seus dados pessoais em conformidade com a Lei Geral de Proteção de Dados (LGPD).',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Política de Privacidade – Winove',
+      url: `${BASE_URL}/politica-de-privacidade`,
+    },
+  },
+  {
+    path: '/termos-de-uso',
+    title: 'Termos de Uso | Winove',
+    description: 'Leia os Termos de Uso da Winove. Condições de contratação, propriedade intelectual, responsabilidades e regras de uso dos serviços e plataformas Winove.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Termos de Uso – Winove',
+      url: `${BASE_URL}/termos-de-uso`,
+    },
+  },
+  {
+    path: '/politica-de-cookies',
+    title: 'Política de Cookies | Winove',
+    description: 'Saiba como a Winove utiliza cookies para melhorar sua experiência de navegação, análise de tráfego e personalização de conteúdo. Gerencie suas preferências.',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Política de Cookies – Winove',
+      url: `${BASE_URL}/politica-de-cookies`,
+    },
+  },
+];
+
+app.get('/blog/', (req, res, next) => {
+  const template = getTemplate();
+  if (!template) return next();
+  const canonical = `${BASE_URL}/blog/`;
+  const title = 'Blog Winove | Marketing Digital, Wix, SEO e Tecnologia';
+  const html = renderTemplateWithMeta(template, {
+    title,
+    description: BLOG_DESCRIPTION,
+    canonical,
+    openGraph: { 'og:type': 'website', 'og:title': title, 'og:description': BLOG_DESCRIPTION, 'og:image': DEFAULT_IMAGE },
+    twitter: { 'twitter:card': 'summary_large_image', 'twitter:title': title, 'twitter:description': BLOG_DESCRIPTION, 'twitter:image': DEFAULT_IMAGE },
+    jsonLd: { '@context': 'https://schema.org', '@type': 'Blog', name: 'Blog Winove', description: BLOG_DESCRIPTION, url: canonical },
   });
-
-  if (!html) {
-    return next();
-  }
-
+  if (!html) return next();
   sendHtml(res, html);
 });
+
+// ── SSR for all static pages ─────────────────────────────────────────────────
+for (const page of SSR_PAGES) {
+  app.get(page.path, (req, res, next) => {
+    const template = getTemplate();
+    if (!template) return next();
+    const canonical = `${BASE_URL}${page.path}`;
+    const html = renderTemplateWithMeta(template, {
+      title: page.title,
+      description: page.description,
+      canonical,
+      openGraph: { 'og:type': 'website', 'og:title': page.title, 'og:description': page.description, 'og:image': DEFAULT_IMAGE },
+      twitter: { 'twitter:card': 'summary_large_image', 'twitter:title': page.title, 'twitter:description': page.description, 'twitter:image': DEFAULT_IMAGE },
+      jsonLd: page.jsonLd,
+    });
+    if (!html) return next();
+    sendHtml(res, html);
+  });
+}
 
 // API routes
 app.use('/api', blogRoute);

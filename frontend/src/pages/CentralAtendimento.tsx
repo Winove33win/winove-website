@@ -9,17 +9,35 @@ export function CentralAtendimento() {
   return (
       <>
       <SEO
-        title="Central de Conversas com Funil | Winove"
-        description="Gerencie atendimentos em tempo real e automatize fluxos."
+        title="Central de Atendimento WhatsApp com Funil de Vendas | Winove"
+        description="Gerencie todos os atendimentos do WhatsApp em um único painel kanban. Funil de vendas visual, automação de fluxos, métricas de SLA e relatórios em tempo real para sua equipe comercial."
         canonical="https://www.winove.com.br/central-atendimento"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "Service",
-          name: "Central de Conversas com Funil",
-          provider: { "@type": "Organization", name: "Winove" },
-          serviceType: "Central de atendimento",
-          url: "https://www.winove.com.br/central-atendimento",
-        }}
+        keywords={["central de atendimento whatsapp", "crm kanban", "funil de vendas whatsapp", "gestão de atendimento", "automação whatsapp", "central de conversas", "atendimento multiusuário"]}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "@id": "https://www.winove.com.br/central-atendimento#service",
+            name: "Central de Atendimento WhatsApp com Funil de Vendas",
+            description: "Painel kanban para gestão de atendimentos WhatsApp com automação de fluxos, funil de vendas visual e métricas em tempo real.",
+            provider: {
+              "@type": "Organization",
+              name: "Winove",
+              url: "https://www.winove.com.br",
+            },
+            serviceType: "Software de CRM e Atendimento",
+            url: "https://www.winove.com.br/central-atendimento",
+            areaServed: { "@type": "Country", name: "Brasil" },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Central de Atendimento", item: "https://www.winove.com.br/central-atendimento" },
+            ],
+          },
+        ]}
       />
       <div className="min-h-screen">
         <section className="section--first pb-16" aria-labelledby="central-hero">

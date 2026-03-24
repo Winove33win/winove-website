@@ -171,6 +171,7 @@ const ProposalPanel = () => {
         title="Painel de Propostas Comerciais | Winove"
         description="Preencha, valide e gere propostas comerciais padronizadas com assinatura digital e exportação em PDF."
         canonical="https://www.winove.com.br/comercial-propostas"
+        noindex={true}
       />
 
       <section className="section--first px-4">
