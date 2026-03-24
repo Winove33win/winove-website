@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- Homepage -->
   <url>
@@ -38,7 +37,7 @@
 
   <!-- Content & marketing -->
   <url>
-    <loc>https://www.winove.com.br/blog</loc>
+    <loc>https://www.winove.com.br/blog/</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -58,9 +57,14 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- About -->
+  <!-- About & support -->
   <url>
     <loc>https://www.winove.com.br/sobre-fernando-souza</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.winove.com.br/central-atendimento</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
