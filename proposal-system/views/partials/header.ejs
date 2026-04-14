@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' — ' : '' %>Winove Propostas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark sidebar d-flex flex-column p-0" style="width:240px;min-height:100vh;position:fixed;top:0;left:0;z-index:100">
+  <div class="w-100 p-3 border-bottom border-secondary">
+    <div class="d-flex align-items-center gap-2">
+      <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+      <div>
+        <div class="fw-bold text-white" style="font-size:14px">Winove</div>
+        <div style="font-size:11px;color:#94a3b8">Propostas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-grow-1 w-100 py-3">
+    <div class="px-3 mb-2" style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600">Menu</div>
+    <a href="/dashboard" class="nav-link-item <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-grid-1x2"></i> Dashboard
+    </a>
+    <a href="/proposals/new" class="nav-link-item <%= typeof activePage !== 'undefined' && activePage === 'new' ? 'active' : '' %>">
+      <i class="bi bi-plus-circle"></i> Nova Proposta
+    </a>
+
+    <div class="px-3 mb-2 mt-3" style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600">Sistema</div>
+    <a href="/settings" class="nav-link-item <%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">
+      <i class="bi bi-building"></i> Minha Empresa
+    </a>
+  </div>
+
+  <div class="w-100 p-3 border-top border-secondary">
+    <div style="font-size:12px;color:#94a3b8" class="mb-2">
+      <i class="bi bi-person-circle me-1"></i> <%= user?.name || 'Admin' %>
+    </div>
+    <form action="/logout" method="POST">
+      <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
+        <i class="bi bi-box-arrow-left me-1"></i> Sair
+      </button>
+    </form>
+  </div>
+</nav>
+
+<div class="main-content">

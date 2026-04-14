@@ -1,0 +1,459 @@
+<%
+  activePage = proposal ? 'edit' : 'new';
+  title = proposal ? 'Editar Proposta' : 'Nova Proposta';
+%>
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title"><%= proposal ? 'Editar Proposta' : 'Nova Proposta' %></h2>
+    <p class="page-subtitle"><%= proposalNumber %></p>
+  </div>
+  <a href="/dashboard" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-2"></i>Voltar
+  </a>
+</div>
+
+<form action="<%= action %>" method="POST" id="proposalForm">
+  <% if (method === 'PUT') { %><input type="hidden" name="_method" value="PUT"><% } %>
+
+  <!-- Navegação por abas -->
+  <ul class="nav nav-tabs mb-4" id="formTabs">
+    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-geral"><i class="bi bi-info-circle me-1"></i>Geral</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-cliente"><i class="bi bi-person me-1"></i>Cliente</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-projeto"><i class="bi bi-folder me-1"></i>Projeto</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-tecnica"><i class="bi bi-cpu me-1"></i>Estrutura Técnica</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-entregas"><i class="bi bi-check2-square me-1"></i>Entregas</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-financeiro"><i class="bi bi-currency-dollar me-1"></i>Financeiro</a></li>
+    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-condicoes"><i class="bi bi-shield-check me-1"></i>Condições</a></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ─── ABA 1: GERAL ─── -->
+    <div class="tab-pane fade show active" id="tab-geral">
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label required">Título da Proposta</label>
+              <input type="text" name="proposal_title" class="form-control"
+                     value="<%= proposal?.proposal_title || '' %>"
+                     placeholder="Ex: Desenvolvimento de Sistema ERP para Gestão Industrial" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <% const statuses = ['rascunho','enviada','em_negociacao','aprovada','rejeitada','cancelada']; %>
+                <% const statusNames = { rascunho:'Rascunho', enviada:'Enviada', em_negociacao:'Em Negociação', aprovada:'Aprovada', rejeitada:'Rejeitada', cancelada:'Cancelada' }; %>
+                <% statuses.forEach(s => { %>
+                  <option value="<%= s %>" <%= (proposal?.status || 'rascunho') === s ? 'selected' : '' %>><%= statusNames[s] %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Responsável</label>
+              <input type="text" name="responsible" class="form-control"
+                     value="<%= proposal?.responsible || user?.name || '' %>">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Data da Proposta</label>
+              <input type="date" name="proposal_date" class="form-control"
+                     value="<%= proposal?.proposal_date ? new Date(proposal.proposal_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0] %>">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Validade (dias)</label>
+              <input type="number" name="validity_days" class="form-control" value="<%= proposal?.validity_days || 30 %>" min="1">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Válida até</label>
+              <input type="date" name="valid_until" class="form-control"
+                     value="<%= proposal?.valid_until ? new Date(proposal.valid_until).toISOString().split('T')[0] : '' %>">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 2: CLIENTE ─── -->
+    <div class="tab-pane fade" id="tab-cliente">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-building me-2"></i>Dados do Cliente</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required">Empresa do Cliente</label>
+              <input type="text" name="client_company" class="form-control"
+                     value="<%= proposal?.client_company || '' %>" placeholder="Nome da empresa" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">CNPJ</label>
+              <input type="text" name="client_cnpj" class="form-control" data-mask="cnpj"
+                     value="<%= proposal?.client_cnpj || '' %>" placeholder="00.000.000/0000-00">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Telefone</label>
+              <input type="text" name="client_phone" class="form-control"
+                     value="<%= proposal?.client_phone || '' %>" placeholder="(11) 99999-9999">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nome do Contato</label>
+              <input type="text" name="client_contact_name" class="form-control"
+                     value="<%= proposal?.client_contact_name || '' %>" placeholder="Nome do responsável">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nome do Solicitante</label>
+              <input type="text" name="client_name" class="form-control"
+                     value="<%= proposal?.client_name || '' %>" placeholder="Quem fez a solicitação">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">E-mail</label>
+              <input type="email" name="client_email" class="form-control"
+                     value="<%= proposal?.client_email || '' %>" placeholder="contato@empresa.com.br">
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Endereço</label>
+              <input type="text" name="client_address" class="form-control"
+                     value="<%= proposal?.client_address || '' %>" placeholder="Rua, número, bairro">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Cidade</label>
+              <input type="text" name="client_city" class="form-control" value="<%= proposal?.client_city || '' %>">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Estado</label>
+              <input type="text" name="client_state" class="form-control" value="<%= proposal?.client_state || '' %>" placeholder="SP">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 3: PROJETO ─── -->
+    <div class="tab-pane fade" id="tab-projeto">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-folder me-2"></i>Detalhes do Projeto</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Descrição / Contexto do Projeto</label>
+              <textarea name="project_description" class="form-control" rows="4"
+                placeholder="Descreva o contexto, o problema que será resolvido e o objetivo geral do projeto..."><%= proposal?.project_description || '' %></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Objetivos do Projeto</label>
+              <textarea name="project_objectives" class="form-control" rows="4"
+                placeholder="Liste os objetivos específicos que serão alcançados..."><%= proposal?.project_objectives || '' %></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">O que está INCLUÍDO no escopo</label>
+              <textarea name="project_scope" class="form-control" rows="5"
+                placeholder="Descreva o que será desenvolvido/entregue..."><%= proposal?.project_scope || '' %></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">O que NÃO está incluído (fora do escopo)</label>
+              <textarea name="out_of_scope" class="form-control" rows="5"
+                placeholder="Descreva o que não faz parte desta proposta para evitar dúvidas..."><%= proposal?.out_of_scope || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 4: ESTRUTURA TÉCNICA ─── -->
+    <div class="tab-pane fade" id="tab-tecnica">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Estrutura Técnica</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Tecnologias Utilizadas</label>
+              <div class="tech-tags-input">
+                <div class="tags-container" id="tagsContainer">
+                  <% if (proposal?.technologies) { %>
+                    <% proposal.technologies.forEach(tech => { %>
+                    <span class="tech-tag"><%= tech %><button type="button" onclick="removeTag(this)">×</button></span>
+                    <% }); %>
+                  <% } %>
+                  <input type="text" id="techInput" placeholder="Digite e pressione Enter..."
+                         onkeydown="addTag(event)" class="tag-input">
+                </div>
+              </div>
+              <input type="hidden" name="technologies_raw" id="technologiesRaw"
+                     value="<%= proposal?.technologies ? proposal.technologies.join(',') : '' %>">
+              <small class="text-muted">Ex: Node.js, React, MySQL, Docker, AWS — pressione Enter para adicionar</small>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Arquitetura da Solução</label>
+              <textarea name="architecture" class="form-control" rows="4"
+                placeholder="Descreva a arquitetura técnica: microsserviços, monolito, API REST, etc..."><%= proposal?.architecture || '' %></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Integrações</label>
+              <textarea name="integrations" class="form-control" rows="4"
+                placeholder="APIs externas, sistemas legados, ERPs, bancos de dados que serão integrados..."><%= proposal?.integrations || '' %></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Requisitos Técnicos do Cliente</label>
+              <textarea name="requirements" class="form-control" rows="4"
+                placeholder="Infraestrutura necessária, servidor, licenças, acessos que o cliente deve fornecer..."><%= proposal?.requirements || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 5: ENTREGAS ─── -->
+    <div class="tab-pane fade" id="tab-entregas">
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="bi bi-check2-square me-2"></i>Entregas e Cronograma</h6>
+        </div>
+        <div class="card-body">
+          <h6 class="text-muted mb-3">Entregas do Projeto</h6>
+          <div id="deliverablesList">
+            <% const deliverables = proposal?.deliverables || []; %>
+            <% if (deliverables.length === 0) { %>
+              <%- include('partials/deliverable-row', { d: null, i: 0 }) %>
+            <% } else { %>
+              <% deliverables.forEach((d, i) => { %>
+                <%- include('partials/deliverable-row', { d, i }) %>
+              <% }); %>
+            <% } %>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addDeliverable()">
+            <i class="bi bi-plus-lg me-1"></i>Adicionar Entrega
+          </button>
+
+          <hr class="my-4">
+
+          <h6 class="text-muted mb-3">Cronograma de Fases</h6>
+          <div id="timelineList">
+            <% const timeline = proposal?.timeline || []; %>
+            <% if (timeline.length === 0) { %>
+              <%- include('partials/timeline-row', { t: null, i: 0 }) %>
+            <% } else { %>
+              <% timeline.forEach((t, i) => { %>
+                <%- include('partials/timeline-row', { t, i }) %>
+              <% }); %>
+            <% } %>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addTimeline()">
+            <i class="bi bi-plus-lg me-1"></i>Adicionar Fase
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 6: FINANCEIRO ─── -->
+    <div class="tab-pane fade" id="tab-financeiro">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-currency-dollar me-2"></i>Valores e Pagamento</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Valor Total (R$)</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="text" name="total_value" class="form-control money-input"
+                       value="<%= proposal?.total_value ? Number(proposal.total_value).toFixed(2) : '' %>"
+                       placeholder="0,00" oninput="calcFinal()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Desconto (R$)</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="text" name="discount_value" class="form-control money-input"
+                       value="<%= proposal?.discount_value ? Number(proposal.discount_value).toFixed(2) : '0.00' %>"
+                       placeholder="0,00" oninput="calcFinal()">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Valor Final</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="text" id="finalValueDisplay" class="form-control fw-bold text-success"
+                       value="<%= proposal?.final_value ? Number(proposal.final_value).toFixed(2) : '' %>"
+                       readonly>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Forma de Pagamento</label>
+              <select name="payment_method" class="form-select">
+                <option value="">Selecione...</option>
+                <% ['PIX','Transferência Bancária','Boleto','Cartão de Crédito','Cheque','À Vista','Parcelado'].forEach(m => { %>
+                <option value="<%= m %>" <%= proposal?.payment_method === m ? 'selected' : '' %>><%= m %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Parcelas</label>
+              <input type="number" name="installments" class="form-control"
+                     value="<%= proposal?.installments || 1 %>" min="1" max="60">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Condições de Pagamento</label>
+              <textarea name="payment_conditions" class="form-control" rows="3"
+                placeholder="Ex: 50% na assinatura do contrato, 25% na entrega do MVP, 25% na entrega final..."><%= proposal?.payment_conditions || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ABA 7: CONDIÇÕES ─── -->
+    <div class="tab-pane fade" id="tab-condicoes">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Garantias, SLA e Condições</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Garantia (meses)</label>
+              <input type="number" name="warranty_months" class="form-control"
+                     value="<%= proposal?.warranty_months || 3 %>" min="0">
+            </div>
+            <div class="col-md-9">
+              <label class="form-label">Descrição da Garantia</label>
+              <input type="text" name="warranty_description" class="form-control"
+                     value="<%= proposal?.warranty_description || '' %>"
+                     placeholder="Ex: Correção de bugs e erros de funcionamento sem custo adicional">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">SLA — Tempo de Resposta</label>
+              <input type="text" name="sla_response_time" class="form-control"
+                     value="<%= proposal?.sla_response_time || '' %>"
+                     placeholder="Ex: Até 4h úteis para incidentes críticos">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Suporte Técnico</label>
+              <input type="text" name="support_description" class="form-control"
+                     value="<%= proposal?.support_description || '' %>"
+                     placeholder="Ex: Suporte por e-mail e WhatsApp, horário comercial, Seg-Sex 9h–18h">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Condições Gerais</label>
+              <textarea name="general_conditions" class="form-control" rows="5"
+                placeholder="Cláusulas gerais: direitos de propriedade, sigilo, penalidades, rescisão..."><%= proposal?.general_conditions || '' %></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Notas Internas <span class="text-muted small">(não aparece no PDF)</span></label>
+              <textarea name="internal_notes" class="form-control" rows="3"
+                placeholder="Anotações privadas sobre a negociação, histórico, etc."><%= proposal?.internal_notes || '' %></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-content -->
+
+  <div class="d-flex gap-3 mt-3 pb-4">
+    <button type="submit" name="status_action" value="save" class="btn btn-primary">
+      <i class="bi bi-save me-2"></i>Salvar Proposta
+    </button>
+    <a href="/dashboard" class="btn btn-outline-secondary">Cancelar</a>
+    <% if (proposal) { %>
+    <a href="/proposals/<%= proposal.id %>/pdf" target="_blank" class="btn btn-outline-danger ms-auto">
+      <i class="bi bi-file-pdf me-2"></i>Gerar PDF
+    </a>
+    <% } %>
+  </div>
+</form>
+
+<script>
+// ─── Tags de tecnologia ────────────────────────
+function addTag(e) {
+  if (e.key !== 'Enter' && e.key !== ',') return;
+  e.preventDefault();
+  const input = document.getElementById('techInput');
+  const value = input.value.trim();
+  if (!value) return;
+
+  const tag = document.createElement('span');
+  tag.className = 'tech-tag';
+  tag.innerHTML = `${value}<button type="button" onclick="removeTag(this)">×</button>`;
+  document.getElementById('tagsContainer').insertBefore(tag, input);
+  input.value = '';
+  updateTechRaw();
+}
+
+function removeTag(btn) {
+  btn.parentElement.remove();
+  updateTechRaw();
+}
+
+function updateTechRaw() {
+  const tags = document.querySelectorAll('#tagsContainer .tech-tag');
+  document.getElementById('technologiesRaw').value =
+    Array.from(tags).map(t => t.textContent.replace('×', '').trim()).join(',');
+}
+
+// ─── Entregas ─────────────────────────────────
+let deliverableCount = document.querySelectorAll('#deliverablesList .deliverable-row').length;
+
+function addDeliverable() {
+  const i = deliverableCount++;
+  const html = `
+    <div class="deliverable-row card mb-2 p-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+          <label class="form-label form-label-sm">Entrega</label>
+          <input type="text" name="deliverable_title[]" class="form-control form-control-sm" placeholder="Nome da entrega">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label form-label-sm">Descrição</label>
+          <input type="text" name="deliverable_description[]" class="form-control form-control-sm" placeholder="Detalhes">
+        </div>
+        <div class="col-md-1">
+          <label class="form-label form-label-sm">Prazo</label>
+          <input type="text" name="deliverable_deadline[]" class="form-control form-control-sm" placeholder="Semana X">
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.deliverable-row').remove()">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('deliverablesList').insertAdjacentHTML('beforeend', html);
+}
+
+// ─── Cronograma ───────────────────────────────
+let timelineCount = document.querySelectorAll('#timelineList .timeline-row').length;
+
+function addTimeline() {
+  const html = `
+    <div class="timeline-row card mb-2 p-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label form-label-sm">Fase</label>
+          <input type="text" name="timeline_phase[]" class="form-control form-control-sm" placeholder="Nome da fase">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label form-label-sm">Duração</label>
+          <input type="text" name="timeline_duration[]" class="form-control form-control-sm" placeholder="2 semanas">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label form-label-sm">Descrição</label>
+          <input type="text" name="timeline_description[]" class="form-control form-control-sm" placeholder="O que será feito">
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.timeline-row').remove()">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('timelineList').insertAdjacentHTML('beforeend', html);
+}
+
+// ─── Cálculo financeiro ───────────────────────
+function calcFinal() {
+  const total = parseFloat(document.querySelector('[name=total_value]').value.replace(',', '.') || 0);
+  const discount = parseFloat(document.querySelector('[name=discount_value]').value.replace(',', '.') || 0);
+  document.getElementById('finalValueDisplay').value = (total - discount).toFixed(2);
+}
+</script>
+
+<%- include('partials/footer') %>

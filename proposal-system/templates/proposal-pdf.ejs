@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 10pt;
+    color: #1e293b;
+    line-height: 1.5;
+    background: #fff;
+  }
+
+  /* ─── Variáveis de cor ─── */
+  :root {
+    --primary: #1d4ed8;
+    --primary-light: #eff6ff;
+    --border: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dark: #0f172a;
+  }
+
+  /* ─── CAPA / HEADER ─── */
+  .pdf-cover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 60%, #0f172a 100%);
+    color: #fff;
+    padding: 40px 50px 50px;
+    margin-bottom: 30px;
+  }
+
+  .cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+  }
+
+  .cover-logo img { max-height: 55px; max-width: 200px; object-fit: contain; }
+  .cover-logo-text { font-size: 22pt; font-weight: 700; letter-spacing: -0.5px; }
+
+  .cover-proposal-info { text-align: right; }
+  .cover-proposal-number { font-size: 11pt; opacity: 0.8; margin-bottom: 4px; }
+  .cover-proposal-date { font-size: 9pt; opacity: 0.65; }
+
+  .cover-title { margin-bottom: 30px; }
+  .cover-label { font-size: 8pt; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 8px; }
+  .cover-project { font-size: 20pt; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+  .cover-client { font-size: 12pt; opacity: 0.85; }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 20px;
+  }
+  .cover-meta-item label { font-size: 7pt; text-transform: uppercase; letter-spacing: 1px; opacity: 0.65; display: block; }
+  .cover-meta-item span { font-size: 9.5pt; font-weight: 600; }
+
+  /* ─── CONTEÚDO ─── */
+  .pdf-body { padding: 0 50px; }
+
+  /* ─── Seções ─── */
+  .section { margin-bottom: 28px; }
+
+  .section-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+  }
+
+  /* ─── Grid de info ─── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+  }
+  .info-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .info-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .info-item label {
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  .info-item span {
+    font-size: 9.5pt;
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+
+  /* ─── Box destacado ─── */
+  .highlight-box {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 16px;
+  }
+  .highlight-box .box-title {
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+  .highlight-box p { font-size: 9.5pt; color: #334155; white-space: pre-wrap; }
+
+  /* ─── Tags de tecnologia ─── */
+  .tech-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tech-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid #bfdbfe;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+
+  /* ─── Tabelas ─── */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 4px; }
+  th {
+    background: #1d4ed8;
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  td.num { text-align: center; font-weight: 600; color: var(--primary); }
+
+  /* ─── Financeiro ─── */
+  .financial-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .financial-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .financial-row:last-child { border-bottom: none; }
+  .financial-row.total {
+    background: var(--primary);
+    color: #fff;
+    font-size: 12pt;
+    font-weight: 700;
+    padding: 14px 18px;
+  }
+  .financial-row label { color: var(--text-muted); font-size: 9pt; }
+  .financial-row.total label { color: rgba(255,255,255,0.8); }
+  .financial-row span { font-weight: 600; font-size: 10pt; }
+  .financial-row.total span { color: #fff; font-size: 14pt; }
+
+  /* ─── Condições ─── */
+  .conditions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .condition-item {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .condition-item label {
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .condition-item p { font-size: 9pt; color: #334155; white-space: pre-wrap; }
+
+  /* ─── Assinatura ─── */
+  .signature-section {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+  }
+  .signature-box { text-align: center; }
+  .signature-line {
+    border-top: 1px solid #334155;
+    margin-top: 50px;
+    padding-top: 8px;
+  }
+  .signature-line .name { font-weight: 700; font-size: 10pt; }
+  .signature-line .role { font-size: 8.5pt; color: var(--text-muted); }
+
+  /* ─── Rodapé ─── */
+  .pdf-footer {
+    margin-top: 40px;
+    padding: 20px 50px;
+    background: #f1f5f9;
+    border-top: 3px solid var(--primary);
+  }
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    color: var(--text-muted);
+  }
+
+  /* ─── Quebra de página ─── */
+  .page-break { page-break-before: always; margin-top: 0; padding-top: 30px; }
+  .no-break { page-break-inside: avoid; }
+
+  /* ─── Utilitários ─── */
+  .text-muted { color: var(--text-muted); }
+  .fw-bold { font-weight: 700; }
+  .text-primary { color: var(--primary); }
+  .text-success { color: #16a34a; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     CAPA
+════════════════════════════════════════════ -->
+<div class="pdf-cover">
+  <div class="cover-top">
+    <div class="cover-logo">
+      <% if (logoBase64) { %>
+        <img src="<%= logoBase64 %>" alt="<%= company.company_name %>">
+      <% } else { %>
+        <div class="cover-logo-text"><%= company.company_name || 'Empresa' %></div>
+      <% } %>
+    </div>
+    <div class="cover-proposal-info">
+      <div class="cover-proposal-number">Proposta Nº <%= proposal.proposal_number %></div>
+      <div class="cover-proposal-date">Emitida em <%= formatDate(proposal.proposal_date || proposal.created_at) %></div>
+    </div>
+  </div>
+
+  <div class="cover-title">
+    <div class="cover-label">Proposta Comercial</div>
+    <div class="cover-project"><%= proposal.proposal_title || 'Proposta Comercial' %></div>
+    <div class="cover-client">Preparado para: <strong><%= proposal.client_company || proposal.client_name %></strong></div>
+  </div>
+
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <label>Responsável</label>
+      <span><%= proposal.responsible || company.company_name %></span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Validade</label>
+      <span>até <%= formatDate(proposal.valid_until) %></span>
+    </div>
+    <div class="cover-meta-item">
+      <label>Valor Total</label>
+      <span><%= formatCurrency(proposal.final_value) %></span>
+    </div>
+    <% if (company.phone) { %>
+    <div class="cover-meta-item">
+      <label>Contato</label>
+      <span><%= company.phone %></span>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     CORPO
+════════════════════════════════════════════ -->
+<div class="pdf-body">
+
+  <!-- ─── 1. DADOS DAS PARTES ─── -->
+  <div class="section no-break">
+    <div class="section-title">Partes Envolvidas</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <div>
+        <div style="font-size:8pt;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:8px">Contratante</div>
+        <div class="info-grid" style="grid-template-columns:1fr;">
+          <div class="info-item">
+            <label>Empresa</label>
+            <span><%= proposal.client_company || '—' %></span>
+          </div>
+          <% if (proposal.client_cnpj) { %>
+          <div class="info-item">
+            <label>CNPJ</label>
+            <span><%= formatCNPJ(proposal.client_cnpj) %></span>
+          </div>
+          <% } %>
+          <div class="info-item">
+            <label>Responsável</label>
+            <span><%= proposal.client_contact_name || proposal.client_name || '—' %></span>
+          </div>
+          <% if (proposal.client_email) { %>
+          <div class="info-item">
+            <label>E-mail</label>
+            <span><%= proposal.client_email %></span>
+          </div>
+          <% } %>
+          <% if (proposal.client_phone) { %>
+          <div class="info-item">
+            <label>Telefone</label>
+            <span><%= proposal.client_phone %></span>
+          </div>
+          <% } %>
+          <% if (proposal.client_city) { %>
+          <div class="info-item">
+            <label>Cidade/Estado</label>
+            <span><%= [proposal.client_city, proposal.client_state].filter(Boolean).join('/') %></span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:8pt;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:8px">Contratada</div>
+        <div class="info-grid" style="grid-template-columns:1fr;">
+          <div class="info-item">
+            <label>Empresa</label>
+            <span><%= company.company_name || '—' %></span>
+          </div>
+          <% if (company.cnpj) { %>
+          <div class="info-item">
+            <label>CNPJ</label>
+            <span><%= formatCNPJ(company.cnpj) %></span>
+          </div>
+          <% } %>
+          <% if (company.email) { %>
+          <div class="info-item">
+            <label>E-mail</label>
+            <span><%= company.email %></span>
+          </div>
+          <% } %>
+          <% if (company.phone) { %>
+          <div class="info-item">
+            <label>Telefone</label>
+            <span><%= company.phone %></span>
+          </div>
+          <% } %>
+          <% if (company.website) { %>
+          <div class="info-item">
+            <label>Site</label>
+            <span><%= company.website %></span>
+          </div>
+          <% } %>
+          <% if (company.city) { %>
+          <div class="info-item">
+            <label>Cidade/Estado</label>
+            <span><%= [company.city, company.state].filter(Boolean).join('/') %></span>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── 2. DESCRIÇÃO DO PROJETO ─── -->
+  <% if (proposal.project_description) { %>
+  <div class="section no-break">
+    <div class="section-title">Contexto e Descrição do Projeto</div>
+    <div class="highlight-box">
+      <p><%= proposal.project_description %></p>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- ─── 3. OBJETIVOS ─── -->
+  <% if (proposal.project_objectives) { %>
+  <div class="section no-break">
+    <div class="section-title">Objetivos do Projeto</div>
+    <div class="highlight-box">
+      <p><%= proposal.project_objectives %></p>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- ─── 4. ESCOPO ─── -->
+  <% if (proposal.project_scope || proposal.out_of_scope) { %>
+  <div class="section no-break">
+    <div class="section-title">Escopo do Projeto</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <% if (proposal.project_scope) { %>
+      <div>
+        <div style="font-size:8pt;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+          ✓ Incluso no escopo
+        </div>
+        <div style="font-size:9.5pt;white-space:pre-wrap;color:#1e293b"><%= proposal.project_scope %></div>
+      </div>
+      <% } %>
+      <% if (proposal.out_of_scope) { %>
+      <div>
+        <div style="font-size:8pt;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+          ✗ Fora do escopo
+        </div>
+        <div style="font-size:9.5pt;white-space:pre-wrap;color:#64748b"><%= proposal.out_of_scope %></div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- ─── 5. ESTRUTURA TÉCNICA ─── -->
+  <% if ((proposal.technologies && proposal.technologies.length) || proposal.architecture || proposal.integrations) { %>
+  <div class="section">
+    <div class="section-title">Estrutura Técnica</div>
+
+    <% if (proposal.technologies && proposal.technologies.length) { %>
+    <div style="margin-bottom:16px">
+      <div style="font-size:8pt;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">Tecnologias Utilizadas</div>
+      <div class="tech-tags">
+        <% proposal.technologies.forEach(t => { %>
+        <span class="tech-tag"><%= t %></span>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <% if (proposal.architecture) { %>
+      <div>
+        <div style="font-size:8pt;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">Arquitetura</div>
+        <div style="font-size:9.5pt;white-space:pre-wrap"><%= proposal.architecture %></div>
+      </div>
+      <% } %>
+      <% if (proposal.integrations) { %>
+      <div>
+        <div style="font-size:8pt;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">Integrações</div>
+        <div style="font-size:9.5pt;white-space:pre-wrap"><%= proposal.integrations %></div>
+      </div>
+      <% } %>
+    </div>
+
+    <% if (proposal.requirements) { %>
+    <div style="margin-top:14px">
+      <div style="font-size:8pt;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px">Requisitos do Cliente</div>
+      <div style="font-size:9.5pt;white-space:pre-wrap;color:#64748b"><%= proposal.requirements %></div>
+    </div>
+    <% } %>
+  </div>
+  <% } %>
+
+  <!-- ─── 6. ENTREGAS ─── -->
+  <% if (proposal.deliverables && proposal.deliverables.length) { %>
+  <div class="section page-break">
+    <div class="section-title">Entregas do Projeto</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Entrega</th>
+          <th>Descrição</th>
+          <th style="width:90px">Prazo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% proposal.deliverables.forEach((d, i) => { %>
+        <tr>
+          <td class="num"><%= i + 1 %></td>
+          <td class="fw-bold"><%= d.title %></td>
+          <td class="text-muted"><%= d.description || '—' %></td>
+          <td><%= d.deadline || '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <!-- ─── 7. CRONOGRAMA ─── -->
+  <% if (proposal.timeline && proposal.timeline.length) { %>
+  <div class="section no-break">
+    <div class="section-title">Cronograma de Execução</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Fase</th>
+          <th>Duração</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% proposal.timeline.forEach((t, i) => { %>
+        <tr>
+          <td class="num"><%= i + 1 %></td>
+          <td class="fw-bold"><%= t.phase %></td>
+          <td style="white-space:nowrap"><%= t.duration || '—' %></td>
+          <td class="text-muted"><%= t.description || '—' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+
+  <!-- ─── 8. INVESTIMENTO ─── -->
+  <div class="section no-break">
+    <div class="section-title">Investimento</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start;">
+
+      <div class="financial-box">
+        <div class="financial-row">
+          <label>Valor do Projeto</label>
+          <span><%= formatCurrency(proposal.total_value) %></span>
+        </div>
+        <% if (proposal.discount_value > 0) { %>
+        <div class="financial-row">
+          <label>Desconto</label>
+          <span style="color:#dc2626">− <%= formatCurrency(proposal.discount_value) %></span>
+        </div>
+        <% } %>
+        <div class="financial-row total">
+          <label>TOTAL</label>
+          <span><%= formatCurrency(proposal.final_value) %></span>
+        </div>
+      </div>
+
+      <div>
+        <% if (proposal.payment_method) { %>
+        <div class="info-item" style="margin-bottom:12px">
+          <label>Forma de Pagamento</label>
+          <span><%= proposal.payment_method %><% if (proposal.installments > 1) { %> — <%= proposal.installments %>x de <%= formatCurrency(proposal.final_value / proposal.installments) %><% } %></span>
+        </div>
+        <% } %>
+        <% if (proposal.payment_conditions) { %>
+        <div class="info-item" style="margin-bottom:12px">
+          <label>Condições</label>
+          <span style="font-size:9pt;white-space:pre-wrap"><%= proposal.payment_conditions %></span>
+        </div>
+        <% } %>
+        <% if (company.bank_pix) { %>
+        <div class="info-item">
+          <label>Chave PIX</label>
+          <span><%= company.bank_pix %></span>
+        </div>
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── 9. GARANTIAS E CONDIÇÕES ─── -->
+  <% if (proposal.warranty_months || proposal.sla_response_time || proposal.general_conditions) { %>
+  <div class="section no-break">
+    <div class="section-title">Garantias, SLA e Condições</div>
+    <div class="conditions-grid">
+      <% if (proposal.warranty_months) { %>
+      <div class="condition-item">
+        <label>Garantia</label>
+        <p><strong><%= proposal.warranty_months %> meses</strong><% if (proposal.warranty_description) { %> — <%= proposal.warranty_description %><% } %></p>
+      </div>
+      <% } %>
+      <% if (proposal.sla_response_time) { %>
+      <div class="condition-item">
+        <label>SLA — Tempo de Resposta</label>
+        <p><%= proposal.sla_response_time %></p>
+      </div>
+      <% } %>
+      <% if (proposal.support_description) { %>
+      <div class="condition-item">
+        <label>Suporte Técnico</label>
+        <p><%= proposal.support_description %></p>
+      </div>
+      <% } %>
+      <div class="condition-item">
+        <label>Validade da Proposta</label>
+        <p>Esta proposta é válida até <strong><%= formatDate(proposal.valid_until) %></strong> (<%= proposal.validity_days %> dias)</p>
+      </div>
+    </div>
+    <% if (proposal.general_conditions) { %>
+    <div style="margin-top:14px;font-size:8.5pt;color:#64748b;white-space:pre-wrap"><%= proposal.general_conditions %></div>
+    <% } %>
+  </div>
+  <% } %>
+
+  <!-- ─── 10. ASSINATURA ─── -->
+  <div class="section">
+    <div class="section-title">Aprovação e Assinatura</div>
+    <p style="font-size:9pt;color:#64748b;margin-bottom:30px">
+      Ao assinar este documento, as partes declaram ciência e concordância com todos os termos descritos nesta proposta.
+    </p>
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-line">
+          <div class="name"><%= company.company_name || 'Contratada' %></div>
+          <div class="role">Responsável / <%= proposal.responsible || 'Representante' %></div>
+        </div>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line">
+          <div class="name"><%= proposal.client_company || proposal.client_name || 'Contratante' %></div>
+          <div class="role"><%= proposal.client_contact_name || 'Responsável' %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /pdf-body -->
+
+<!-- ─── RODAPÉ ─── -->
+<div class="pdf-footer">
+  <div class="footer-content">
+    <div>
+      <strong><%= company.company_name %></strong>
+      <% if (company.cnpj) { %> • CNPJ: <%= formatCNPJ(company.cnpj) %><% } %>
+      <% if (company.phone) { %> • <%= company.phone %><% } %>
+      <% if (company.email) { %> • <%= company.email %><% } %>
+    </div>
+    <div>
+      <%= company.footer_text || `Proposta ${proposal.proposal_number} — ${new Date().getFullYear()}` %>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

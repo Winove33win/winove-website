@@ -1,0 +1,257 @@
+<%
+  activePage = 'dashboard';
+  title = 'Dashboard';
+  const statusLabel = {
+    rascunho: { label: 'Rascunho', cls: 'secondary' },
+    enviada: { label: 'Enviada', cls: 'info' },
+    em_negociacao: { label: 'Em Negociação', cls: 'warning' },
+    aprovada: { label: 'Aprovada', cls: 'success' },
+    rejeitada: { label: 'Rejeitada', cls: 'danger' },
+    cancelada: { label: 'Cancelada', cls: 'dark' }
+  };
+  function fmtMoney(v) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  }
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('pt-BR');
+  }
+%>
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Dashboard</h2>
+    <p class="page-subtitle">Visão geral das propostas comerciais</p>
+  </div>
+  <a href="/proposals/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-2"></i>Nova Proposta
+  </a>
+</div>
+
+<% if (successMsg) { %>
+<div class="alert alert-success alert-dismissible d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-check-circle-fill"></i>
+  <%= successMsg %>
+  <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+</div>
+<% } %>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary-soft"><i class="bi bi-file-text text-primary"></i></div>
+      <div class="stat-value"><%= stats.total %></div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning-soft"><i class="bi bi-send text-warning"></i></div>
+      <div class="stat-value"><%= stats.enviadas %></div>
+      <div class="stat-label">Enviadas</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon bg-success-soft"><i class="bi bi-check-circle text-success"></i></div>
+      <div class="stat-value"><%= stats.aprovadas %></div>
+      <div class="stat-label">Aprovadas</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon bg-secondary-soft"><i class="bi bi-pencil-square text-secondary"></i></div>
+      <div class="stat-value"><%= stats.rascunhos %></div>
+      <div class="stat-label">Rascunhos</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon bg-danger-soft"><i class="bi bi-x-circle text-danger"></i></div>
+      <div class="stat-value"><%= stats.rejeitadas %></div>
+      <div class="stat-label">Rejeitadas</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-2">
+    <div class="stat-card stat-card-highlight">
+      <div class="stat-icon bg-success-soft"><i class="bi bi-currency-dollar text-success"></i></div>
+      <div class="stat-value stat-value-sm"><%= fmtMoney(stats.valor_aprovado) %></div>
+      <div class="stat-label">Volume Aprovado</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabela de Propostas -->
+<div class="card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Propostas</h5>
+    <div class="d-flex gap-2">
+      <input type="text" class="form-control form-control-sm" id="searchInput"
+             placeholder="Buscar..." style="width:200px" oninput="filterTable()">
+      <select class="form-select form-select-sm" id="statusFilter" onchange="filterTable()" style="width:140px">
+        <option value="">Todos os status</option>
+        <option value="rascunho">Rascunho</option>
+        <option value="enviada">Enviada</option>
+        <option value="em_negociacao">Em Negociação</option>
+        <option value="aprovada">Aprovada</option>
+        <option value="rejeitada">Rejeitada</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <% if (proposals.length === 0) { %>
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-inbox display-5 d-block mb-3"></i>
+      Nenhuma proposta cadastrada ainda.<br>
+      <a href="/proposals/new" class="btn btn-primary mt-3"><i class="bi bi-plus-lg me-1"></i>Criar primeira proposta</a>
+    </div>
+    <% } else { %>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 proposals-table" id="proposalsTable">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Projeto / Cliente</th>
+            <th>Status</th>
+            <th>Valor</th>
+            <th>Validade</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% proposals.forEach(p => { %>
+          <tr data-status="<%= p.status %>">
+            <td>
+              <a href="/proposals/<%= p.id %>" class="proposal-number"><%= p.proposal_number %></a>
+            </td>
+            <td>
+              <div class="fw-medium"><%= p.proposal_title || '(sem título)' %></div>
+              <div class="text-muted small"><%= p.client_company || p.client_name || '—' %></div>
+            </td>
+            <td>
+              <% const s = statusLabel[p.status] || { label: p.status, cls: 'secondary' }; %>
+              <span class="badge bg-<%= s.cls %>-subtle text-<%= s.cls %> border border-<%= s.cls %>-subtle">
+                <%= s.label %>
+              </span>
+            </td>
+            <td class="fw-medium"><%= fmtMoney(p.final_value) %></td>
+            <td>
+              <% const hoje = new Date(); const validade = p.valid_until ? new Date(p.valid_until) : null; %>
+              <% if (validade && validade < hoje && p.status !== 'aprovada') { %>
+                <span class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i><%= fmtDate(p.valid_until) %></span>
+              <% } else { %>
+                <span class="small"><%= fmtDate(p.valid_until) %></span>
+              <% } %>
+            </td>
+            <td>
+              <div class="d-flex gap-1 justify-content-center">
+                <a href="/proposals/<%= p.id %>" class="btn btn-sm btn-ghost" title="Ver"><i class="bi bi-eye"></i></a>
+                <a href="/proposals/<%= p.id %>/edit" class="btn btn-sm btn-ghost" title="Editar"><i class="bi bi-pencil"></i></a>
+                <a href="/proposals/<%= p.id %>/pdf" class="btn btn-sm btn-ghost text-danger" title="PDF"><i class="bi bi-file-pdf"></i></a>
+                <button class="btn btn-sm btn-ghost text-primary"
+                        onclick="openEmailModal(<%= p.id %>, '<%= p.client_email %>', '<%= p.client_name %>')"
+                        title="Enviar por e-mail"><i class="bi bi-envelope"></i></button>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Modal envio de e-mail -->
+<div class="modal fade" id="emailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Enviar Proposta por E-mail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="emailResult"></div>
+        <div class="mb-3">
+          <label class="form-label">E-mail do cliente</label>
+          <input type="email" class="form-control" id="emailTo" placeholder="cliente@empresa.com.br">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nome do contato</label>
+          <input type="text" class="form-control" id="emailName" placeholder="Nome do contato">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mensagem personalizada (opcional)</label>
+          <textarea class="form-control" id="emailMessage" rows="4"
+            placeholder="Prezado(a), segue em anexo nossa proposta comercial..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="sendEmail()">
+          <i class="bi bi-send me-2"></i>Enviar E-mail
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentProposalId = null;
+
+function openEmailModal(id, email, name) {
+  currentProposalId = id;
+  document.getElementById('emailTo').value = email || '';
+  document.getElementById('emailName').value = name || '';
+  document.getElementById('emailResult').innerHTML = '';
+  new bootstrap.Modal(document.getElementById('emailModal')).show();
+}
+
+async function sendEmail() {
+  const btn = document.querySelector('#emailModal .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+
+  try {
+    const res = await fetch(`/proposals/${currentProposalId}/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to_email: document.getElementById('emailTo').value,
+        to_name: document.getElementById('emailName').value,
+        message: document.getElementById('emailMessage').value
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('emailResult').innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>${data.message}</div>`;
+    } else {
+      document.getElementById('emailResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    }
+  } catch (e) {
+    document.getElementById('emailResult').innerHTML = `<div class="alert alert-danger">Erro ao enviar.</div>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-send me-2"></i>Enviar E-mail';
+}
+
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  const rows = document.querySelectorAll('#proposalsTable tbody tr');
+
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    const rowStatus = row.dataset.status;
+    const matchSearch = !search || text.includes(search);
+    const matchStatus = !status || rowStatus === status;
+    row.style.display = matchSearch && matchStatus ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('partials/footer') %>

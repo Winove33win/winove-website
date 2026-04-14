@@ -1,0 +1,24 @@
+<div class="timeline-row card mb-2 p-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label form-label-sm">Fase</label>
+      <input type="text" name="timeline_phase[]" class="form-control form-control-sm"
+             value="<%= t?.phase || '' %>" placeholder="Nome da fase">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label form-label-sm">Duração</label>
+      <input type="text" name="timeline_duration[]" class="form-control form-control-sm"
+             value="<%= t?.duration || '' %>" placeholder="2 semanas">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label form-label-sm">Descrição</label>
+      <input type="text" name="timeline_description[]" class="form-control form-control-sm"
+             value="<%= t?.description || '' %>" placeholder="O que será feito">
+    </div>
+    <div class="col-md-1">
+      <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.timeline-row').remove()">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  </div>
+</div>

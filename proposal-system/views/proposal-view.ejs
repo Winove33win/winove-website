@@ -1,0 +1,365 @@
+<%
+  activePage = 'view';
+  title = 'Ver Proposta';
+  const statusLabel = {
+    rascunho: { label: 'Rascunho', cls: 'secondary' },
+    enviada: { label: 'Enviada', cls: 'info' },
+    em_negociacao: { label: 'Em Negociação', cls: 'warning' },
+    aprovada: { label: 'Aprovada', cls: 'success' },
+    rejeitada: { label: 'Rejeitada', cls: 'danger' },
+    cancelada: { label: 'Cancelada', cls: 'dark' }
+  };
+  function fmtDate(d) {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('pt-BR');
+  }
+  function fmtMoney(v) {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
+  }
+%>
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <div class="d-flex align-items-center gap-3">
+      <h2 class="page-title mb-0"><%= proposal.proposal_number %></h2>
+      <% const s = statusLabel[proposal.status] || { label: proposal.status, cls: 'secondary' }; %>
+      <span class="badge bg-<%= s.cls %>-subtle text-<%= s.cls %> border border-<%= s.cls %>-subtle fs-6"><%= s.label %></span>
+    </div>
+    <p class="page-subtitle"><%= proposal.proposal_title %></p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/proposals/<%= proposal.id %>/edit" class="btn btn-outline-primary">
+      <i class="bi bi-pencil me-1"></i>Editar
+    </a>
+    <a href="/proposals/<%= proposal.id %>/preview" target="_blank" class="btn btn-outline-secondary">
+      <i class="bi bi-eye me-1"></i>Prévia
+    </a>
+    <a href="/proposals/<%= proposal.id %>/pdf" class="btn btn-danger">
+      <i class="bi bi-file-pdf me-2"></i>Baixar PDF
+    </a>
+    <button class="btn btn-primary" onclick="openEmailModal()">
+      <i class="bi bi-envelope me-2"></i>Enviar por E-mail
+    </button>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Coluna Principal -->
+  <div class="col-lg-8">
+
+    <!-- Cliente -->
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-building me-2"></i>Cliente</h6></div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="info-label">Empresa</div>
+            <div class="info-value"><%= proposal.client_company || '—' %></div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-label">CNPJ</div>
+            <div class="info-value"><%= proposal.client_cnpj || '—' %></div>
+          </div>
+          <div class="col-md-6 mt-3">
+            <div class="info-label">Contato</div>
+            <div class="info-value"><%= proposal.client_contact_name || proposal.client_name || '—' %></div>
+          </div>
+          <div class="col-md-6 mt-3">
+            <div class="info-label">E-mail</div>
+            <div class="info-value"><%= proposal.client_email || '—' %></div>
+          </div>
+          <div class="col-md-6 mt-3">
+            <div class="info-label">Telefone</div>
+            <div class="info-value"><%= proposal.client_phone || '—' %></div>
+          </div>
+          <div class="col-md-6 mt-3">
+            <div class="info-label">Cidade/Estado</div>
+            <div class="info-value"><%= [proposal.client_city, proposal.client_state].filter(Boolean).join('/') || '—' %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projeto -->
+    <% if (proposal.project_description || proposal.project_objectives || proposal.project_scope) { %>
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-folder me-2"></i>Projeto</h6></div>
+      <div class="card-body">
+        <% if (proposal.project_description) { %>
+        <div class="mb-3">
+          <div class="info-label">Descrição</div>
+          <div class="info-value whitespace-pre"><%= proposal.project_description %></div>
+        </div>
+        <% } %>
+        <% if (proposal.project_objectives) { %>
+        <div class="mb-3">
+          <div class="info-label">Objetivos</div>
+          <div class="info-value whitespace-pre"><%= proposal.project_objectives %></div>
+        </div>
+        <% } %>
+        <div class="row">
+          <% if (proposal.project_scope) { %>
+          <div class="col-md-6">
+            <div class="info-label">Escopo incluso</div>
+            <div class="info-value whitespace-pre"><%= proposal.project_scope %></div>
+          </div>
+          <% } %>
+          <% if (proposal.out_of_scope) { %>
+          <div class="col-md-6">
+            <div class="info-label">Fora do escopo</div>
+            <div class="info-value whitespace-pre text-muted"><%= proposal.out_of_scope %></div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Estrutura Técnica -->
+    <% if ((proposal.technologies && proposal.technologies.length) || proposal.architecture) { %>
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Estrutura Técnica</h6></div>
+      <div class="card-body">
+        <% if (proposal.technologies && proposal.technologies.length) { %>
+        <div class="mb-3">
+          <div class="info-label">Tecnologias</div>
+          <div class="d-flex flex-wrap gap-2 mt-1">
+            <% proposal.technologies.forEach(t => { %>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><%= t %></span>
+            <% }); %>
+          </div>
+        </div>
+        <% } %>
+        <% if (proposal.architecture) { %>
+        <div class="mb-3">
+          <div class="info-label">Arquitetura</div>
+          <div class="info-value whitespace-pre"><%= proposal.architecture %></div>
+        </div>
+        <% } %>
+        <% if (proposal.integrations) { %>
+        <div>
+          <div class="info-label">Integrações</div>
+          <div class="info-value whitespace-pre"><%= proposal.integrations %></div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Entregas -->
+    <% if (proposal.deliverables && proposal.deliverables.length) { %>
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-check2-square me-2"></i>Entregas</h6></div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>Entrega</th><th>Descrição</th><th>Prazo</th></tr></thead>
+          <tbody>
+            <% proposal.deliverables.forEach((d, i) => { %>
+            <tr>
+              <td class="fw-medium"><%= d.title %></td>
+              <td class="text-muted"><%= d.description || '—' %></td>
+              <td><%= d.deadline || '—' %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Cronograma -->
+    <% if (proposal.timeline && proposal.timeline.length) { %>
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Cronograma</h6></div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead><tr><th>Fase</th><th>Duração</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <% proposal.timeline.forEach((t, i) => { %>
+            <tr>
+              <td class="fw-medium"><%= t.phase %></td>
+              <td><span class="badge bg-secondary-subtle text-secondary"><%= t.duration || '—' %></span></td>
+              <td class="text-muted"><%= t.description || '—' %></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <% } %>
+
+  </div>
+
+  <!-- Coluna Lateral -->
+  <div class="col-lg-4">
+
+    <!-- Resumo Financeiro -->
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-receipt me-2"></i>Financeiro</h6></div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Valor total</span>
+          <span><%= fmtMoney(proposal.total_value) %></span>
+        </div>
+        <% if (proposal.discount_value > 0) { %>
+        <div class="d-flex justify-content-between mb-2 text-danger">
+          <span>Desconto</span>
+          <span>− <%= fmtMoney(proposal.discount_value) %></span>
+        </div>
+        <% } %>
+        <hr>
+        <div class="d-flex justify-content-between fw-bold fs-5">
+          <span>Total Final</span>
+          <span class="text-success"><%= fmtMoney(proposal.final_value) %></span>
+        </div>
+        <% if (proposal.payment_method) { %>
+        <div class="mt-3 pt-3 border-top">
+          <div class="info-label">Pagamento</div>
+          <div class="info-value"><%= proposal.payment_method %><% if (proposal.installments > 1) { %> em <%= proposal.installments %>x<% } %></div>
+          <% if (proposal.payment_conditions) { %>
+          <div class="text-muted small mt-1"><%= proposal.payment_conditions %></div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Datas -->
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-calendar me-2"></i>Datas</h6></div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Emissão</span>
+          <span><%= fmtDate(proposal.proposal_date || proposal.created_at) %></span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Válida até</span>
+          <span><%= fmtDate(proposal.valid_until) %></span>
+        </div>
+        <% if (proposal.sent_at) { %>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted">Enviada em</span>
+          <span><%= fmtDate(proposal.sent_at) %></span>
+        </div>
+        <% } %>
+        <% if (proposal.approved_at) { %>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted">Aprovada em</span>
+          <span class="text-success"><%= fmtDate(proposal.approved_at) %></span>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Condições -->
+    <% if (proposal.warranty_months || proposal.sla_response_time) { %>
+    <div class="card mb-3">
+      <div class="card-header"><h6 class="mb-0"><i class="bi bi-shield-check me-2"></i>Garantias e SLA</h6></div>
+      <div class="card-body">
+        <% if (proposal.warranty_months) { %>
+        <div class="mb-3">
+          <div class="info-label">Garantia</div>
+          <div class="info-value"><%= proposal.warranty_months %> meses — <%= proposal.warranty_description || '' %></div>
+        </div>
+        <% } %>
+        <% if (proposal.sla_response_time) { %>
+        <div class="mb-3">
+          <div class="info-label">SLA</div>
+          <div class="info-value"><%= proposal.sla_response_time %></div>
+        </div>
+        <% } %>
+        <% if (proposal.support_description) { %>
+        <div>
+          <div class="info-label">Suporte</div>
+          <div class="info-value"><%= proposal.support_description %></div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Excluir -->
+    <div class="card border-danger">
+      <div class="card-body">
+        <form action="/proposals/<%= proposal.id %>" method="POST"
+              onsubmit="return confirm('Excluir esta proposta permanentemente?')">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+            <i class="bi bi-trash me-2"></i>Excluir Proposta
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal e-mail -->
+<div class="modal fade" id="emailModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-envelope me-2"></i>Enviar por E-mail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="emailResult"></div>
+        <div class="mb-3">
+          <label class="form-label">E-mail</label>
+          <input type="email" class="form-control" id="emailTo" value="<%= proposal.client_email || '' %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" class="form-control" id="emailName" value="<%= proposal.client_contact_name || proposal.client_name || '' %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Mensagem (opcional)</label>
+          <textarea class="form-control" id="emailMessage" rows="4"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="sendEmail()"><i class="bi bi-send me-2"></i>Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openEmailModal() {
+  document.getElementById('emailResult').innerHTML = '';
+  new bootstrap.Modal(document.getElementById('emailModal')).show();
+}
+
+async function sendEmail() {
+  const btn = document.querySelector('#emailModal .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+
+  try {
+    const res = await fetch('/proposals/<%= proposal.id %>/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to_email: document.getElementById('emailTo').value,
+        to_name: document.getElementById('emailName').value,
+        message: document.getElementById('emailMessage').value
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('emailResult').innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>${data.message}</div>`;
+    } else {
+      document.getElementById('emailResult').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+    }
+  } catch(e) {
+    document.getElementById('emailResult').innerHTML = '<div class="alert alert-danger">Erro ao enviar.</div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-send me-2"></i>Enviar';
+}
+</script>
+
+<%- include('partials/footer') %>
