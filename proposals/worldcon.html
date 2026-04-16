@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta Comercial — Worldcon | Winove</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e40af;
+    --primary-light: #eff6ff;
+    --primary-border: #bfdbfe;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --bg: #f8fafc;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    font-size: 10pt;
+    color: var(--text);
+    background: #fff;
+    line-height: 1.6;
+  }
+
+  /* ── BARRA IMPRESSÃO ── */
+  .print-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--primary); color: #fff;
+    padding: 11px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    font-size: 13px;
+  }
+  .print-bar span { opacity: .9; }
+  .print-btn {
+    background: #fff; color: var(--primary);
+    border: none; padding: 8px 20px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .print-btn:hover { background: #eff6ff; }
+  body.has-bar { padding-top: 50px; }
+
+  @media print {
+    .print-bar { display: none !important; }
+    body { padding-top: 0 !important; }
+    .no-break { page-break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .financial-total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cta-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ── CAPA ── */
+  .cover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 55%, #0f172a 100%);
+    color: #fff;
+    padding: 48px 56px 52px;
+  }
+  .cover-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 44px;
+  }
+  .cover-brand { font-size: 24pt; font-weight: 800; letter-spacing: -0.5px; }
+  .cover-brand span { color: #93c5fd; }
+  .cover-meta-top { text-align: right; }
+  .cover-number { font-size: 10pt; opacity: .75; margin-bottom: 3px; }
+  .cover-date { font-size: 9pt; opacity: .55; }
+
+  .cover-body { margin-bottom: 36px; }
+  .cover-eyebrow {
+    font-size: 8pt; text-transform: uppercase; letter-spacing: 2.5px;
+    opacity: .65; margin-bottom: 10px;
+  }
+  .cover-title { font-size: 22pt; font-weight: 800; line-height: 1.15; margin-bottom: 8px; }
+  .cover-subtitle { font-size: 12pt; opacity: .8; }
+
+  .cover-bottom {
+    display: flex; gap: 40px;
+    border-top: 1px solid rgba(255,255,255,0.18);
+    padding-top: 22px;
+  }
+  .cover-item label {
+    font-size: 7pt; text-transform: uppercase; letter-spacing: 1.2px;
+    opacity: .6; display: block; margin-bottom: 4px;
+  }
+  .cover-item span { font-size: 10pt; font-weight: 600; }
+
+  /* ── CONTEÚDO ── */
+  .body { padding: 0 56px; }
+
+  /* ── SEÇÕES ── */
+  .section { margin-bottom: 30px; }
+  .section-title {
+    font-size: 8.5pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.8px; color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 6px; margin-bottom: 16px;
+  }
+
+  /* ── DESTAQUE ── */
+  .highlight {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px; border-radius: 0 6px 6px 0;
+    margin-bottom: 14px;
+  }
+  .highlight .hl-label {
+    font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--primary); margin-bottom: 6px;
+  }
+  .highlight p { font-size: 9.5pt; color: #334155; line-height: 1.65; }
+
+  /* ── GRID INFO ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 20px; }
+
+  .info-item label {
+    font-size: 7pt; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--muted); font-weight: 600; display: block; margin-bottom: 2px;
+  }
+  .info-item span { font-size: 9.5pt; font-weight: 500; color: var(--text); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .card-label {
+    font-size: 7.5pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .9px; color: var(--primary); margin-bottom: 6px;
+  }
+  .card p, .card ul { font-size: 9pt; color: #334155; }
+  .card ul { padding-left: 16px; }
+  .card ul li { margin-bottom: 3px; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 8.5pt; font-weight: 600;
+  }
+  .badge-blue { background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-border); }
+  .badge-green { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+
+  /* ── TABELA ── */
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  th {
+    background: var(--primary); color: #fff;
+    padding: 8px 12px; text-align: left;
+    font-size: 7.5pt; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .8px;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  td.center { text-align: center; }
+  td.bold { font-weight: 600; }
+  td.primary { color: var(--primary); font-weight: 700; text-align: center; }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item:last-child { margin-bottom: 0; }
+  .tl-dot {
+    position: absolute; left: -28px; top: 2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--primary); border: 2px solid var(--primary-border);
+  }
+  .tl-item::before {
+    content: ''; position: absolute; left: -23px; top: 14px;
+    width: 2px; height: calc(100% + 8px);
+    background: var(--border);
+  }
+  .tl-item:last-child::before { display: none; }
+  .tl-phase {
+    font-size: 8pt; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--primary); margin-bottom: 3px;
+  }
+  .tl-title { font-size: 10pt; font-weight: 600; margin-bottom: 3px; }
+  .tl-duration { font-size: 8pt; color: var(--muted); margin-bottom: 4px; }
+  .tl-desc { font-size: 9pt; color: #334155; }
+
+  /* ── FINANCEIRO ── */
+  .financial-box {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 6px;
+  }
+  .financial-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 18px; border-bottom: 1px solid var(--border);
+  }
+  .financial-row:last-child { border-bottom: none; }
+  .financial-row label { font-size: 9pt; color: var(--muted); }
+  .financial-row span { font-size: 10pt; font-weight: 600; }
+  .financial-total {
+    background: var(--primary); color: #fff;
+    padding: 16px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .financial-total label { font-size: 10pt; font-weight: 600; color: rgba(255,255,255,.85); }
+  .financial-total span { font-size: 15pt; font-weight: 800; }
+
+  /* ── REFERÊNCIAS ── */
+  .ref-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .ref-item {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px;
+    font-size: 8.5pt; color: var(--primary); font-weight: 500;
+  }
+  .ref-item span { display: block; font-size: 7.5pt; color: var(--muted); font-weight: 400; margin-top: 1px; }
+
+  /* ── ESCOPO ── */
+  .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .scope-in .scope-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--success); margin-bottom: 8px; }
+  .scope-out .scope-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--danger); margin-bottom: 8px; }
+  .scope-list { list-style: none; }
+  .scope-list li { font-size: 9pt; padding: 4px 0; border-bottom: 1px solid var(--border); color: #334155; }
+  .scope-list li:last-child { border-bottom: none; }
+  .scope-in .scope-list li::before { content: '✓ '; color: var(--success); font-weight: 700; }
+  .scope-out .scope-list li::before { content: '✗ '; color: var(--danger); font-weight: 700; }
+
+  /* ── ASSINATURA ── */
+  .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 20px; }
+  .sig-box { text-align: center; }
+  .sig-line { border-top: 1px solid #334155; margin-top: 52px; padding-top: 8px; }
+  .sig-name { font-weight: 700; font-size: 10pt; }
+  .sig-role { font-size: 8.5pt; color: var(--muted); }
+
+  /* ── CTA ── */
+  .cta-box {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    color: #fff; border-radius: 10px; padding: 24px 28px;
+    text-align: center; margin: 24px 0;
+  }
+  .cta-box h3 { font-size: 13pt; font-weight: 700; margin-bottom: 6px; }
+  .cta-box p { font-size: 9.5pt; opacity: .85; margin-bottom: 14px; }
+  .cta-email { font-size: 11pt; font-weight: 700; background: rgba(255,255,255,.15); padding: 8px 20px; border-radius: 6px; display: inline-block; }
+
+  /* ── RODAPÉ ── */
+  .footer {
+    margin-top: 40px; padding: 18px 56px;
+    background: #f1f5f9; border-top: 3px solid var(--primary);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8pt; color: var(--muted);
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 8px 0 16px; }
+</style>
+</head>
+<body>
+
+<!-- ════════ CAPA ════════ -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-brand">WIN<span>OVE</span></div>
+    <div class="cover-meta-top">
+      <div class="cover-number">Proposta Nº WNC-2026-001</div>
+      <div class="cover-date">Emitida em 15 de Abril de 2026</div>
+    </div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-eyebrow">Proposta Comercial</div>
+    <div class="cover-title">Desenvolvimento de Site<br>Profissional em Wix Studio</div>
+    <div class="cover-subtitle">Preparado para: <strong>Worldcon</strong> — worldcon.com.br</div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-item">
+      <label>Responsável</label>
+      <span>Fernando Souza — Winove</span>
+    </div>
+    <div class="cover-item">
+      <label>Validade</label>
+      <span>até 15 de Maio de 2026</span>
+    </div>
+    <div class="cover-item">
+      <label>Prazo de Entrega</label>
+      <span>até 15 dias úteis</span>
+    </div>
+    <div class="cover-item">
+      <label>Investimento</label>
+      <span>R$ 3.500,00</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ CORPO ════════ -->
+<div class="body">
+
+  <!-- 1. PARTES -->
+  <div class="section no-break" style="margin-top:30px">
+    <div class="section-title">Partes Envolvidas</div>
+    <div class="grid-2">
+      <div>
+        <div style="font-size:8pt;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Contratante</div>
+        <div class="grid-2" style="gap:10px 20px">
+          <div class="info-item"><label>Empresa</label><span>Worldcon</span></div>
+          <div class="info-item"><label>Site</label><span>www.worldcon.com.br</span></div>
+          <div class="info-item"><label>Contato</label><span>Julio Freitas</span></div>
+          <div class="info-item"><label>E-mail</label><span>julio.freitas@worldcon.com.br</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:8pt;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Contratada</div>
+        <div class="grid-2" style="gap:10px 20px">
+          <div class="info-item"><label>Empresa</label><span>Winove</span></div>
+          <div class="info-item"><label>Site</label><span>www.winove.com.br</span></div>
+          <div class="info-item"><label>Responsável</label><span>Fernando Souza</span></div>
+          <div class="info-item"><label>E-mail</label><span>fernando@winove.com.br</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CONTEXTO -->
+  <div class="section no-break">
+    <div class="section-title">Contexto e Oportunidade</div>
+    <div class="highlight">
+      <div class="hl-label">Briefing recebido</div>
+      <p>
+        A Worldcon nos contactou para participar do processo seletivo de escolha do parceiro de desenvolvimento do novo site institucional.
+        Após análise do briefing, foi identificada a necessidade de desenvolver o site <strong>do zero</strong>, em plataforma moderna,
+        mantendo a identidade visual e logo da empresa — podendo a Winove sugerir melhorias que não alterem a identidade visual.
+        <br><br>
+        O novo site deverá seguir o padrão visual e de UX dos sites de referência indicados pelo cliente, com foco em apresentação
+        institucional, serviços, clientes, parceiros e facilidade de contato.
+      </p>
+    </div>
+  </div>
+
+  <!-- 3. SITES DE REFERÊNCIA -->
+  <div class="section no-break">
+    <div class="section-title">Sites de Referência Indicados</div>
+    <p style="font-size:9pt;color:var(--muted);margin-bottom:12px">
+      Os sites abaixo foram indicados pela Worldcon como referência visual e estrutural para o novo www.worldcon.com.br:
+    </p>
+    <div class="ref-grid">
+      <div class="ref-item">digitalwork.com.br <span>Design corporativo moderno</span></div>
+      <div class="ref-item">engemon.com.br <span>Institucional + serviços</span></div>
+      <div class="ref-item">avanzato.com.br <span>Layout limpo e profissional</span></div>
+      <div class="ref-item">guarutech.com.br <span>Tecnologia + apresentação</span></div>
+      <div class="ref-item">lp2hts.htsconsult.com.br <span>Página única com impacto</span></div>
+      <div class="ref-item">ccitecnologia.com.br <span>Corporativo + cases</span></div>
+    </div>
+  </div>
+
+  <!-- 4. ESCOPO -->
+  <div class="section no-break">
+    <div class="section-title">Escopo do Projeto</div>
+    <div class="scope-grid">
+      <div class="scope-in">
+        <div class="scope-label">✓ Incluso no escopo</div>
+        <ul class="scope-list">
+          <li>Site de uma página (One Page) em Wix Studio</li>
+          <li>Relayout completo com identidade visual da Worldcon</li>
+          <li>Seção "Nossos Serviços" — apresentação clara das soluções</li>
+          <li>Seção "Nossos Clientes" — logos e depoimentos</li>
+          <li>Seção "Nossos Parceiros" — parceiros estratégicos</li>
+          <li>Seção "Nossa Área de Atuação" — regiões / segmentos</li>
+          <li>Seção "Informações Institucionais" — sobre a empresa, missão, visão</li>
+          <li>Botão de contato via WhatsApp (CTA flutuante + seção)</li>
+          <li>SEO nativo Wix Studio — títulos, metas, schema, sitemap</li>
+          <li>Responsivo (mobile, tablet e desktop)</li>
+          <li>Configuração de domínio www.worldcon.com.br</li>
+          <li>1 rodada de ajustes após aprovação</li>
+        </ul>
+      </div>
+      <div class="scope-out">
+        <div class="scope-label">✗ Fora do escopo</div>
+        <ul class="scope-list">
+          <li>Ferramentas extras de SEO (ex.: Semrush, Ahrefs, plugins)</li>
+          <li>Blog ou área de notícias</li>
+          <li>E-commerce / loja virtual</li>
+          <li>Sistema de login ou área restrita</li>
+          <li>Criação ou redesenho do logotipo</li>
+          <li>Produção de textos e conteúdo institucional</li>
+          <li>Produção de fotos ou vídeos</li>
+          <li>Gestão de tráfego pago (Google Ads, Meta Ads)</li>
+          <li>Manutenção mensal (consultar planos à parte)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ESTRUTURA DA PÁGINA -->
+  <div class="section no-break page-break">
+    <div class="section-title">Estrutura da Página (One Page)</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:35px">#</th>
+          <th>Seção</th>
+          <th>Descrição</th>
+          <th style="width:120px">Recursos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="primary">01</td>
+          <td class="bold">Hero / Cabeçalho</td>
+          <td>Banner principal com headline impactante, proposta de valor da Worldcon e CTA de contato via WhatsApp</td>
+          <td><span class="badge badge-blue">Animação</span></td>
+        </tr>
+        <tr>
+          <td class="primary">02</td>
+          <td class="bold">Sobre a Empresa</td>
+          <td>Informações institucionais — história, missão, visão, valores e diferenciais competitivos</td>
+          <td><span class="badge badge-blue">Texto + Imagem</span></td>
+        </tr>
+        <tr>
+          <td class="primary">03</td>
+          <td class="bold">Nossos Serviços</td>
+          <td>Cards ou grid com todos os serviços oferecidos, com ícones e descrição objetiva de cada solução</td>
+          <td><span class="badge badge-blue">Cards Grid</span></td>
+        </tr>
+        <tr>
+          <td class="primary">04</td>
+          <td class="bold">Área de Atuação</td>
+          <td>Regiões geográficas atendidas e/ou segmentos de mercado, com mapa ou infográfico visual</td>
+          <td><span class="badge badge-blue">Visual</span></td>
+        </tr>
+        <tr>
+          <td class="primary">05</td>
+          <td class="bold">Nossos Clientes</td>
+          <td>Logos dos principais clientes em carrossel ou grid, com possibilidade de depoimento em destaque</td>
+          <td><span class="badge badge-blue">Carrossel</span></td>
+        </tr>
+        <tr>
+          <td class="primary">06</td>
+          <td class="bold">Nossos Parceiros</td>
+          <td>Logos e nomes dos parceiros estratégicos, destacando o ecossistema de soluções da Worldcon</td>
+          <td><span class="badge badge-blue">Grid Logos</span></td>
+        </tr>
+        <tr>
+          <td class="primary">07</td>
+          <td class="bold">Contato / CTA Final</td>
+          <td>Formulário de contato simplificado + botão WhatsApp destacado + endereço e dados de contato</td>
+          <td><span class="badge badge-green">WhatsApp</span></td>
+        </tr>
+        <tr>
+          <td class="primary">08</td>
+          <td class="bold">Rodapé</td>
+          <td>Links rápidos, redes sociais, informações legais e botão WhatsApp flutuante em todas as páginas</td>
+          <td><span class="badge badge-blue">Fixo</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. PLATAFORMA E SEO -->
+  <div class="section no-break">
+    <div class="section-title">Plataforma e SEO</div>
+    <div class="grid-2" style="gap:16px">
+      <div class="card">
+        <div class="card-label">Wix Studio — Por que escolhemos</div>
+        <ul>
+          <li>Editor profissional com controle total de layout</li>
+          <li>Responsividade nativa (mobile, tablet, desktop)</li>
+          <li>Velocidade de carregamento otimizada (CDN global)</li>
+          <li>Hospedagem inclusa — sem custos extras de servidor</li>
+          <li>Painel intuitivo para edições futuras pelo cliente</li>
+          <li>SSL gratuito e segurança gerenciada pela Wix</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-label">SEO nativo Wix Studio (sem ferramentas extras)</div>
+        <ul>
+          <li>Títulos e meta descriptions personalizados por seção</li>
+          <li>Schema markup automático (Google structured data)</li>
+          <li>Sitemap XML gerado e atualizado automaticamente</li>
+          <li>URLs amigáveis e canônicas configuradas</li>
+          <li>Open Graph para compartilhamento social</li>
+          <li>Integração nativa com Google Search Console</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CRONOGRAMA -->
+  <div class="section no-break">
+    <div class="section-title">Cronograma de Execução</div>
+    <p style="font-size:8.5pt;color:var(--muted);margin-bottom:16px">
+      Contagem a partir da assinatura do contrato e envio dos materiais (logo, textos, imagens).
+    </p>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Fase 1 — Dias 1 a 2</div>
+        <div class="tl-title">Kickoff e Briefing</div>
+        <div class="tl-duration">⏱ 2 dias úteis</div>
+        <div class="tl-desc">Reunião de alinhamento, coleta de materiais (logo, textos, imagens), definição de paleta e referências visuais.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Fase 2 — Dias 3 a 5</div>
+        <div class="tl-title">Wireframe e Aprovação de Layout</div>
+        <div class="tl-duration">⏱ 3 dias úteis</div>
+        <div class="tl-desc">Criação do wireframe de alta fidelidade da página única no Wix Studio e envio para aprovação do cliente antes do desenvolvimento.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Fase 3 — Dias 6 a 12</div>
+        <div class="tl-title">Desenvolvimento e Conteúdo</div>
+        <div class="tl-duration">⏱ 7 dias úteis</div>
+        <div class="tl-desc">Construção completa do site no Wix Studio: todas as seções, responsividade, animações, botão WhatsApp, SEO nativo e integração de conteúdo.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Fase 4 — Dias 13 a 14</div>
+        <div class="tl-title">Revisão e Ajustes</div>
+        <div class="tl-duration">⏱ 2 dias úteis</div>
+        <div class="tl-desc">Apresentação do site para aprovação. Rodada de ajustes com base no feedback do cliente (inclusa no escopo).</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-phase">Fase 5 — Dia 15</div>
+        <div class="tl-title">Publicação em Produção</div>
+        <div class="tl-duration">⏱ 1 dia útil</div>
+        <div class="tl-desc">Configuração do domínio www.worldcon.com.br, publicação em produção, verificação Google Search Console e entrega final ao cliente.</div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:16px">
+      <div class="hl-label">Prazo total garantido</div>
+      <p><strong>15 dias úteis</strong> após assinatura do contrato e recebimento dos materiais.<br>
+      O site estará publicado em produção no endereço www.worldcon.com.br dentro deste prazo.</p>
+    </div>
+  </div>
+
+  <!-- 8. INVESTIMENTO -->
+  <div class="section no-break page-break">
+    <div class="section-title">Investimento</div>
+    <div class="grid-2" style="align-items:start;gap:24px">
+
+      <div>
+        <div class="financial-box">
+          <div class="financial-row">
+            <label>Desenvolvimento Wix Studio (One Page)</label>
+            <span>R$ 3.500,00</span>
+          </div>
+          <div class="financial-row">
+            <label>SEO Nativo + Configuração de Domínio</label>
+            <span>Incluso</span>
+          </div>
+          <div class="financial-row">
+            <label>Hospedagem Wix (1º ano)</label>
+            <span>Incluso</span>
+          </div>
+          <div class="financial-row">
+            <label>1 Rodada de Revisões</label>
+            <span>Incluso</span>
+          </div>
+          <div class="financial-row">
+            <label>Desconto parceria</label>
+            <span style="color:var(--danger)">— R$ 0,00</span>
+          </div>
+        </div>
+        <div class="financial-total">
+          <label>TOTAL</label>
+          <span>R$ 3.500,00</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-label">Forma de Pagamento</div>
+          <ul>
+            <li><strong>Entrada:</strong> 50% na assinatura — R$ 1.750,00</li>
+            <li><strong>Saldo:</strong> 50% na entrega — R$ 1.750,00</li>
+          </ul>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-label">Meios aceitos</div>
+          <p>PIX, TED/DOC ou boleto bancário.</p>
+        </div>
+        <div class="card">
+          <div class="card-label">Validade da proposta</div>
+          <p>Esta proposta é válida por <strong>30 dias</strong> a partir de 15/04/2026, ou seja, até <strong>15/05/2026</strong>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 9. GARANTIAS -->
+  <div class="section no-break">
+    <div class="section-title">Garantias e Suporte Pós-Entrega</div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-label">Garantia Técnica</div>
+        <p><strong>30 dias</strong> de garantia após publicação. Correção de qualquer bug ou problema de funcionamento sem custo.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Suporte Pós-Entrega</div>
+        <p>Atendimento via WhatsApp durante o período de garantia. Resposta em até <strong>1 dia útil</strong>.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Treinamento</div>
+        <p>Sessão de treinamento de <strong>30 minutos</strong> via videoconferência para uso do painel Wix Studio.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. PORQUE WINOVE -->
+  <div class="section no-break">
+    <div class="section-title">Por que escolher a Winove</div>
+    <div class="grid-2" style="gap:12px">
+      <div class="card">
+        <div class="card-label">Especialistas Wix Studio</div>
+        <p>Somos parceiros Wix Studio com portfólio de mais de 100 projetos. Dominamos o editor profissional para criar sites de alto padrão.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">SEO Profissional Nativo</div>
+        <p>Toda a configuração de SEO já está inclusa no desenvolvimento, sem ferramentas extras. Configuramos schema, sitemap, metas e integração com Google Search Console.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Prazo Garantido</div>
+        <p>Compromisso contratual de entrega em até 15 dias úteis com o site no ar em produção no domínio www.worldcon.com.br.</p>
+      </div>
+      <div class="card">
+        <div class="card-label">Identidade Visual Preservada</div>
+        <p>Trabalhamos respeitando a identidade visual da Worldcon, podendo sugerir melhorias de design que não alterem o logotipo ou brand.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. CTA -->
+  <div class="cta-box no-break">
+    <h3>Pronto para avançar?</h3>
+    <p>Envie sua confirmação de interesse ou dúvidas para o e-mail abaixo.<br>Aguardamos seu retorno para iniciar o projeto.</p>
+    <div class="cta-email">julio.freitas@worldcon.com.br</div>
+    <p style="margin-top:10px;font-size:8.5pt;opacity:.7">Ou entre em contato via WhatsApp: fernando@winove.com.br</p>
+  </div>
+
+  <!-- 12. ASSINATURA -->
+  <div class="section no-break">
+    <div class="section-title">Aprovação e Assinatura</div>
+    <p style="font-size:9pt;color:var(--muted);margin-bottom:6px">
+      Ao assinar este documento, as partes declaram ciência e concordância com todos os termos desta proposta.
+    </p>
+    <div class="signature-grid">
+      <div class="sig-box">
+        <div class="sig-line">
+          <div class="sig-name">Winove</div>
+          <div class="sig-role">Fernando Souza — Responsável Comercial</div>
+        </div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line">
+          <div class="sig-name">Worldcon</div>
+          <div class="sig-role">Julio Freitas — Responsável</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /body -->
+
+<!-- ── RODAPÉ ── -->
+<div class="footer">
+  <div><strong>Winove</strong> • fernando@winove.com.br • www.winove.com.br</div>
+  <div>Proposta WNC-2026-001 — Válida até 15/05/2026</div>
+</div>
+
+<!-- ── BARRA IMPRESSÃO ── -->
+<div class="print-bar" id="printBar">
+  <span>📄 Proposta Worldcon — WNC-2026-001</span>
+  <button class="print-btn" onclick="window.print()">⬇️ Salvar como PDF</button>
+</div>
+
+<script>
+  document.body.classList.add('has-bar');
+  window.addEventListener('beforeprint', () => {
+    document.getElementById('printBar').style.display = 'none';
+    document.body.classList.remove('has-bar');
+  });
+  window.addEventListener('afterprint', () => {
+    document.getElementById('printBar').style.display = 'flex';
+    document.body.classList.add('has-bar');
+  });
+</script>
+</body>
+</html>

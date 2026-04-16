@@ -1,7 +1,30 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Read(//c/Users/Nrtfe/**)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const crypto = require\\('crypto'\\); console.log\\(crypto.randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(node -e ' *)",
+      "Bash(sftp -o StrictHostKeyChecking=no -o ConnectTimeout=10 \"winove.com.br_gaupkup6z5s@168.75.84.128\")",
+      "Bash(curl -s --ftp-ssl -u \"winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80\" \"ftp://168.75.84.128/\" --list-only)",
+      "Bash(curl -v -u \"winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80\" \"ftp://168.75.84.128/\")",
+      "Bash(curl -s -u \"winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80\" \"ftp://168.75.84.128/\" --list-only)",
+      "Bash(curl -s -u \"winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80\" \"ftp://168.75.84.128/comercial.winove.com.br/\" --list-only)",
+      "Bash(curl -s -u \"winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80\" \"ftp://168.75.84.128/comercial.winove.com.br/proposal-system/\" --list-only)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' ftp://168.75.84.128/comercial.winove.com.br/proposal-system/.env)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' -T c:/Users/Nrtfe/proposal-system/.env ftp://168.75.84.128/comercial.winove.com.br/proposal-system/.env)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' -T c:/Users/Nrtfe/proposal-system/setup-remote.js ftp://168.75.84.128/comercial.winove.com.br/proposal-system/setup-remote.js)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' ftp://168.75.84.128/comercial.winove.com.br/proposal-system/routes/ --list-only)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' ftp://168.75.84.128/comercial.winove.com.br/ --list-only)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' ftp://168.75.84.128/comercial.winove.com.br/tmp/ --list-only)",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' ftp://168.75.84.128/comercial.winove.com.br/httpdocs/ --list-only)",
+      "Bash(echo \"restart $\\(date\\)\")",
+      "Bash(curl -s -u 'winove.com.br_gaupkup6z5s:EVl4v?laDeaa~i80' -T /tmp/restart.txt ftp://168.75.84.128/comercial.winove.com.br/tmp/restart.txt)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://comercial.winove.com.br/dashboard\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Nrtfe\\winove-website-2"
     ]
   }
 }
