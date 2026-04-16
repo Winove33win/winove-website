@@ -1,0 +1,24 @@
+<div class="deliverable-row card mb-2 p-3">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label form-label-sm">Entrega</label>
+      <input type="text" name="deliverable_title[]" class="form-control form-control-sm"
+             value="<%= d?.title || '' %>" placeholder="Nome da entrega">
+    </div>
+    <div class="col-md-5">
+      <label class="form-label form-label-sm">Descrição</label>
+      <input type="text" name="deliverable_description[]" class="form-control form-control-sm"
+             value="<%= d?.description || '' %>" placeholder="Detalhes">
+    </div>
+    <div class="col-md-1">
+      <label class="form-label form-label-sm">Prazo</label>
+      <input type="text" name="deliverable_deadline[]" class="form-control form-control-sm"
+             value="<%= d?.deadline || '' %>" placeholder="Semana X">
+    </div>
+    <div class="col-md-1">
+      <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.deliverable-row').remove()">
+        <i class="bi bi-trash"></i>
+      </button>
+    </div>
+  </div>
+</div>

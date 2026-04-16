@@ -1,0 +1,162 @@
+<%
+  activePage = 'settings';
+  title = 'Minha Empresa';
+%>
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h2 class="page-title">Minha Empresa</h2>
+    <p class="page-subtitle">Esses dados aparecem em todas as propostas geradas</p>
+  </div>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-check-circle-fill"></i><%= success %>
+</div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-exclamation-triangle-fill"></i><%= error %>
+</div>
+<% } %>
+
+<form action="/settings" method="POST" enctype="multipart/form-data">
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-building me-2"></i>Dados da Empresa</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label required">Nome da Empresa</label>
+              <input type="text" name="company_name" class="form-control"
+                     value="<%= company.company_name || '' %>" placeholder="Winove Tecnologia" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">CNPJ</label>
+              <input type="text" name="cnpj" class="form-control"
+                     value="<%= company.cnpj || '' %>" placeholder="00.000.000/0000-00">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">E-mail</label>
+              <input type="email" name="email" class="form-control"
+                     value="<%= company.email || '' %>" placeholder="contato@winove.com.br">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Telefone</label>
+              <input type="text" name="phone" class="form-control"
+                     value="<%= company.phone || '' %>" placeholder="(11) 99999-9999">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Site</label>
+              <input type="text" name="website" class="form-control"
+                     value="<%= company.website || '' %>" placeholder="winove.com.br">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Endereço</label>
+              <input type="text" name="address" class="form-control"
+                     value="<%= company.address || '' %>" placeholder="Rua, número, bairro">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">CEP</label>
+              <input type="text" name="zip" class="form-control" value="<%= company.zip || '' %>" placeholder="00000-000">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Cidade</label>
+              <input type="text" name="city" class="form-control" value="<%= company.city || '' %>">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Estado</label>
+              <input type="text" name="state" class="form-control" value="<%= company.state || '' %>" placeholder="SP">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-bank me-2"></i>Dados Bancários (Pagamento)</h6></div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Banco</label>
+              <input type="text" name="bank_name" class="form-control"
+                     value="<%= company.bank_name || '' %>" placeholder="Itaú, Bradesco, Nubank...">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Agência</label>
+              <input type="text" name="bank_agency" class="form-control" value="<%= company.bank_agency || '' %>">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Conta</label>
+              <input type="text" name="bank_account" class="form-control" value="<%= company.bank_account || '' %>">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Chave PIX</label>
+              <input type="text" name="bank_pix" class="form-control"
+                     value="<%= company.bank_pix || '' %>" placeholder="CPF, CNPJ, e-mail ou chave aleatória">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-text-paragraph me-2"></i>Rodapé das Propostas</h6></div>
+        <div class="card-body">
+          <textarea name="footer_text" class="form-control" rows="3"
+            placeholder="Texto que aparece no rodapé de todas as propostas em PDF..."><%= company.footer_text || '' %></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header"><h6 class="mb-0"><i class="bi bi-image me-2"></i>Logo da Empresa</h6></div>
+        <div class="card-body text-center">
+          <% if (company.logo_path) { %>
+          <img src="<%= company.logo_path %>" alt="Logo" class="img-fluid mb-3"
+               style="max-height:100px;object-fit:contain">
+          <% } else { %>
+          <div class="text-muted mb-3 py-3">
+            <i class="bi bi-image display-5 d-block mb-2"></i>
+            Sem logo cadastrado
+          </div>
+          <% } %>
+          <input type="hidden" name="existing_logo" value="<%= company.logo_path || '' %>">
+          <label class="btn btn-outline-primary w-100">
+            <i class="bi bi-upload me-2"></i>Enviar Logo
+            <input type="file" name="logo" accept=".png,.jpg,.jpeg,.svg,.webp" class="d-none"
+                   onchange="previewLogo(this)">
+          </label>
+          <img id="logoPreview" class="img-fluid mt-3 d-none" style="max-height:80px;object-fit:contain" alt="Preview">
+          <small class="d-block text-muted mt-2">PNG, JPG, SVG — máx. 2MB<br>Recomendado: fundo transparente</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-3 pb-4">
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-save me-2"></i>Salvar Configurações
+    </button>
+  </div>
+</form>
+
+<script>
+function previewLogo(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('logoPreview');
+      preview.src = e.target.result;
+      preview.classList.remove('d-none');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+
+<%- include('partials/footer') %>
