@@ -301,4 +301,122 @@ router.post('/api/sistema-proposta/webhook', async (req, res) => {
   }
 });
 
+/* ── POST /api/sistema-proposta/trial ───────────────────────────── */
+router.post('/api/sistema-proposta/trial', async (req, res) => {
+  try {
+    const { name, email, company = '', phone = '' } = req.body;
+
+    if (!name?.trim() || !email?.trim()) {
+      return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName  = name.trim();
+
+    // Verifica se já tem trial/conta
+    if (pool) {
+      const [existing] = await pool.execute(
+        'SELECT id, is_trial, active FROM users WHERE email = ? LIMIT 1',
+        [cleanEmail]
+      );
+      if (existing.length) {
+        const u = existing[0];
+        if (!u.is_trial) {
+          return res.status(400).json({ error: 'Este e-mail já possui uma conta ativa. Use a página de login.' });
+        }
+        // Trial já existe — reenviar credenciais
+        return res.json({ ok: true, alreadyExists: true, message: 'Você já possui um trial ativo. Verifique seu e-mail.' });
+      }
+    }
+
+    // Gera senha temporária
+    const tmpPassword = crypto.randomBytes(5).toString('hex');
+    const trialExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // +7 dias
+
+    // Cria usuário trial
+    if (pool) {
+      const bcrypt = await import('bcryptjs');
+      const hash = await bcrypt.default.hash(tmpPassword, 12);
+      await pool.execute(
+        `INSERT INTO users (name, email, password_hash, role, active, is_trial, trial_expires_at, plan)
+         VALUES (?, ?, ?, 'admin', 1, 1, ?, 'trial')`,
+        [cleanName, cleanEmail, hash, trialExpires]
+      );
+
+      // Salva no log de vendas como trial
+      await pool.execute(
+        `INSERT INTO sistema_proposta_vendas
+           (order_id, plan, billing, amount_cents, customer_name, customer_email, customer_company, customer_phone, status)
+         VALUES (?, 'trial', 'monthly', 0, ?, ?, ?, ?, 'paid')`,
+        [`TRIAL-${Date.now()}`, cleanName, cleanEmail, company.trim(), phone.trim()]
+      ).catch(() => {}); // não bloqueia se tabela não existir ainda
+    }
+
+    const loginUrl = process.env.COMERCIAL_URL || 'https://comercial.winove.com.br/login';
+    const expiresStr = trialExpires.toLocaleDateString('pt-BR');
+
+    // E-mail de boas-vindas ao usuário
+    try {
+      await sendEmail({
+        to: cleanEmail,
+        subject: '🎁 Seu trial gratuito está ativo — Sistema de Propostas',
+        html: `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc">
+  <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
+    <div style="border-bottom:3px solid #2563eb;padding-bottom:20px;margin-bottom:24px">
+      <h2 style="margin:0;color:#1e40af;font-size:22px">🎁 Trial de 7 dias ativado!</h2>
+    </div>
+    <p style="font-size:15px">Olá, <strong>${cleanName}</strong>!</p>
+    <p style="font-size:14px;line-height:1.7;color:#334155">
+      Seu trial gratuito de 7 dias do <strong>Sistema de Propostas Winove</strong> está ativo.<br>
+      Você tem acesso completo até <strong>${expiresStr}</strong>.
+    </p>
+    <div style="background:#f1f5f9;border-radius:8px;padding:20px;margin:24px 0;font-family:monospace">
+      <div style="margin-bottom:8px"><strong>URL:</strong> <a href="${loginUrl}" style="color:#2563eb">${loginUrl}</a></div>
+      <div style="margin-bottom:8px"><strong>E-mail:</strong> ${cleanEmail}</div>
+      <div><strong>Senha:</strong> ${tmpPassword}</div>
+    </div>
+    <p style="font-size:13px;color:#64748b">⚠️ Altere sua senha em Configurações → Senha após o primeiro acesso.</p>
+    <div style="text-align:center;margin:32px 0">
+      <a href="${loginUrl}" style="background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block">
+        Acessar agora →
+      </a>
+    </div>
+    <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:16px;font-size:13px;color:#713f12">
+      <strong>⏰ Lembrete:</strong> Seu trial expira em 7 dias (${expiresStr}).<br>
+      Para continuar sem interrupção, <a href="${process.env.APP_BASE_URL || 'https://winove.com.br'}/sistema-proposta-comercial#planos" style="color:#713f12;font-weight:600">assine um plano antes da expiração</a>.
+    </div>
+    <p style="font-size:13px;color:#94a3b8;margin-top:24px">
+      Dúvidas? Fale conosco pelo WhatsApp.<br>Equipe Winove
+    </p>
+  </div>
+</body></html>`,
+      });
+    } catch (e) {
+      console.warn('[Trial] Erro ao enviar e-mail:', e.message);
+    }
+
+    // Notificação para o admin
+    try {
+      await sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `🎁 Novo trial — ${cleanName} (${cleanEmail})`,
+        html: `<p><strong>Novo trial iniciado:</strong></p>
+        <ul>
+          <li><strong>Nome:</strong> ${cleanName}</li>
+          <li><strong>E-mail:</strong> ${cleanEmail}</li>
+          <li><strong>Empresa:</strong> ${company || '—'}</li>
+          <li><strong>Expira em:</strong> ${expiresStr}</li>
+        </ul>`,
+      });
+    } catch (e) { /* silencioso */ }
+
+    res.json({ ok: true, message: 'Trial criado! Verifique seu e-mail para acessar.' });
+  } catch (err) {
+    console.error('[Trial] Erro:', err);
+    res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+  }
+});
+
 export default router;

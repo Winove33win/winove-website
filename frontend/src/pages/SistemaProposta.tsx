@@ -665,9 +665,159 @@ function ProposalPreview() {
 
 /* ─── Page ──────────────────────────────────────────────────────────────── */
 
+/* ── Trial Modal ────────────────────────────────────────────────────── */
+function TrialModal({
+  plan,
+  onClose,
+}: {
+  plan: (typeof plans)[0] | null;
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<"form" | "loading" | "success" | "error">("form");
+  const [errMsg, setErrMsg] = useState("");
+  const [form, setForm] = useState({ name: "", email: "" });
+
+  if (!plan) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep("loading");
+    try {
+      const res = await fetch("/api/sistema-proposta/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: plan.id, ...form }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Erro ao criar trial. Tente novamente.");
+      setStep("success");
+    } catch (err: unknown) {
+      setErrMsg(err instanceof Error ? err.message : "Erro inesperado.");
+      setStep("error");
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#0d1117] shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/8">
+          <div>
+            <p className="text-xs text-green-400 font-semibold uppercase tracking-widest mb-1">
+              Trial gratuito — 7 dias
+            </p>
+            <h3 className="text-lg font-bold text-foreground">Plano {plan.name}</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          {step === "form" && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Crie seu acesso gratuito agora. Sem cartão de crédito — cancele quando quiser.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Nome <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="João Silva"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-all text-sm"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  E-mail <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="joao@empresa.com.br"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 transition-all text-sm"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                />
+              </div>
+              <Button type="submit" className="w-full gap-2 py-3 text-base mt-1" style={{ background: "#16a34a", borderColor: "#16a34a" }}>
+                <Clock className="w-4 h-4" />
+                Começar trial grátis
+              </Button>
+              <p className="text-xs text-muted-foreground/50 text-center">
+                Acesso enviado por e-mail em instantes. Sem cartão necessário.
+              </p>
+            </form>
+          )}
+
+          {step === "loading" && (
+            <div className="text-center py-10">
+              <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground text-sm">Criando seu acesso...</p>
+            </div>
+          )}
+
+          {step === "success" && (
+            <div className="text-center py-8">
+              <div className="w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-7 h-7 text-green-400" />
+              </div>
+              <p className="text-foreground font-bold text-lg mb-2">Acesso criado!</p>
+              <p className="text-muted-foreground text-sm mb-2">
+                Enviamos suas credenciais para <strong className="text-foreground">{form.email}</strong>.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                Verifique sua caixa de entrada (ou spam) e acesse agora em{" "}
+                <span className="text-primary font-semibold">comercial.winove.com.br</span>.
+              </p>
+              <Button onClick={onClose} variant="outline" size="sm">
+                Fechar
+              </Button>
+            </div>
+          )}
+
+          {step === "error" && (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4">
+                <X className="w-6 h-6 text-destructive" />
+              </div>
+              <p className="text-foreground font-semibold mb-2">Algo deu errado</p>
+              <p className="text-muted-foreground text-sm mb-6">{errMsg}</p>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" size="sm" onClick={() => setStep("form")}>
+                  Tentar novamente
+                </Button>
+                <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" className="btn-primary gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    WhatsApp
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SistemaProposta() {
   useScrollReveal();
   const [checkoutPlan, setCheckoutPlan] = useState<(typeof plans)[0] | null>(null);
+  const [trialPlan, setTrialPlan] = useState<(typeof plans)[0] | null>(null);
 
   // Show success toast if redirected back after payment
   useEffect(() => {
@@ -683,6 +833,10 @@ export default function SistemaProposta() {
       {/* Checkout Modal */}
       {checkoutPlan && (
         <CheckoutModal plan={checkoutPlan} onClose={() => setCheckoutPlan(null)} />
+      )}
+      {/* Trial Modal */}
+      {trialPlan && (
+        <TrialModal plan={trialPlan} onClose={() => setTrialPlan(null)} />
       )}
 
       <SEO
@@ -1274,6 +1428,14 @@ export default function SistemaProposta() {
                     <Zap className="w-4 h-4" />
                     {plan.cta}
                   </Button>
+
+                  <button
+                    onClick={() => setTrialPlan(plan)}
+                    className="w-full mt-2.5 text-xs text-muted-foreground/70 hover:text-green-400 transition-colors py-1.5 flex items-center justify-center gap-1.5"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    Testar grátis por 7 dias
+                  </button>
                 </div>
               ))}
             </div>
