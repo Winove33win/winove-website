@@ -203,6 +203,70 @@ const faqs = [
 
 const WA_LINK = "https://api.whatsapp.com/send?phone=5519982403845";
 
+const plans = [
+  {
+    id: "start",
+    name: "Start",
+    price: 97,
+    billing: "mês",
+    description: "Para autônomos e freelancers que querem profissionalizar suas propostas.",
+    highlight: false,
+    badge: null,
+    features: [
+      "Propostas ilimitadas",
+      "CRM de clientes",
+      "Triagem automática de leads",
+      "Catálogo de produtos",
+      "Dashboard de performance",
+      "Link de pagamento InfinitePay",
+      "Personalização com sua marca",
+      "1 usuário",
+      "Suporte via WhatsApp",
+    ],
+    cta: "Começar agora",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 197,
+    billing: "mês",
+    description: "Para agências e consultores que gerenciam vários clientes e precisam de escala.",
+    highlight: true,
+    badge: "Mais popular",
+    features: [
+      "Tudo do plano Start",
+      "Até 5 usuários",
+      "Domínio próprio (ex: propostas.suaempresa.com.br)",
+      "E-mail SMTP configurado",
+      "Importação de leads via planilha",
+      "Webhook para integração com Wix / outros",
+      "Suporte prioritário",
+      "Onboarding em vídeo",
+    ],
+    cta: "Assinar o Pro",
+  },
+  {
+    id: "agency",
+    name: "Agency",
+    price: 397,
+    billing: "mês",
+    description: "Para agências que precisam de múltiplos usuários, personalização total e escala.",
+    highlight: false,
+    badge: "White-label",
+    features: [
+      "Tudo do plano Pro",
+      "Usuários ilimitados",
+      "White-label completo (sem menção à Winove)",
+      "Personalização de cores e identidade",
+      "Implantação expressa em 24h",
+      "Treinamento da equipe (1h ao vivo)",
+      "Suporte premium com SLA",
+      "Acesso ao código-fonte",
+    ],
+    cta: "Contratar Agency",
+  },
+];
+
 /* ─── Sub-components ────────────────────────────────────────────────────── */
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
@@ -221,6 +285,175 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
         <p className="px-6 pb-5 text-sm text-muted-foreground leading-relaxed">{answer}</p>
+      </div>
+    </div>
+  );
+}
+
+/* ── Checkout Modal ─────────────────────────────────────────────── */
+function CheckoutModal({
+  plan,
+  onClose,
+}: {
+  plan: (typeof plans)[0] | null;
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<"form" | "loading" | "success" | "error">("form");
+  const [errMsg, setErrMsg] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", company: "", phone: "" });
+
+  if (!plan) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep("loading");
+    try {
+      const res = await fetch("/api/sistema-proposta/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: plan.id, billing: "monthly", ...form }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Erro ao processar. Tente novamente.");
+      // Redirect to payment
+      window.location.href = data.redirectUrl;
+    } catch (err: unknown) {
+      setErrMsg(err instanceof Error ? err.message : "Erro inesperado.");
+      setStep("error");
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#0d1117] shadow-2xl"
+        style={{ maxHeight: "90vh", overflowY: "auto" }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/8">
+          <div>
+            <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-1">
+              Plano {plan.name}
+            </p>
+            <h3 className="text-lg font-bold text-foreground">
+              R$ {plan.price}
+              <span className="text-sm text-muted-foreground font-normal">/{plan.billing}</span>
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          {step === "form" && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Preencha seus dados para prosseguir ao pagamento. Após a confirmação, seu acesso é liberado automaticamente.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Nome completo <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="João Silva"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all text-sm"
+                  value={form.name}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  E-mail <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="joao@empresa.com.br"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all text-sm"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Nome da empresa
+                </label>
+                <input
+                  type="text"
+                  placeholder="Minha Agência Ltda"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all text-sm"
+                  value={form.company}
+                  onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  WhatsApp
+                </label>
+                <input
+                  type="tel"
+                  placeholder="(19) 99999-9999"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all text-sm"
+                  value={form.phone}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                />
+              </div>
+              <Button type="submit" className="btn-primary w-full gap-2 py-3 text-base mt-2">
+                <CreditCard className="w-4 h-4" />
+                Ir para o pagamento
+              </Button>
+              <div className="flex items-center justify-center gap-4 pt-1">
+                {["PIX", "Cartão", "Boleto"].map((m) => (
+                  <span key={m} className="text-xs text-muted-foreground/60 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-primary/60" /> {m}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground/50 text-center">
+                Pagamento seguro via InfinitePay. Cancele quando quiser.
+              </p>
+            </form>
+          )}
+
+          {step === "loading" && (
+            <div className="text-center py-10">
+              <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground text-sm">Preparando seu checkout seguro...</p>
+            </div>
+          )}
+
+          {step === "error" && (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4">
+                <X className="w-6 h-6 text-destructive" />
+              </div>
+              <p className="text-foreground font-semibold mb-2">Algo deu errado</p>
+              <p className="text-muted-foreground text-sm mb-6">{errMsg}</p>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" size="sm" onClick={() => setStep("form")}>
+                  Tentar novamente
+                </Button>
+                <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" className="btn-primary gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Falar no WhatsApp
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -434,9 +667,24 @@ function ProposalPreview() {
 
 export default function SistemaProposta() {
   useScrollReveal();
+  const [checkoutPlan, setCheckoutPlan] = useState<(typeof plans)[0] | null>(null);
+
+  // Show success toast if redirected back after payment
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("compra") === "sucesso") {
+      // clean URL without reload
+      window.history.replaceState({}, "", "/sistema-proposta-comercial");
+    }
+  }, []);
 
   return (
     <>
+      {/* Checkout Modal */}
+      {checkoutPlan && (
+        <CheckoutModal plan={checkoutPlan} onClose={() => setCheckoutPlan(null)} />
+      )}
+
       <SEO
         title="Sistema de Proposta Comercial Online | Winove"
         description="Gere propostas comerciais profissionais em minutos, gerencie clientes e feche negócios com CRM, triagem automática, link de pagamento e dashboard completo."
@@ -962,6 +1210,87 @@ export default function SistemaProposta() {
           </div>
         </section>
 
+        {/* ── PRICING ──────────────────────────────────────────────────── */}
+        <section className="py-24 bg-white/[0.02] relative overflow-hidden" id="planos">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16 reveal-on-scroll">
+              <p className="text-primary font-semibold uppercase tracking-widest text-sm mb-3">
+                Planos e Preços
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Escolha o plano{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  certo para você
+                </span>
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Acesso imediato após o pagamento. Personalize com sua marca e comece a vender mais hoje.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {plans.map((plan, i) => (
+                <div
+                  key={plan.id}
+                  className={`reveal-on-scroll relative rounded-2xl border p-7 flex flex-col transition-all duration-300 ${
+                    plan.highlight
+                      ? "border-primary bg-primary/[0.07] shadow-[0_0_50px_rgba(37,99,235,0.15)]"
+                      : "border-white/8 bg-white/[0.03] hover:border-primary/30"
+                  }`}
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  {plan.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
+                        {plan.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold text-foreground mb-1">{plan.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">{plan.description}</p>
+                    <div className="flex items-end gap-1">
+                      <span className="text-4xl font-extrabold text-foreground">R$ {plan.price}</span>
+                      <span className="text-muted-foreground text-sm mb-1">/{plan.billing}</span>
+                    </div>
+                  </div>
+
+                  <ul className="space-y-2.5 mb-8 flex-1">
+                    {plan.features.map((feat) => (
+                      <li key={feat} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                        <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        {feat}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button
+                    onClick={() => setCheckoutPlan(plan)}
+                    className={`w-full gap-2 ${plan.highlight ? "btn-primary" : "border-primary/30 hover:bg-primary/10 hover:border-primary/60"}`}
+                    variant={plan.highlight ? "default" : "outline"}
+                  >
+                    <Zap className="w-4 h-4" />
+                    {plan.cta}
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Garantia */}
+            <div className="text-center mt-12 reveal-on-scroll">
+              <div className="inline-flex items-center gap-3 bg-white/[0.03] border border-white/8 rounded-2xl px-8 py-4">
+                <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0" />
+                <span className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">7 dias de garantia.</strong>{" "}
+                  Não gostou? Devolvemos 100% — sem perguntas.
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── FAQ ──────────────────────────────────────────────────────── */}
         <section className="py-24 relative overflow-hidden" id="faq">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
@@ -1013,12 +1342,17 @@ export default function SistemaProposta() {
               </p>
 
               <div className="flex flex-wrap gap-4 justify-center mb-10">
-                <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" className="btn-primary gap-2 text-base px-8 py-6 text-lg">
-                    <Zap className="w-5 h-5" />
-                    Quero meu sistema agora
-                  </Button>
-                </a>
+                <Button
+                  size="lg"
+                  className="btn-primary gap-2 text-base px-8 py-6 text-lg"
+                  onClick={() => {
+                    const el = document.getElementById("planos");
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  <Zap className="w-5 h-5" />
+                  Ver planos e preços
+                </Button>
                 <a href={WA_LINK} target="_blank" rel="noopener noreferrer">
                   <Button
                     size="lg"

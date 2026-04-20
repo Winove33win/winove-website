@@ -9,10 +9,12 @@ import { isDbConfigured, missingDbEnv, pool } from './db.js';
 import sitemapRoute from './routes/sitemap.js';
 import blogRoute from './routes/blog.js';
 import casesRoute from './routes/cases.js';
+import setupPortfolioRoute from './routes/setupPortfolio.js';
 import templatesRoute from './routes/templates.js';
 import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
+import sistemaPropostasRoute from './routes/sistemaPropostas.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -399,12 +401,22 @@ for (const page of SSR_PAGES) {
   });
 }
 
+// Debug rota temporária — remove após diagnóstico
+app.get('/api/debug-db', (req, res) => {
+  const vars = ['DB_HOST','DB_PORT','DB_USER','DB_PASSWORD','DB_NAME'];
+  const env = {};
+  vars.forEach(v => { env[v] = process.env[v] ? '✅ set' : '❌ missing'; });
+  res.json({ pool: pool ? '✅ pool ok' : '❌ pool null', isDbConfigured, missingDbEnv, env });
+});
+
 // API routes
 app.use('/api', blogRoute);
 app.use('/api/cases', casesRoute);
+app.use('/api', setupPortfolioRoute);
 app.use('/api/templates', templatesRoute);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/propostas', requireCommercialProposalAuth, proposalsRoute);
+app.use(sistemaPropostasRoute);
 app.use('/', postSeoRoute);
 
 app.get('/', (req, res, next) => {
