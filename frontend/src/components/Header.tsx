@@ -16,6 +16,7 @@ import {
   LayoutTemplate,
   Tag,
   ArrowRight,
+  ClipboardList,
 } from "lucide-react";
 
 /* ─── Nav data ──────────────────────────────────────────────────────────── */
@@ -26,6 +27,7 @@ const solutions = [
   { name: "E-mail Corporativo", href: "/email-corporativo", icon: Mail, desc: "E-mail profissional para sua marca" },
   { name: "Chat WhatsApp", href: "/chat-whatsapp", icon: MessageSquare, desc: "CRM, chatbot e IA no WhatsApp" },
   { name: "Gestão Documental", href: "/sistema-gestao-documental", icon: FileText, desc: "Gestão e automação de documentos" },
+  { name: "Sistema de Propostas", href: "/sistema-proposta-comercial", icon: ClipboardList, desc: "Propostas comerciais que fecham negócios" },
 ];
 
 const content = [

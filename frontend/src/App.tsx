@@ -29,6 +29,7 @@ import ProposalPanel from "./pages/ProposalPanel";
 import ServicesPage from "./pages/Services";
 import SobreFernandoSouza from "./pages/SobreFernandoSouza";
 import SistemaGestaoDocumental from "./pages/SistemaGestaoDocumental";
+import SistemaProposta from "./pages/SistemaProposta";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/templates/:slug" element={<TemplateDetail />} />
             <Route path="/email-corporativo" element={<EmailCorporativo />} />
             <Route path="/sistema-gestao-documental" element={<SistemaGestaoDocumental />} />
+            <Route path="/sistema-proposta-comercial" element={<SistemaProposta />} />
             <Route path="/cursos" element={<Cursos />} />
             <Route path="/chat-whatsapp" element={<ChatWhatsapp />} />
             <Route path="/chatwhatsapp" element={<ChatWhatsapp />} />
