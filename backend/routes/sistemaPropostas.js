@@ -100,13 +100,25 @@ ensureTable().catch(e => console.warn('[SistemaPropostas] ensureTable:', e.messa
 
 /* ── GET /api/sistema-proposta/debug (temporário) ───────────────── */
 router.get('/api/sistema-proposta/debug', async (req, res) => {
+  // quick transporter test (sem enviar email)
+  let transporterStatus = null;
+  try {
+    const t = makeTransporter();
+    await t.verify();
+    transporterStatus = 'ok';
+  } catch (e) {
+    transporterStatus = e.message;
+  }
+
   const result = { pool: !!pool, tables: {}, env: {} };
   result.env = {
     IP_HANDLE: process.env.IP_HANDLE || '(não definido)',
     COMERCIAL_URL: process.env.COMERCIAL_URL || '(não definido)',
     MAIL_HOST: process.env.MAIL_HOST || '(não definido)',
+    MAIL_PORT: process.env.MAIL_PORT || '(não definido)',
     MAIL_USER: process.env.MAIL_USER || '(não definido)',
   };
+  result.mailer = transporterStatus;
   if (pool) {
     try {
       await pool.execute('SELECT 1 FROM users LIMIT 1');
@@ -126,11 +138,11 @@ router.get('/api/sistema-proposta/debug', async (req, res) => {
 
 /* ── Mailer ─────────────────────────────────────────────────────── */
 function makeTransporter() {
-  const port = parseInt(process.env.MAIL_PORT) || 465;
+  // Porta 587 bloqueada no servidor — usar 465 (SSL) obrigatório
   return nodemailer.createTransport({
     host: process.env.MAIL_HOST,
-    port,
-    secure: port === 465,   // true para SSL (465), false para STARTTLS (587)
+    port: 465,
+    secure: true,
     auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
     tls: { rejectUnauthorized: false },
     connectionTimeout: 15000,
@@ -587,78 +599,5 @@ router.post('/api/sistema-proposta/trial', async (req, res) => {
   }
 });
 
-/* ── GET /api/sistema-proposta/debug-email (REMOVER APÓS TESTE) ─── */
-router.get('/api/sistema-proposta/debug-email', async (req, res) => {
-  const to = req.query.to || ADMIN_EMAIL;
-  const mode = req.query.mode || 'smtp'; // smtp | local
-  const results = {};
-
-  // Testa SMTP externo
-  try {
-    const t = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: parseInt(process.env.MAIL_PORT) || 587,
-      secure: false,
-      auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 8000,
-    });
-    await t.verify();
-    const info = await t.sendMail({
-      from: process.env.MAIL_FROM || `Winove <${process.env.MAIL_USER}>`,
-      to,
-      subject: 'Teste SMTP externo',
-      text: 'SMTP externo funcionando.',
-    });
-    results.smtp_externo = { ok: true, messageId: info.messageId };
-  } catch (err) {
-    results.smtp_externo = { ok: false, error: err.message, code: err.code };
-  }
-
-  // Testa localhost:25 como relay SMTP
-  try {
-    const tLocal = nodemailer.createTransport({
-      host: '127.0.0.1',
-      port: 25,
-      secure: false,
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 5000,
-    });
-    await tLocal.verify();
-    const info = await tLocal.sendMail({
-      from: process.env.MAIL_FROM || `Winove <${process.env.MAIL_USER}>`,
-      to,
-      subject: 'Teste localhost:25',
-      text: 'Relay local funcionando.',
-    });
-    results.localhost_25 = { ok: true, messageId: info.messageId };
-  } catch (err) {
-    results.localhost_25 = { ok: false, error: err.message, code: err.code };
-  }
-
-  // Testa SMTP porta 465 (SSL)
-  try {
-    const t465 = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: 465,
-      secure: true,
-      auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 8000,
-    });
-    await t465.verify();
-    const info = await t465.sendMail({
-      from: process.env.MAIL_FROM || `Winove <${process.env.MAIL_USER}>`,
-      to,
-      subject: 'Teste SMTP 465 SSL',
-      text: 'SMTP 465 funcionando.',
-    });
-    results.smtp_465 = { ok: true, messageId: info.messageId };
-  } catch (err) {
-    results.smtp_465 = { ok: false, error: err.message, code: err.code };
-  }
-
-  res.json(results);
-});
 
 export default router;
