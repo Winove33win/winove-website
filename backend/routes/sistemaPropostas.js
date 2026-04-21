@@ -10,6 +10,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import bcrypt from 'bcrypt';
 import { pool } from '../db.js';
 
 const router = express.Router();
@@ -82,14 +83,14 @@ async function ensureTable() {
     ) ENGINE=InnoDB
   `);
 
-  // Garante colunas extras caso a tabela já exista sem elas (idempotente)
+  // Garante colunas extras caso a tabela já exista sem elas (sem AFTER para evitar falha)
   const alterStmts = [
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS role          ENUM('admin','user') DEFAULT 'admin' AFTER password_hash`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS active        TINYINT(1)    DEFAULT 1   AFTER role`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial      TINYINT(1)    DEFAULT 0   AFTER active`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expires_at TIMESTAMP  NULL        AFTER is_trial`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan          VARCHAR(50)   DEFAULT ''  AFTER trial_expires_at`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_link  VARCHAR(1000) DEFAULT ''  AFTER plan`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS role             ENUM('admin','user') DEFAULT 'admin'`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS active           TINYINT(1)    DEFAULT 1`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial         TINYINT(1)    DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expires_at TIMESTAMP     NULL`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan             VARCHAR(50)   DEFAULT ''`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_link     VARCHAR(1000) DEFAULT ''`,
   ];
   for (const stmt of alterStmts) {
     try { await pool.execute(stmt); } catch { /* coluna já existe — ok */ }
@@ -309,8 +310,7 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
     const loginUrl     = process.env.COMERCIAL_URL || 'https://comercial.winove.com.br/login';
 
     if (pool) {
-      const bcrypt = await import('bcryptjs');
-      const hash   = await bcrypt.default.hash(tmpPassword, 12);
+      const hash   = await bcrypt.hash(tmpPassword, 12);
 
       // Upsert: cria ou atualiza conta existente (trial anterior com mesmo e-mail)
       await pool.execute(
@@ -503,8 +503,7 @@ router.post('/api/sistema-proposta/trial', async (req, res) => {
 
     // Cria usuário trial
     if (pool) {
-      const bcrypt = await import('bcryptjs');
-      const hash = await bcrypt.default.hash(tmpPassword, 12);
+      const hash = await bcrypt.hash(tmpPassword, 12);
       await pool.execute(
         `INSERT INTO users (name, email, password_hash, role, active, is_trial, trial_expires_at, plan)
          VALUES (?, ?, ?, 'admin', 1, 1, ?, 'trial')`,
