@@ -315,8 +315,7 @@ function CheckoutModal({
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "Erro ao processar. Tente novamente.");
-      // Redirect to payment
-      window.location.href = data.redirectUrl;
+      setStep("success");
     } catch (err: unknown) {
       setErrMsg(err instanceof Error ? err.message : "Erro inesperado.");
       setStep("error");
@@ -429,7 +428,27 @@ function CheckoutModal({
           {step === "loading" && (
             <div className="text-center py-10">
               <div className="w-12 h-12 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground text-sm">Preparando seu checkout seguro...</p>
+              <p className="text-muted-foreground text-sm">Criando seu acesso...</p>
+            </div>
+          )}
+
+          {step === "success" && (
+            <div className="text-center py-8">
+              <div className="w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-7 h-7 text-green-400" />
+              </div>
+              <p className="text-foreground font-bold text-lg mb-2">Acesso liberado!</p>
+              <p className="text-muted-foreground text-sm mb-2">
+                Enviamos suas credenciais de acesso + link de pagamento para{" "}
+                <strong className="text-foreground">{form.email}</strong>.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                Você tem <strong className="text-foreground">7 dias</strong> para pagar — sua conta já está ativa agora em{" "}
+                <span className="text-primary font-semibold">comercial.winove.com.br</span>.
+              </p>
+              <Button onClick={onClose} variant="outline" size="sm">
+                Fechar
+              </Button>
             </div>
           )}
 

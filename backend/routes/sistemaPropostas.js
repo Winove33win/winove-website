@@ -86,17 +86,33 @@ async function sendEmail(opts) {
 }
 
 /* ── HTML do e-mail de boas-vindas ──────────────────────────────── */
-function welcomeEmailHtml({ name, email, password, plan, loginUrl }) {
+function welcomeEmailHtml({ name, email, password, plan, loginUrl, paymentLink, payDue }) {
+  const payBlock = paymentLink ? `
+    <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:10px;padding:20px;margin:24px 0">
+      <p style="margin:0 0 12px;font-size:14px;font-weight:bold;color:#92400e">
+        ⏰ Pague em até 7 dias para manter o acesso
+      </p>
+      <p style="margin:0 0 16px;font-size:13px;color:#78350f">
+        Seu acesso está ativo agora. A cobrança do <strong>Plano ${plan}</strong> vence em <strong>${payDue || '7 dias'}</strong>.
+        Se não pagar até lá, a conta será suspensa automaticamente.
+      </p>
+      <div style="text-align:center">
+        <a href="${paymentLink}" style="background:#f59e0b;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px;display:inline-block">
+          Pagar agora →
+        </a>
+      </div>
+    </div>` : '';
+
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="font-family:Arial,sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc">
   <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
     <div style="border-bottom:3px solid #2563eb;padding-bottom:20px;margin-bottom:24px">
-      <h2 style="margin:0;color:#1e40af;font-size:22px">🎉 Bem-vindo ao Sistema de Propostas!</h2>
+      <h2 style="margin:0;color:#1e40af;font-size:22px">🎉 Acesso liberado — Sistema de Propostas!</h2>
     </div>
     <p style="font-size:15px">Olá, <strong>${name}</strong>!</p>
     <p style="font-size:14px;line-height:1.7;color:#334155">
-      Seu pagamento foi confirmado e seu acesso ao <strong>Plano ${plan}</strong> já está ativo!<br>
+      Seu acesso ao <strong>Plano ${plan}</strong> está ativo.<br>
       Use os dados abaixo para fazer seu primeiro login:
     </p>
     <div style="background:#f1f5f9;border-radius:8px;padding:20px;margin:24px 0;font-family:monospace">
@@ -104,6 +120,7 @@ function welcomeEmailHtml({ name, email, password, plan, loginUrl }) {
       <div style="margin-bottom:8px"><strong>E-mail:</strong> ${email}</div>
       <div><strong>Senha:</strong> ${password}</div>
     </div>
+    ${payBlock}
     <p style="font-size:13px;color:#64748b">
       ⚠️ Altere sua senha assim que fizer o primeiro login em <strong>Configurações → Senha</strong>.
     </p>
@@ -115,6 +132,38 @@ function welcomeEmailHtml({ name, email, password, plan, loginUrl }) {
     <p style="font-size:13px;color:#94a3b8">
       Dúvidas? Fale conosco pelo WhatsApp ou responda este e-mail.<br>
       Equipe Winove
+    </p>
+  </div>
+</body></html>`;
+}
+
+/* ── HTML do e-mail de lembrete de pagamento ─────────────────── */
+function reminderEmailHtml({ name, paymentLink, daysLeft, plan }) {
+  const urgency = daysLeft <= 1
+    ? { color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', icon: '🔴', label: daysLeft <= 0 ? 'Último dia!' : `${daysLeft} dia restante` }
+    : { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⏰', label: `${daysLeft} dias restantes` };
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc">
+  <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
+    <div style="background:${urgency.bg};border:2px solid ${urgency.border};border-radius:10px;padding:20px;margin-bottom:24px">
+      <h2 style="margin:0 0 8px;color:${urgency.color};font-size:20px">${urgency.icon} Lembrete de pagamento — ${urgency.label}</h2>
+      <p style="margin:0;font-size:14px;color:${urgency.color}">
+        Seu acesso ao <strong>Plano ${plan}</strong> será <strong>suspenso automaticamente</strong> quando o prazo acabar.
+      </p>
+    </div>
+    <p style="font-size:15px">Olá, <strong>${name}</strong>!</p>
+    <p style="font-size:14px;line-height:1.7;color:#334155">
+      Você está usando o Sistema de Propostas Winove. Para manter o acesso sem interrupção, complete o pagamento agora.
+    </p>
+    <div style="text-align:center;margin:32px 0">
+      <a href="${paymentLink}" style="background:${urgency.color};color:#fff;padding:16px 40px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block">
+        Pagar agora →
+      </a>
+    </div>
+    <p style="font-size:13px;color:#94a3b8">
+      Dúvidas? Fale conosco no WhatsApp. Equipe Winove.
     </p>
   </div>
 </body></html>`;
@@ -132,12 +181,25 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
       return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
     }
 
-    const planData = PLANS[plan];
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName  = name.trim();
+    const planData   = PLANS[plan];
     const amountCents = billing === 'yearly' ? planData.priceYearly : planData.priceMonthly;
-    const orderId = 'SP-' + Date.now() + '-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    const orderId    = 'SP-' + Date.now() + '-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // Verifica se já tem conta
+    if (pool) {
+      const [existing] = await pool.execute(
+        'SELECT id, is_trial, active FROM users WHERE email = ? LIMIT 1',
+        [cleanEmail]
+      );
+      if (existing.length && !existing[0].is_trial) {
+        return res.status(400).json({ error: 'Este e-mail já possui uma conta ativa. Acesse pelo login.' });
+      }
+    }
 
     // Cria link InfinitePay
-    const payload = {
+    const ipPayload = {
       handle: IP_HANDLE,
       items: [{
         quantity: 1,
@@ -148,8 +210,8 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
       redirect_url: `${BASE_URL}/sistema-proposta-comercial?compra=sucesso&order=${orderId}`,
       webhook_url: `${BASE_URL}/api/sistema-proposta/webhook`,
       customer: {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
+        name: cleanName,
+        email: cleanEmail,
         ...(phone && { phone_number: '+55' + phone.replace(/\D/g, '') }),
       },
     };
@@ -161,7 +223,7 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
       const ipRes = await fetch(IP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(ipPayload),
       });
       const data = await ipRes.json();
       if (ipRes.ok) {
@@ -174,32 +236,81 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
       console.warn('[SistemaPropostas] InfinitePay fetch error:', e.message);
     }
 
-    // Salva venda pendente no banco
+    // Fallback: link do WhatsApp se InfinitePay falhar
+    if (!paymentLink) {
+      const waMsg = encodeURIComponent(
+        `Olá! Quero contratar o Sistema de Propostas — Plano ${planData.name}.\nNome: ${cleanName}\nE-mail: ${cleanEmail}`
+      );
+      paymentLink = `https://api.whatsapp.com/send?phone=5519982403845&text=${waMsg}`;
+    }
+
+    // Gera senha temporária e cria conta imediatamente
+    const tmpPassword  = crypto.randomBytes(5).toString('hex');
+    const trialExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // +7 dias
+    const payDueStr    = trialExpires.toLocaleDateString('pt-BR');
+    const loginUrl     = process.env.COMERCIAL_URL || 'https://comercial.winove.com.br/login';
+
     if (pool) {
+      const bcrypt = await import('bcryptjs');
+      const hash   = await bcrypt.default.hash(tmpPassword, 12);
+
+      // Upsert: cria ou atualiza conta existente (trial anterior com mesmo e-mail)
+      await pool.execute(
+        `INSERT INTO users (name, email, password_hash, role, active, is_trial, trial_expires_at, plan, payment_link)
+         VALUES (?, ?, ?, 'admin', 1, 1, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           name=VALUES(name), password_hash=VALUES(password_hash),
+           active=1, is_trial=1, trial_expires_at=VALUES(trial_expires_at),
+           plan=VALUES(plan), payment_link=VALUES(payment_link)`,
+        [cleanName, cleanEmail, hash, trialExpires, plan, paymentLink]
+      );
+
+      // Salva venda pendente
       await pool.execute(
         `INSERT INTO sistema_proposta_vendas
            (order_id, plan, billing, amount_cents, customer_name, customer_email, customer_company, customer_phone, payment_link, payment_slug)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE payment_link=VALUES(payment_link)`,
-        [orderId, plan, billing, amountCents, name.trim(), email.trim().toLowerCase(),
+        [orderId, plan, billing, amountCents, cleanName, cleanEmail,
          company.trim(), phone.trim(), paymentLink, paymentSlug]
       );
     }
 
-    if (!paymentLink) {
-      // Fallback: redireciona pro WhatsApp se InfinitePay falhar
-      const waMsg = encodeURIComponent(
-        `Olá! Quero contratar o Sistema de Propostas — Plano ${planData.name}.\nNome: ${name}\nE-mail: ${email}`
-      );
-      return res.json({
-        ok: true,
-        fallback: true,
-        redirectUrl: `https://api.whatsapp.com/send?phone=5519982403845&text=${waMsg}`,
-        orderId,
+    // E-mail com credenciais + link de pagamento
+    try {
+      await sendEmail({
+        to: cleanEmail,
+        subject: `🎉 Acesso liberado — Sistema de Propostas ${planData.name}`,
+        html: welcomeEmailHtml({
+          name: cleanName, email: cleanEmail,
+          password: tmpPassword, plan: planData.name,
+          loginUrl, paymentLink, payDue: payDueStr,
+        }),
       });
+    } catch (e) {
+      console.warn('[SistemaPropostas] Erro ao enviar e-mail:', e.message);
     }
 
-    res.json({ ok: true, redirectUrl: paymentLink, orderId });
+    // Notificação admin
+    try {
+      await sendEmail({
+        to: ADMIN_EMAIL,
+        subject: `🛒 Novo cadastro — Plano ${planData.name} — ${cleanName}`,
+        html: `<p><strong>Novo cadastro (acesso liberado, aguardando pagamento):</strong></p>
+        <ul>
+          <li><strong>Plano:</strong> ${planData.name} (${billing})</li>
+          <li><strong>Nome:</strong> ${cleanName}</li>
+          <li><strong>Empresa:</strong> ${company || '—'}</li>
+          <li><strong>E-mail:</strong> ${cleanEmail}</li>
+          <li><strong>Telefone:</strong> ${phone || '—'}</li>
+          <li><strong>Pedido:</strong> ${orderId}</li>
+          <li><strong>Valor:</strong> R$ ${(amountCents / 100).toFixed(2)}</li>
+          <li><strong>Vence em:</strong> ${payDueStr}</li>
+        </ul>`,
+      });
+    } catch (e) { /* silencioso */ }
+
+    res.json({ ok: true, orderId });
   } catch (err) {
     console.error('[SistemaPropostas] checkout error:', err);
     res.status(500).json({ error: 'Erro interno. Tente novamente.' });
@@ -233,64 +344,63 @@ router.post('/api/sistema-proposta/webhook', async (req, res) => {
       [orderId]
     );
 
-    // Gera senha temporária
-    const tmpPassword = crypto.randomBytes(5).toString('hex'); // ex: a3f9c2e1b0
     const planName = PLANS[sale.plan]?.name || sale.plan;
-
-    // Cria usuário no sistema de propostas (mesma DB)
-    let userCreated = false;
-    try {
-      const bcrypt = await import('bcryptjs');
-      const hash = await bcrypt.default.hash(tmpPassword, 12);
-      await pool.execute(
-        `INSERT INTO users (name, email, password_hash, role, active)
-         VALUES (?, ?, ?, 'admin', 1)
-         ON DUPLICATE KEY UPDATE active=1`,
-        [sale.customer_name, sale.customer_email, hash]
-      );
-      userCreated = true;
-    } catch (e) {
-      console.warn('[SistemaPropostas] Erro ao criar usuário:', e.message);
-    }
-
     const loginUrl = process.env.COMERCIAL_URL || 'https://comercial.winove.com.br/login';
 
-    // E-mail para o cliente
-    if (userCreated) {
-      try {
-        await sendEmail({
-          to: sale.customer_email,
-          subject: `✅ Acesso liberado — Sistema de Propostas ${planName}`,
-          html: welcomeEmailHtml({
-            name: sale.customer_name,
-            email: sale.customer_email,
-            password: tmpPassword,
-            plan: planName,
-            loginUrl,
-          }),
-        });
-        console.log(`[SistemaPropostas] ✅ Boas-vindas enviado para ${sale.customer_email}`);
-      } catch (e) {
-        console.warn('[SistemaPropostas] Erro ao enviar e-mail cliente:', e.message);
-      }
+    // Pagamento confirmado: ativa conta permanentemente (remove trial/payment_link)
+    try {
+      await pool.execute(
+        `UPDATE users SET is_trial=0, active=1, trial_expires_at=NULL, payment_link='', plan=?
+         WHERE email=?`,
+        [sale.plan, sale.customer_email]
+      );
+    } catch (e) {
+      console.warn('[SistemaPropostas] Erro ao ativar usuário:', e.message);
+    }
+
+    // Envia e-mail de confirmação de pagamento
+    try {
+      await sendEmail({
+        to: sale.customer_email,
+        subject: `✅ Pagamento confirmado — Sistema de Propostas ${planName}`,
+        html: `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc">
+  <div style="background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 4px rgba(0,0,0,.07)">
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:20px;margin-bottom:24px">
+      <h2 style="margin:0;color:#166534;font-size:20px">✅ Pagamento confirmado!</h2>
+    </div>
+    <p style="font-size:15px">Olá, <strong>${sale.customer_name}</strong>!</p>
+    <p style="font-size:14px;line-height:1.7;color:#334155">
+      Seu pagamento do <strong>Plano ${planName}</strong> foi confirmado.
+      Seu acesso está ativo permanentemente — continue usando normalmente.
+    </p>
+    <div style="text-align:center;margin:32px 0">
+      <a href="${loginUrl}" style="background:#2563eb;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block">
+        Acessar o sistema →
+      </a>
+    </div>
+    <p style="font-size:13px;color:#94a3b8">Equipe Winove</p>
+  </div>
+</body></html>`,
+      });
+    } catch (e) {
+      console.warn('[SistemaPropostas] Erro ao enviar e-mail de confirmação:', e.message);
     }
 
     // Notificação para o admin
     try {
       await sendEmail({
         to: ADMIN_EMAIL,
-        subject: `🎉 Nova venda — Plano ${planName} — ${sale.customer_name}`,
-        html: `<p><strong>Nova venda confirmada!</strong></p>
+        subject: `🎉 Pagamento confirmado — Plano ${planName} — ${sale.customer_name}`,
+        html: `<p><strong>Pagamento confirmado!</strong></p>
         <ul>
           <li><strong>Plano:</strong> ${planName} (${sale.billing})</li>
           <li><strong>Cliente:</strong> ${sale.customer_name}</li>
           <li><strong>Empresa:</strong> ${sale.customer_company || '—'}</li>
           <li><strong>E-mail:</strong> ${sale.customer_email}</li>
-          <li><strong>Telefone:</strong> ${sale.customer_phone || '—'}</li>
           <li><strong>Pedido:</strong> ${orderId}</li>
           <li><strong>Valor:</strong> R$ ${(sale.amount_cents / 100).toFixed(2)}</li>
-          <li><strong>Usuário criado automaticamente:</strong> ${userCreated ? 'Sim ✅' : 'Não ⚠️ — criar manualmente'}</li>
-          ${userCreated ? `<li><strong>Senha temporária enviada:</strong> ${tmpPassword}</li>` : ''}
         </ul>`,
       });
     } catch (e) {
