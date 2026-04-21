@@ -65,18 +65,63 @@ async function ensureTable() {
     ) ENGINE=InnoDB
   `);
 
-  // Garante colunas de trial/billing na tabela users (idempotente)
+  // Garante que a tabela users existe (cria se não existir)
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id            INT AUTO_INCREMENT PRIMARY KEY,
+      name          VARCHAR(255) NOT NULL,
+      email         VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role          ENUM('admin','user') DEFAULT 'admin',
+      active        TINYINT(1) DEFAULT 1,
+      is_trial      TINYINT(1) DEFAULT 0,
+      trial_expires_at TIMESTAMP NULL,
+      plan          VARCHAR(50) DEFAULT '',
+      payment_link  VARCHAR(1000) DEFAULT '',
+      created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB
+  `);
+
+  // Garante colunas extras caso a tabela já exista sem elas (idempotente)
   const alterStmts = [
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial        TINYINT(1)    DEFAULT 0   AFTER active`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expires_at TIMESTAMP    NULL        AFTER is_trial`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan            VARCHAR(50)   DEFAULT ''  AFTER trial_expires_at`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_link    VARCHAR(1000) DEFAULT ''  AFTER plan`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS role          ENUM('admin','user') DEFAULT 'admin' AFTER password_hash`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS active        TINYINT(1)    DEFAULT 1   AFTER role`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial      TINYINT(1)    DEFAULT 0   AFTER active`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expires_at TIMESTAMP  NULL        AFTER is_trial`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan          VARCHAR(50)   DEFAULT ''  AFTER trial_expires_at`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_link  VARCHAR(1000) DEFAULT ''  AFTER plan`,
   ];
   for (const stmt of alterStmts) {
-    try { await pool.execute(stmt); } catch { /* coluna já existe */ }
+    try { await pool.execute(stmt); } catch { /* coluna já existe — ok */ }
   }
 }
 ensureTable().catch(e => console.warn('[SistemaPropostas] ensureTable:', e.message));
+
+/* ── GET /api/sistema-proposta/debug (temporário) ───────────────── */
+router.get('/api/sistema-proposta/debug', async (req, res) => {
+  const result = { pool: !!pool, tables: {}, env: {} };
+  result.env = {
+    IP_HANDLE: process.env.IP_HANDLE || '(não definido)',
+    COMERCIAL_URL: process.env.COMERCIAL_URL || '(não definido)',
+    MAIL_HOST: process.env.MAIL_HOST || '(não definido)',
+    MAIL_USER: process.env.MAIL_USER || '(não definido)',
+  };
+  if (pool) {
+    try {
+      await pool.execute('SELECT 1 FROM users LIMIT 1');
+      result.tables.users = '✅ existe';
+    } catch (e) { result.tables.users = '❌ ' + e.message; }
+    try {
+      await pool.execute('SELECT 1 FROM sistema_proposta_vendas LIMIT 1');
+      result.tables.sistema_proposta_vendas = '✅ existe';
+    } catch (e) { result.tables.sistema_proposta_vendas = '❌ ' + e.message; }
+    try {
+      const [cols] = await pool.execute(`SHOW COLUMNS FROM users LIKE 'payment_link'`);
+      result.tables.users_payment_link_col = cols.length ? '✅ existe' : '❌ não existe';
+    } catch (e) { result.tables.users_payment_link_col = '❌ ' + e.message; }
+  }
+  res.json(result);
+});
 
 /* ── Mailer ─────────────────────────────────────────────────────── */
 function makeTransporter() {
@@ -326,7 +371,7 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
     res.json({ ok: true, orderId });
   } catch (err) {
     console.error('[SistemaPropostas] checkout error:', err);
-    res.status(500).json({ error: 'Erro interno. Tente novamente.' });
+    res.status(500).json({ error: 'Erro interno. Tente novamente.', _detail: err.message });
   }
 });
 
