@@ -41,9 +41,11 @@ const IP_HANDLE = process.env.IP_HANDLE || 'winove-online';
 const BASE_URL  = process.env.APP_BASE_URL || 'https://winove.com.br';
 const ADMIN_EMAIL = process.env.CONTACT_EMAIL || 'fernando@winove.com.br';
 
-/* ── Garante tabela ─────────────────────────────────────────────── */
+/* ── Garante tabelas e colunas ──────────────────────────────────── */
 async function ensureTable() {
   if (!pool) return;
+
+  // Tabela de vendas
   await pool.execute(`
     CREATE TABLE IF NOT EXISTS sistema_proposta_vendas (
       id            INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,6 +64,17 @@ async function ensureTable() {
       created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB
   `);
+
+  // Garante colunas de trial/billing na tabela users (idempotente)
+  const alterStmts = [
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_trial        TINYINT(1)    DEFAULT 0   AFTER active`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_expires_at TIMESTAMP    NULL        AFTER is_trial`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS plan            VARCHAR(50)   DEFAULT ''  AFTER trial_expires_at`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_link    VARCHAR(1000) DEFAULT ''  AFTER plan`,
+  ];
+  for (const stmt of alterStmts) {
+    try { await pool.execute(stmt); } catch { /* coluna já existe */ }
+  }
 }
 ensureTable().catch(e => console.warn('[SistemaPropostas] ensureTable:', e.message));
 
