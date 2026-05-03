@@ -118,6 +118,8 @@ function buildReportHtml(client, data, isEmail = false) {
     { icon: '💬', title: 'CRM WhatsApp', desc: 'Central de atendimento profissional no WhatsApp com funil de vendas, chatbot e métricas em tempo real para sua equipe.', url: 'https://winove.com.br/chat-whatsapp' },
     { icon: '📋', title: 'Sistema de Propostas', desc: 'Crie propostas comerciais profissionais em minutos, com catálogo de produtos, link de pagamento e envio automático.', url: 'https://winove.com.br/sistema-proposta-comercial' },
     { icon: '📧', title: 'E-mail Corporativo', desc: 'Configure e-mail com seu domínio próprio via Google Workspace ou Microsoft 365. Transmita credibilidade e profissionalismo.', url: 'https://winove.com.br/email-corporativo' },
+    { icon: '💻', title: 'Desenvolvimento Web', desc: 'Desenvolvemos sites e sistemas do zero com código próprio — totalmente sob medida para o seu negócio, sem limitações de plataforma.', url: 'https://winove.com.br/servicos' },
+    { icon: '🔒', title: 'Hospedagem Segura', desc: 'Hospedagem gerenciada com SSL, backups automáticos, monitoramento 24h e atualizações de segurança para manter seu site sempre no ar e protegido.', url: 'https://winove.com.br/servicos' },
   ];
 
   const serviceCards = SERVICES.map(s => `
