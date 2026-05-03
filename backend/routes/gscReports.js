@@ -111,6 +111,22 @@ function buildReportHtml(client, data, isEmail = false) {
 
   const publicLink = `${BASE_URL}/api/relatorio-seo/${report_token}`;
 
+  const SERVICES = [
+    { icon: '🌐', title: 'Criação de Sites', desc: 'Sites profissionais em Wix Studio com design exclusivo, responsivos e otimizados para converter visitantes em clientes.', url: 'https://winove.com.br/servicos' },
+    { icon: '📈', title: 'SEO Avançado', desc: 'Estratégia completa de SEO técnico e de conteúdo para seu site aparecer nas primeiras posições do Google e atrair mais clientes.', url: 'https://winove.com.br/servicos' },
+    { icon: '🤖', title: 'Automação e IA', desc: 'Automatize processos repetitivos e use inteligência artificial para ganhar tempo, reduzir erros e escalar seu negócio.', url: 'https://winove.com.br/servicos' },
+    { icon: '💬', title: 'CRM WhatsApp', desc: 'Central de atendimento profissional no WhatsApp com funil de vendas, chatbot e métricas em tempo real para sua equipe.', url: 'https://winove.com.br/chat-whatsapp' },
+    { icon: '📋', title: 'Sistema de Propostas', desc: 'Crie propostas comerciais profissionais em minutos, com catálogo de produtos, link de pagamento e envio automático.', url: 'https://winove.com.br/sistema-proposta-comercial' },
+    { icon: '📧', title: 'E-mail Corporativo', desc: 'Configure e-mail com seu domínio próprio via Google Workspace ou Microsoft 365. Transmita credibilidade e profissionalismo.', url: 'https://winove.com.br/email-corporativo' },
+  ];
+
+  const serviceCards = SERVICES.map(s => `
+    <a href="${s.url}" target="_blank" style="display:block;background:#fff;border-radius:10px;padding:20px;text-decoration:none;color:inherit;border:1.5px solid #f0f0f0;transition:border-color .15s">
+      <div style="font-size:24px;margin-bottom:10px">${s.icon}</div>
+      <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:6px">${s.title}</div>
+      <div style="font-size:13px;color:#666;line-height:1.5">${s.desc}</div>
+    </a>`).join('');
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -119,18 +135,25 @@ function buildReportHtml(client, data, isEmail = false) {
 <title>Relatório SEO — ${esc(client_name)}</title>
 <style>
 *{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;background:#f0f2f5;color:#222}a{color:#6c63ff}
-.wrap{max-width:900px;margin:0 auto;padding:32px 16px}
+.wrap{max-width:920px;margin:0 auto;padding:32px 16px}
 .header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;border-radius:12px;padding:32px;margin-bottom:28px}
 .logo{font-size:22px;font-weight:800;margin-bottom:18px;letter-spacing:-.5px}.logo em{color:#6c63ff;font-style:normal}
 .header h1{margin:0 0 6px;font-size:22px;font-weight:700}.header p{margin:0;opacity:.65;font-size:13px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:8px}
 .kpi{background:#fff;border-radius:10px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
-.kpi .lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.kpi .val{font-size:26px;font-weight:800;color:#1a1a2e;line-height:1}
+.kpi .lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}
+.kpi .val{font-size:28px;font-weight:800;color:#1a1a2e;line-height:1;margin-bottom:6px}
+.kpi .desc{font-size:12px;color:#999;line-height:1.4}
 .section{background:#fff;border-radius:10px;padding:22px 24px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:20px}
-.section h2{margin:0 0 14px;font-size:15px;font-weight:700;color:#1a1a2e}
+.section h2{margin:0 0 6px;font-size:15px;font-weight:700;color:#1a1a2e}
+.section .subtitle{font-size:12px;color:#aaa;margin-bottom:16px}
 table{width:100%;border-collapse:collapse}th{text-align:left;padding:8px 12px;background:#f8f9fa;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-th:not(:first-child){text-align:right}.footer{text-align:center;font-size:12px;color:#aaa;padding:24px 0}
+th:not(:first-child){text-align:right}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.cta-box{background:linear-gradient(135deg,#6c63ff 0%,#4f46e5 100%);border-radius:12px;padding:32px;text-align:center;margin-bottom:20px;color:#fff}
+.cta-box h3{margin:0 0 10px;font-size:20px;font-weight:800}.cta-box p{margin:0 0 20px;opacity:.85;font-size:14px;line-height:1.5}
+.cta-btn{display:inline-block;padding:13px 28px;background:#fff;color:#4f46e5;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px}
+.footer{text-align:center;font-size:12px;color:#aaa;padding:24px 0}
 </style>
 </head>
 <body><div class="wrap">
@@ -139,26 +162,81 @@ th:not(:first-child){text-align:right}.footer{text-align:center;font-size:12px;c
     <h1>Relatório de Desempenho no Google</h1>
     <p>${esc(client_name)} &nbsp;·&nbsp; ${esc(site_url)} &nbsp;·&nbsp; ${dateRange.start} a ${dateRange.end}</p>
   </div>
+
   <div class="kpis">
-    <div class="kpi"><div class="lbl">Cliques</div><div class="val">${totalClicks.toLocaleString('pt-BR')}</div></div>
-    <div class="kpi"><div class="lbl">Impressões</div><div class="val">${totalImpressions.toLocaleString('pt-BR')}</div></div>
-    <div class="kpi"><div class="lbl">CTR médio</div><div class="val">${avgCtr}</div></div>
-    <div class="kpi"><div class="lbl">Posição média</div><div class="val">${avgPosition}</div></div>
+    <div class="kpi">
+      <div class="lbl">Cliques</div>
+      <div class="val">${totalClicks.toLocaleString('pt-BR')}</div>
+      <div class="desc">Pessoas que clicaram no seu site nos resultados do Google neste período.</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Impressões</div>
+      <div class="val">${totalImpressions.toLocaleString('pt-BR')}</div>
+      <div class="desc">Quantas vezes seu site apareceu nas buscas, mesmo sem ser clicado.</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">CTR Médio</div>
+      <div class="val">${avgCtr}</div>
+      <div class="desc">Taxa de cliques: % das pessoas que viram e clicaram. Quanto maior, melhor.</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Posição Média</div>
+      <div class="val">${avgPosition}</div>
+      <div class="desc">Posição média nos resultados do Google. Menos que 10 = primeira página.</div>
+    </div>
   </div>
-  <div class="section"><h2>🔍 Palavras-chave com Mais Cliques</h2>
+
+  <div style="margin-bottom:24px;padding:12px 16px;background:#fffbeb;border-radius:8px;border-left:3px solid #f59e0b;font-size:12px;color:#92400e;line-height:1.5">
+    💡 <strong>Como interpretar:</strong> Impressões altas com poucos cliques indicam oportunidade de melhorar títulos e descrições das páginas. Posição acima de 10 significa que seu site ainda não está na primeira página — há espaço para crescer.
+  </div>
+
+  <div class="section">
+    <h2>🔍 Palavras-chave com Mais Cliques</h2>
+    <div class="subtitle">As buscas que mais trouxeram visitantes ao seu site nos últimos 30 dias.</div>
     <table><thead><tr><th>Palavra-chave</th><th>Cliques</th><th>Impressões</th><th>CTR</th><th>Posição</th></tr></thead>
-    <tbody>${tableRows(queries, r => r.keys[0])}</tbody></table></div>
-  <div class="section"><h2>📄 Páginas com Mais Tráfego</h2>
+    <tbody>${tableRows(queries, r => r.keys[0])}</tbody></table>
+  </div>
+
+  <div class="section">
+    <h2>📄 Páginas com Mais Tráfego</h2>
+    <div class="subtitle">Quais páginas do seu site recebem mais visitantes vindos do Google.</div>
     <table><thead><tr><th>URL</th><th>Cliques</th><th>Impressões</th><th>CTR</th><th>Posição</th></tr></thead>
-    <tbody>${tableRows(pages, r => r.keys[0])}</tbody></table></div>
-  <div class="section"><h2>🌎 Países de Origem</h2>
+    <tbody>${tableRows(pages, r => r.keys[0])}</tbody></table>
+  </div>
+
+  <div class="section">
+    <h2>🌎 Países de Origem</h2>
+    <div class="subtitle">De onde vêm as pessoas que encontraram seu site no Google.</div>
     <table><thead><tr><th>País</th><th>Cliques</th><th>Impressões</th><th>CTR</th><th>Posição</th></tr></thead>
-    <tbody>${tableRows(countries, r => r.keys[0])}</tbody></table></div>
+    <tbody>${tableRows(countries, r => r.keys[0])}</tbody></table>
+  </div>
+
   ${isEmail ? `<div style="text-align:center;margin:24px 0">
     <a href="${publicLink}" style="display:inline-block;padding:14px 28px;background:#6c63ff;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px">Ver Relatório Completo Online</a>
   </div>` : ''}
+
+  <div style="margin-bottom:20px;padding:20px 24px;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07)">
+    <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Quer melhorar esses números?</div>
+    <div style="font-size:14px;color:#444;line-height:1.6;margin-bottom:16px">
+      Seu relatório mostra o potencial do seu site no Google. Com uma estratégia de SEO bem executada, é possível aumentar cliques e impressões de forma consistente — levando mais clientes até você todos os meses.
+    </div>
+    <a href="https://winove.com.br/servicos" target="_blank" style="display:inline-block;padding:10px 20px;background:#1a1a2e;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">Falar com a Winove →</a>
+  </div>
+
+  <div style="margin-bottom:20px">
+    <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px;padding-left:2px">Conheça nossas soluções</div>
+    <div class="services-grid">${serviceCards}</div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Pronto para crescer no digital?</h3>
+    <p>A Winove combina criação de sites, SEO, automação e inteligência artificial<br>para transformar seu presença online em resultados reais.</p>
+    <a href="https://winove.com.br" target="_blank" class="cta-btn">Conheça a Winove</a>
+  </div>
+
   <div class="footer">Relatório gerado por <a href="https://winove.com.br">Winove</a> · Dados do Google Search Console<br>
-    <small>Atualizado a cada 30 dias. <a href="${publicLink}">Link permanente do relatório</a></small></div>
+    <small>Atualizado a cada 30 dias. <a href="${publicLink}">Link permanente do relatório</a></small>
+  </div>
 </div></body></html>`;
 }
 
