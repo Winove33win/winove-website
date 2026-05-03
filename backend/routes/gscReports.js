@@ -102,7 +102,7 @@ function buildReportHtml(client, data, isEmail = false) {
       .join('')
     : `<tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa;font-size:13px;">Sem dados disponíveis no período</td></tr>`;
 
-  const publicLink = `${BASE_URL}/relatorio-seo/${report_token}`;
+  const publicLink = `${BASE_URL}/api/relatorio-seo/${report_token}`;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -224,11 +224,11 @@ function adminHtml(clients, flash = '') {
       <td><small>${esc(c.client_email)}</small></td>
       <td><small>${c.last_sent_at ? new Date(c.last_sent_at).toLocaleDateString('pt-BR') : '<span class="text-muted">—</span>'}</small></td>
       <td>
-        <a href="/relatorio-seo/${c.report_token}" target="_blank" class="btn btn-sm btn-outline-secondary me-1">Ver</a>
-        <form method="POST" action="/gsc-admin/send/${c.id}" style="display:inline">
+        <a href="/api/relatorio-seo/${c.report_token}" target="_blank" class="btn btn-sm btn-outline-secondary me-1">Ver</a>
+        <form method="POST" action="/api/gsc-admin/send/${c.id}" style="display:inline">
           <button class="btn btn-sm btn-success me-1">Enviar</button>
         </form>
-        <form method="POST" action="/gsc-admin/delete/${c.id}" style="display:inline" onsubmit="return confirm('Remover este cliente?')">
+        <form method="POST" action="/api/gsc-admin/delete/${c.id}" style="display:inline" onsubmit="return confirm('Remover este cliente?')">
           <button class="btn btn-sm btn-outline-danger">Remover</button>
         </form>
       </td>
@@ -259,7 +259,7 @@ function adminHtml(clients, flash = '') {
   <div class="card mb-4">
     <div class="card-header py-3 fw-bold">Cadastrar Novo Cliente</div>
     <div class="card-body">
-      <form method="POST" action="/gsc-admin/clients">
+      <form method="POST" action="/api/gsc-admin/clients">
         <div class="row g-3">
           <div class="col-md-3">
             <label class="form-label fw-semibold">Nome do Cliente</label>
@@ -312,7 +312,7 @@ function esc(str) {
 
 // ── Routes ──────────────────────────────────────────────────────────
 
-router.get('/gsc-admin', async (req, res) => {
+router.get('/api/gsc-admin', async (req, res) => {
   if (!pool) return res.status(503).send('Banco de dados não disponível');
   try {
     await ensureTable();
@@ -324,10 +324,10 @@ router.get('/gsc-admin', async (req, res) => {
   }
 });
 
-router.post('/gsc-admin/clients', async (req, res) => {
+router.post('/api/gsc-admin/clients', async (req, res) => {
   if (!pool) return res.status(503).send('Banco de dados não disponível');
   const { site_url, client_name, client_email } = req.body || {};
-  if (!site_url || !client_name || !client_email) return res.redirect('/gsc-admin');
+  if (!site_url || !client_name || !client_email) return res.redirect('/api/gsc-admin');
   try {
     await ensureTable();
     const token = crypto.randomBytes(32).toString('hex');
@@ -335,42 +335,42 @@ router.post('/gsc-admin/clients', async (req, res) => {
       'INSERT INTO gsc_clients (site_url, client_name, client_email, report_token) VALUES (?, ?, ?, ?)',
       [site_url.trim(), client_name.trim(), client_email.trim(), token]
     );
-    res.redirect('/gsc-admin?ok=' + encodeURIComponent(`Cliente "${client_name}" cadastrado com sucesso!`));
+    res.redirect('/api/gsc-admin?ok=' + encodeURIComponent(`Cliente "${client_name}" cadastrado com sucesso!`));
   } catch (err) {
     console.error('[GSC Admin create]', err);
     res.status(500).send('Erro ao cadastrar');
   }
 });
 
-router.post('/gsc-admin/delete/:id', async (req, res) => {
+router.post('/api/gsc-admin/delete/:id', async (req, res) => {
   if (!pool) return res.status(503).send('Banco de dados não disponível');
   try {
     await pool.execute('DELETE FROM gsc_clients WHERE id = ?', [req.params.id]);
-    res.redirect('/gsc-admin?ok=Cliente+removido.');
+    res.redirect('/api/gsc-admin?ok=Cliente+removido.');
   } catch (err) {
     console.error('[GSC Admin delete]', err);
     res.status(500).send('Erro ao remover');
   }
 });
 
-router.post('/gsc-admin/send/:id', async (req, res) => {
+router.post('/api/gsc-admin/send/:id', async (req, res) => {
   if (!pool) return res.status(503).send('Banco de dados não disponível');
   try {
     const [[client]] = await pool.execute('SELECT * FROM gsc_clients WHERE id = ?', [req.params.id]);
-    if (!client) return res.redirect('/gsc-admin?ok=Cliente+não+encontrado.');
+    if (!client) return res.redirect('/api/gsc-admin?ok=Cliente+não+encontrado.');
     const accessToken = await refreshAccessToken();
     const data = await fetchGscData(accessToken, client.site_url);
     await sendReportEmail(client, data);
     await pool.execute('UPDATE gsc_clients SET last_sent_at = NOW() WHERE id = ?', [client.id]);
-    res.redirect('/gsc-admin?ok=' + encodeURIComponent(`Relatório enviado para ${client.client_email}!`));
+    res.redirect('/api/gsc-admin?ok=' + encodeURIComponent(`Relatório enviado para ${client.client_email}!`));
   } catch (err) {
     console.error('[GSC Admin send]', err);
-    res.redirect('/gsc-admin?ok=' + encodeURIComponent('Erro ao enviar: ' + err.message));
+    res.redirect('/api/gsc-admin?ok=' + encodeURIComponent('Erro ao enviar: ' + err.message));
   }
 });
 
 // Public report via token
-router.get('/relatorio-seo/:token', async (req, res) => {
+router.get('/api/relatorio-seo/:token', async (req, res) => {
   if (!pool) return res.status(503).send('Serviço temporariamente indisponível.');
   try {
     await ensureTable();

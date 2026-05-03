@@ -413,7 +413,7 @@ app.get('/api/debug-db', (req, res) => {
 
 // API routes
 // GSC admin panel (protected) + public report pages
-app.use('/gsc-admin', requireCommercialProposalAuth);
+app.use('/api/gsc-admin', requireCommercialProposalAuth);
 app.use('/', gscReportsRoute);
 
 app.use('/api', blogRoute);
