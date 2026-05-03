@@ -15,6 +15,7 @@ import leadsRoutes from './routes/leads.js';
 import postSeoRoute from './routes/postSeo.js';
 import proposalsRoute from './routes/proposals.js';
 import sistemaPropostasRoute from './routes/sistemaPropostas.js';
+import gscReportsRoute, { startGscCron } from './routes/gscReports.js';
 import {
   ensureTemplateIsFresh,
   getBaseTemplate,
@@ -105,6 +106,7 @@ const requireCommercialProposalAuth = (req, res, next) => {
 // Middlewares
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // Sitemap must be served before static middlewares
@@ -169,8 +171,8 @@ app.use((_req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://winove.com.br https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' https://winove.com.br https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
       "img-src 'self' data: blob: https://winove.com.br https://www.winove.com.br https://images.unsplash.com",
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://winove.com.br https://www.google-analytics.com https://api.stripe.com",
@@ -410,6 +412,10 @@ app.get('/api/debug-db', (req, res) => {
 });
 
 // API routes
+// GSC admin panel (protected) + public report pages
+app.use('/gsc-admin', requireCommercialProposalAuth);
+app.use('/', gscReportsRoute);
+
 app.use('/api', blogRoute);
 app.use('/api/cases', casesRoute);
 app.use('/api', setupPortfolioRoute);
@@ -495,4 +501,5 @@ app.get('*', (req, res) => {
 const port = Number(process.env.PORT || 3333);
 app.listen(port, () => {
   console.log(`API + Frontend running on port ${port}`);
+  startGscCron();
 });
