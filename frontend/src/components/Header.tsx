@@ -93,10 +93,17 @@ function SolucoesDropdown({ pathname }: { pathname: string }) {
         style={{ left: "50%", transform: `translateX(-50%) ${open ? "scaleY(1)" : "scaleY(.95)"}`, width: 640 }}
       >
         <div className="flex justify-center mb-1.5">
-          <div className="w-3 h-3 rotate-45 bg-[hsl(var(--card))] border-l border-t border-white/10" />
+          <div className="w-3 h-3 rotate-45 bg-background border-l border-t border-white/10" />
         </div>
 
-        <div className="glass rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+        <div
+          className="rounded-2xl shadow-2xl overflow-hidden"
+          style={{
+            background: "hsl(var(--background))",
+            border: "1px solid rgba(255,255,255,0.10)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+          }}
+        >
           {/* Grid of groups */}
           <div className="grid grid-cols-2 gap-0 p-5">
             {solutionGroups.map((group) => (
@@ -118,22 +125,22 @@ function SolucoesDropdown({ pathname }: { pathname: string }) {
                         to={item.href}
                         onClick={() => setOpen(false)}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group ${
-                          active ? "bg-primary/10" : "hover:bg-white/5"
+                          active ? "bg-primary/10" : "hover:bg-white/6"
                         }`}
                       >
                         <div
                           className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
-                          style={{ background: active ? `${group.color}25` : "rgba(255,255,255,0.05)" }}
+                          style={{ background: active ? `${group.color}25` : `${group.color}15` }}
                         >
-                          <Icon className="w-4 h-4 transition-colors" style={{ color: active ? group.color : undefined }} />
+                          <Icon className="w-4 h-4" style={{ color: group.color }} />
                         </div>
                         <div className="min-w-0">
-                          <p className={`text-sm font-semibold leading-tight ${active ? "text-primary" : "text-foreground group-hover:text-foreground"}`}>
+                          <p className={`text-sm font-semibold leading-tight ${active ? "text-primary" : "text-foreground"}`}>
                             {item.name}
                           </p>
                           <p className="text-xs text-muted-foreground leading-snug">{item.desc}</p>
                         </div>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 ml-auto flex-shrink-0 transition-opacity" />
+                        <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-60 ml-auto flex-shrink-0 transition-opacity" />
                       </Link>
                     );
                   })}
@@ -143,7 +150,10 @@ function SolucoesDropdown({ pathname }: { pathname: string }) {
           </div>
 
           {/* Footer strip */}
-          <div className="border-t border-white/8 px-8 py-3 flex items-center justify-between bg-white/2">
+          <div
+            className="border-t px-8 py-3 flex items-center justify-between"
+            style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}
+          >
             <span className="text-xs text-muted-foreground">Não encontrou o que precisa?</span>
             <a
               href={WA_LINK}
@@ -202,9 +212,16 @@ function ConteudoDropdown({ pathname }: { pathname: string }) {
         }`}
       >
         <div className="flex justify-center mb-1.5">
-          <div className="w-3 h-3 rotate-45 bg-[hsl(var(--card))] border-l border-t border-white/10" />
+          <div className="w-3 h-3 rotate-45 bg-background border-l border-t border-white/10" />
         </div>
-        <div className="glass rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: "hsl(var(--background))",
+            border: "1px solid rgba(255,255,255,0.10)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+          }}
+        >
           {content.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href || pathname.startsWith(item.href + "/");
