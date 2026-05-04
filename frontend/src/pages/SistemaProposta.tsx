@@ -205,65 +205,83 @@ const WA_LINK = "https://api.whatsapp.com/send?phone=5519982403845";
 
 const plans = [
   {
-    id: "start",
-    name: "Start",
-    price: 97,
-    billing: "mês",
-    description: "Para autônomos e freelancers que querem profissionalizar suas propostas.",
+    id: "monthly",
+    name: "Mensal",
+    pricePerMonth: 399,
+    priceBilled: 399,
+    billingPeriod: "mês",
+    billingNote: null,
+    savingsLabel: null,
+    description: "Flexibilidade total — cancele ou mude de plano quando quiser.",
     highlight: false,
     badge: null,
     features: [
       "Propostas ilimitadas",
-      "CRM de clientes",
+      "CRM de clientes e leads",
       "Triagem automática de leads",
-      "Catálogo de produtos",
+      "Catálogo de produtos e serviços",
       "Dashboard de performance",
       "Link de pagamento InfinitePay",
+      "Proposta online com link público",
+      "Envio por e-mail profissional",
+      "Múltiplos usuários",
       "Personalização com sua marca",
-      "1 usuário",
       "Suporte via WhatsApp",
     ],
-    cta: "Começar agora",
+    cta: "Assinar Mensal",
   },
   {
-    id: "pro",
-    name: "Pro",
-    price: 197,
-    billing: "mês",
-    description: "Para agências e consultores que gerenciam vários clientes e precisam de escala.",
+    id: "quarterly",
+    name: "Trimestral",
+    pricePerMonth: 299,
+    priceBilled: 897,
+    billingPeriod: "mês",
+    billingNote: "R$ 897 cobrado a cada 3 meses",
+    savingsLabel: "Economize 10%",
+    description: "Compromisso trimestral com desconto — ótimo custo-benefício.",
+    highlight: false,
+    badge: "Economize 10%",
+    features: [
+      "Propostas ilimitadas",
+      "CRM de clientes e leads",
+      "Triagem automática de leads",
+      "Catálogo de produtos e serviços",
+      "Dashboard de performance",
+      "Link de pagamento InfinitePay",
+      "Proposta online com link público",
+      "Envio por e-mail profissional",
+      "Múltiplos usuários",
+      "Personalização com sua marca",
+      "Suporte via WhatsApp",
+    ],
+    cta: "Assinar Trimestral",
+  },
+  {
+    id: "annual",
+    name: "Anual",
+    pricePerMonth: 249,
+    priceBilled: 2988,
+    billingPeriod: "mês",
+    billingNote: "R$ 2.988 cobrado anualmente",
+    savingsLabel: "Economize 25%",
+    description: "Melhor preço do ano — pague menos e use o sistema sem interrupção.",
     highlight: true,
     badge: "Mais popular",
     features: [
-      "Tudo do plano Start",
-      "Até 5 usuários",
-      "Domínio próprio (ex: propostas.suaempresa.com.br)",
-      "E-mail SMTP configurado",
-      "Importação de leads via planilha",
-      "Webhook para integração com Wix / outros",
-      "Suporte prioritário",
-      "Onboarding em vídeo",
+      "Propostas ilimitadas",
+      "CRM de clientes e leads",
+      "Triagem automática de leads",
+      "Catálogo de produtos e serviços",
+      "Dashboard de performance",
+      "Link de pagamento InfinitePay",
+      "Proposta online com link público",
+      "Envio por e-mail profissional",
+      "Múltiplos usuários",
+      "Personalização com sua marca",
+      "Suporte via WhatsApp",
+      "Implantação e onboarding incluídos",
     ],
-    cta: "Assinar o Pro",
-  },
-  {
-    id: "agency",
-    name: "Agency",
-    price: 397,
-    billing: "mês",
-    description: "Para agências que precisam de múltiplos usuários, personalização total e escala.",
-    highlight: false,
-    badge: "White-label",
-    features: [
-      "Tudo do plano Pro",
-      "Usuários ilimitados",
-      "White-label completo (sem menção à Winove)",
-      "Personalização de cores e identidade",
-      "Implantação expressa em 24h",
-      "Treinamento da equipe (1h ao vivo)",
-      "Suporte premium com SLA",
-      "Acesso ao código-fonte",
-    ],
-    cta: "Contratar Agency",
+    cta: "Assinar Anual",
   },
 ];
 
@@ -311,7 +329,7 @@ function CheckoutModal({
       const res = await fetch("/api/sistema-proposta/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: plan.id, billing: "monthly", ...form }),
+        body: JSON.stringify({ plan: plan.id, billing: plan.id, ...form }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || "Erro ao processar. Tente novamente.");
@@ -339,9 +357,12 @@ function CheckoutModal({
               Plano {plan.name}
             </p>
             <h3 className="text-lg font-bold text-foreground">
-              R$ {plan.price}
-              <span className="text-sm text-muted-foreground font-normal">/{plan.billing}</span>
+              R$ {plan.pricePerMonth}
+              <span className="text-sm text-muted-foreground font-normal">/{plan.billingPeriod}</span>
             </h3>
+            {plan.billingNote && (
+              <p className="text-xs text-muted-foreground/70 mt-0.5">{plan.billingNote}</p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -875,13 +896,38 @@ export default function SistemaProposta() {
         jsonLd={[
           {
             "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Sistema de Proposta Comercial Online",
-            provider: { "@type": "Organization", name: "Winove" },
-            serviceType: "Software de Gestão Comercial",
+            "@type": "SoftwareApplication",
+            "@id": "https://www.winove.com.br/sistema-proposta-comercial#software",
+            name: "Sistema de Proposta Comercial Online – Winove",
+            description: "Sistema completo para gerar propostas comerciais profissionais, gerenciar clientes e leads, enviar triagens automáticas e integrar links de pagamento.",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
             url: "https://www.winove.com.br/sistema-proposta-comercial",
-            description:
-              "Sistema completo para gerar propostas comerciais profissionais, gerenciar clientes e leads, enviar triagens automáticas e integrar links de pagamento.",
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "BRL",
+              price: "0",
+              description: "Trial gratuito por 7 dias",
+              availability: "https://schema.org/InStock",
+            },
+            author: { "@id": "https://www.winove.com.br/#organization" },
+            featureList: [
+              "Propostas comerciais profissionais em PDF",
+              "CRM de clientes e leads",
+              "Triagem automática de leads por formulário",
+              "Link de pagamento integrado",
+              "Dashboard com métricas de conversão",
+              "Catálogo de produtos e serviços",
+            ],
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Início", item: "https://www.winove.com.br/" },
+              { "@type": "ListItem", position: 2, name: "Serviços", item: "https://www.winove.com.br/servicos" },
+              { "@type": "ListItem", position: 3, name: "Sistema de Proposta Comercial", item: "https://www.winove.com.br/sistema-proposta-comercial" },
+            ],
           },
           {
             "@context": "https://schema.org",
@@ -1425,9 +1471,12 @@ export default function SistemaProposta() {
                     <h3 className="text-lg font-bold text-foreground mb-1">{plan.name}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-4">{plan.description}</p>
                     <div className="flex items-end gap-1">
-                      <span className="text-4xl font-extrabold text-foreground">R$ {plan.price}</span>
-                      <span className="text-muted-foreground text-sm mb-1">/{plan.billing}</span>
+                      <span className="text-4xl font-extrabold text-foreground">R$ {plan.pricePerMonth}</span>
+                      <span className="text-muted-foreground text-sm mb-1">/{plan.billingPeriod}</span>
                     </div>
+                    {plan.billingNote && (
+                      <p className="text-xs text-muted-foreground/60 mt-1">{plan.billingNote}</p>
+                    )}
                   </div>
 
                   <ul className="space-y-2.5 mb-8 flex-1">

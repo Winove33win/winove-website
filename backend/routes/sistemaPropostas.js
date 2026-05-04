@@ -17,23 +17,23 @@ const router = express.Router();
 
 /* ── Planos ─────────────────────────────────────────────────────── */
 const PLANS = {
-  start: {
-    name: 'Start',
-    priceMonthly: 9700,       // centavos
-    priceYearly:  97000,
-    label: 'R$ 97/mês',
+  monthly: {
+    name: 'Mensal',
+    priceTotal: 39900,    // R$ 399/mês — cobrado mensalmente
+    label: 'R$ 399/mês',
+    billingLabel: 'Mensal',
   },
-  pro: {
-    name: 'Pro',
-    priceMonthly: 19700,
-    priceYearly:  197000,
-    label: 'R$ 197/mês',
+  quarterly: {
+    name: 'Trimestral',
+    priceTotal: 89700,    // R$ 897/trimestre (R$ 299/mês — 10% off)
+    label: 'R$ 299/mês',
+    billingLabel: 'Trimestral',
   },
-  agency: {
-    name: 'Agency',
-    priceMonthly: 39700,
-    priceYearly:  397000,
-    label: 'R$ 397/mês',
+  annual: {
+    name: 'Anual',
+    priceTotal: 298800,   // R$ 2.988/ano (R$ 249/mês — 25% off)
+    label: 'R$ 249/mês',
+    billingLabel: 'Anual',
   },
 };
 
@@ -52,7 +52,7 @@ async function ensureTable() {
       id            INT AUTO_INCREMENT PRIMARY KEY,
       order_id      VARCHAR(64) UNIQUE NOT NULL,
       plan          VARCHAR(50) NOT NULL,
-      billing       ENUM('monthly','yearly') DEFAULT 'monthly',
+      billing       ENUM('monthly','quarterly','annual','yearly') DEFAULT 'monthly',
       amount_cents  INT NOT NULL,
       customer_name VARCHAR(255) NOT NULL,
       customer_email VARCHAR(255) NOT NULL,
@@ -256,7 +256,7 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName  = name.trim();
     const planData   = PLANS[plan];
-    const amountCents = billing === 'yearly' ? planData.priceYearly : planData.priceMonthly;
+    const amountCents = planData.priceTotal;
     const orderId    = 'SP-' + Date.now() + '-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
     // Verifica se já tem conta
@@ -276,7 +276,7 @@ router.post('/api/sistema-proposta/checkout', async (req, res) => {
       items: [{
         quantity: 1,
         price: amountCents,
-        description: `Sistema de Propostas — Plano ${planData.name} (${billing === 'yearly' ? 'Anual' : 'Mensal'})`,
+        description: `Sistema de Propostas — Plano ${planData.name} (${planData.billingLabel})`,
       }],
       order_nsu: orderId,
       redirect_url: `${BASE_URL}/sistema-proposta-comercial?compra=sucesso&order=${orderId}`,
