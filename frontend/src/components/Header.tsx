@@ -17,6 +17,7 @@ import {
   Tag,
   ArrowRight,
   ClipboardList,
+  Wine,
 } from "lucide-react";
 
 /* ─── Nav data ──────────────────────────────────────────────────────────── */
@@ -28,6 +29,7 @@ const solutions = [
   { name: "Chat WhatsApp", href: "/chat-whatsapp", icon: MessageSquare, desc: "CRM, chatbot e IA no WhatsApp" },
   { name: "Gestão Documental", href: "/sistema-gestao-documental", icon: FileText, desc: "Gestão e automação de documentos" },
   { name: "Sistema de Propostas", href: "/sistema-proposta-comercial", icon: ClipboardList, desc: "Propostas comerciais que fecham negócios" },
+  { name: "AI Sommelier", href: "/ai-sommelier", icon: Wine, desc: "Atendimento inteligente para vinho e destilados" },
 ];
 
 const content = [

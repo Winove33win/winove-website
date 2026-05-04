@@ -30,6 +30,7 @@ import ServicesPage from "./pages/Services";
 import SobreFernandoSouza from "./pages/SobreFernandoSouza";
 import SistemaGestaoDocumental from "./pages/SistemaGestaoDocumental";
 import SistemaProposta from "./pages/SistemaProposta";
+import AiSommelier from "./pages/AiSommelier";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/email-corporativo" element={<EmailCorporativo />} />
             <Route path="/sistema-gestao-documental" element={<SistemaGestaoDocumental />} />
             <Route path="/sistema-proposta-comercial" element={<SistemaProposta />} />
+            <Route path="/ai-sommelier" element={<AiSommelier />} />
             <Route path="/cursos" element={<Cursos />} />
             <Route path="/chat-whatsapp" element={<ChatWhatsapp />} />
             <Route path="/chatwhatsapp" element={<ChatWhatsapp />} />
