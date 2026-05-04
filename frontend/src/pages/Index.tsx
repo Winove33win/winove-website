@@ -1,5 +1,6 @@
 import { Hero } from "@/components/Hero";
 import { Stats } from "@/components/Stats";
+import { ProductsShowcase } from "@/components/ProductsShowcase";
 import { Services } from "@/components/Services";
 import { About } from "@/components/About";
 import { ChatWhatsappPromo } from "@/components/ChatWhatsappPromo";
@@ -66,6 +67,7 @@ const Index = () => {
       <div className="min-h-screen bg-background text-foreground font-inter">
         <Hero />
         <Stats />
+        <ProductsShowcase />
         <Services />
         <About />
         <ChatWhatsappPromo />
